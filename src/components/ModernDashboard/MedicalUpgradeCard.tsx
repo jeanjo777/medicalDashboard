@@ -25,7 +25,7 @@ const MedicalUpgradeCard: React.FC<MedicalUpgradeCardProps> = ({ onUpgrade }) =>
         </p>
         <button
           onClick={onUpgrade}
-          className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-emerald-600 transition-all hover:scale-105 hover:shadow-md"
+          className="rounded-full bg-white px-5 py-2 text-xs font-semibold text-emerald-600 transition-all hover:scale-105 hover:shadow-md cursor-pointer"
         >
           Découvrir
         </button>
