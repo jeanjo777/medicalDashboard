@@ -80,13 +80,6 @@ const mapCentralPatientToLocal = (patient: typeof centralDemoPatients[0]): Patie
 
 const demoPatients: Patient[] = centralDemoPatients.map(mapCentralPatientToLocal);
 
-const navItems = [
-  { label: 'Dashboard', route: '/dashboard' },
-  { label: 'Patients', route: '/patients-enhanced' },
-  { label: 'Rendez-vous', route: '/appointments' },
-  { label: 'Analytics', route: '/analytics-advanced' },
-];
-
 // Risk score color helpers
 const getRiskScoreColor = (score: number | undefined | null): string => {
   if (score == null) return 'bg-gray-100 text-gray-500 border-gray-200';
@@ -276,22 +269,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
                 MedicalAI
               </span>
 
-              <nav className="hidden md:flex items-center gap-1">
-                {navItems.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => navigate(item.route)}
-                    className={`rounded-full px-4 py-2 text-xs font-medium transition-colors ${
-                      location.pathname === item.route
-                        ? 'bg-white text-gray-900'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </nav>
             </div>
 
             <div className="flex items-center gap-2">

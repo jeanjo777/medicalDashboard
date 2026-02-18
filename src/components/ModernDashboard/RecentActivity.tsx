@@ -54,8 +54,8 @@ const RecentActivity: React.FC = () => {
     return (
       <div className="bg-[#1e293b] rounded-xl p-4 sm:p-5 lg:p-6 border border-[#334155]">
         <div className="mb-4 sm:mb-5 lg:mb-6">
-          <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Recent Activity</h3>
-          <p className="text-gray-400 text-xs sm:text-sm">Latest patient updates</p>
+          <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Activité récente</h3>
+          <p className="text-gray-400 text-xs sm:text-sm">Dernières mises à jour patients</p>
         </div>
         <div className="space-y-3 sm:space-y-4">
           {[1, 2, 3, 4].map((i) => (
@@ -76,8 +76,8 @@ const RecentActivity: React.FC = () => {
     return (
       <div className="bg-[#1e293b] rounded-xl p-4 sm:p-5 lg:p-6 border border-[#334155]">
         <div className="mb-4 sm:mb-5 lg:mb-6">
-          <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Recent Activity</h3>
-          <p className="text-gray-400 text-xs sm:text-sm">Latest patient updates</p>
+          <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Activité récente</h3>
+          <p className="text-gray-400 text-xs sm:text-sm">Dernières mises à jour patients</p>
         </div>
         <ErrorState
           type="network"
@@ -93,8 +93,8 @@ const RecentActivity: React.FC = () => {
   return (
     <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155]">
       <div className="mb-6">
-        <h3 className="text-white text-lg font-semibold mb-1">Recent Activity</h3>
-        <p className="text-gray-400 text-sm">Latest patient updates</p>
+        <h3 className="text-white text-lg font-semibold mb-1">Activité récente</h3>
+        <p className="text-gray-400 text-sm">Dernières mises à jour patients</p>
       </div>
       {!hasActivity ? (
         <EmptyState

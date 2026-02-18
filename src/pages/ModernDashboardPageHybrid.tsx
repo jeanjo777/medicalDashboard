@@ -19,6 +19,8 @@ import MedicalPassingRate from '../components/ModernDashboard/MedicalPassingRate
 import RecentActivity from '../components/ModernDashboard/RecentActivity';
 import UpcomingAppointments from '../components/ModernDashboard/UpcomingAppointments';
 import PatientAlertsWidget from '../components/ModernDashboard/PatientAlertsWidget';
+import KPIPerformanceWidget from '../components/ModernDashboard/KPIPerformanceWidget';
+import WeeklyOverviewWidget from '../components/ModernDashboard/WeeklyOverviewWidget';
 import UserMenu from '../components/Common/UserMenu';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
@@ -58,28 +60,6 @@ const ModernDashboardPageHybrid: React.FC = () => {
                 MedicalAI
               </span>
 
-              {/* Navigation Pills */}
-              <nav className="hidden md:flex items-center gap-1">
-                {[
-                  { label: 'Dashboard', route: '/dashboard' },
-                  { label: 'Patients', route: '/patients-enhanced' },
-                  { label: 'Rendez-vous', route: '/appointments' },
-                  { label: 'Analytics', route: '/analytics-advanced' },
-                ].map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => navigate(item.route)}
-                    className={`rounded-full px-4 py-2 text-xs font-medium transition-colors ${
-                      location.pathname === item.route
-                        ? 'bg-white text-gray-900'
-                        : 'text-gray-300 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </nav>
             </div>
 
             {/* Right: Actions */}
@@ -138,6 +118,11 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   <ErrorBoundary>
                     <MedicalAIReports />
                   </ErrorBoundary>
+
+                  {/* KPI Performance */}
+                  <ErrorBoundary>
+                    <KPIPerformanceWidget />
+                  </ErrorBoundary>
                 </div>
 
                 {/* Right Column - Stats (3 cols) */}
@@ -188,6 +173,11 @@ const ModernDashboardPageHybrid: React.FC = () => {
                       cancelled={12}
                       pending={16}
                     />
+                  </ErrorBoundary>
+
+                  {/* Weekly Overview */}
+                  <ErrorBoundary>
+                    <WeeklyOverviewWidget />
                   </ErrorBoundary>
                 </div>
               </div>

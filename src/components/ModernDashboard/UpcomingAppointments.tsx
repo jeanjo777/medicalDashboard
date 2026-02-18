@@ -297,8 +297,8 @@ const UpcomingAppointments: React.FC = () => {
       <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155]">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-white text-lg font-semibold mb-1">Upcoming Appointments</h3>
-            <p className="text-gray-400 text-sm">Today's Schedule</p>
+            <h3 className="text-white text-lg font-semibold mb-1">Rendez-vous à venir</h3>
+            <p className="text-gray-400 text-sm">Planning du jour</p>
           </div>
         </div>
         <div className="space-y-3">
@@ -328,8 +328,8 @@ const UpcomingAppointments: React.FC = () => {
       <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155]">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-white text-lg font-semibold mb-1">Upcoming Appointments</h3>
-            <p className="text-gray-400 text-sm">Today's Schedule</p>
+            <h3 className="text-white text-lg font-semibold mb-1">Rendez-vous à venir</h3>
+            <p className="text-gray-400 text-sm">Planning du jour</p>
           </div>
         </div>
         <div className="text-center py-8">
@@ -352,11 +352,11 @@ const UpcomingAppointments: React.FC = () => {
       <div className="bg-[#1e293b] rounded-xl p-4 sm:p-5 lg:p-6 border border-[#334155] hover:border-[#475569] transition-colors">
         <div className="flex items-center justify-between mb-4 sm:mb-5 lg:mb-6 gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Upcoming Appointments</h3>
+            <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Rendez-vous à venir</h3>
             <p className="text-gray-400 text-xs sm:text-sm truncate">
               {hasAppointments
                 ? `${appointments.length} rendez-vous aujourd'hui`
-                : "Today's Schedule"
+                : "Planning du jour"
               }
             </p>
           </div>
@@ -366,7 +366,7 @@ const UpcomingAppointments: React.FC = () => {
               className="text-blue-500 hover:text-blue-400 text-xs sm:text-sm font-medium transition-colors duration-200 flex-shrink-0 hover:bg-blue-500/10 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg active:scale-95"
               aria-label="Voir tous les rendez-vous"
             >
-              <span className="hidden sm:inline">View All</span>
+              <span className="hidden sm:inline">Voir tout</span>
               <span className="sm:hidden">Tous</span>
             </button>
           )}
