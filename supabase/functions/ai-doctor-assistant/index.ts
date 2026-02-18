@@ -1,11 +1,29 @@
-import { createClient } from 'npm:@supabase/supabase-js@2.76.1';
 import Anthropic from 'npm:@anthropic-ai/sdk@0.30.1';
+import { verify } from 'https://deno.land/x/djwt@v3.0.2/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
+
+const JWT_SECRET = Deno.env.get('JWT_SECRET') || 'your-secret-key-change-this';
+
+async function verifyJWT(token: string): Promise<any> {
+  try {
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(JWT_SECRET),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    return await verify(token, key);
+  } catch (error) {
+    console.error('Token verification failed:', error);
+    return null;
+  }
+}
 
 interface ImageData {
   base64: string;
@@ -169,23 +187,19 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Verify authentication
+    // Verify authentication with custom JWT
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Authorization required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const token = authHeader.substring(7);
+    const payload = await verifyJWT(token);
 
-    if (authError || !user) {
+    if (!payload) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -140,6 +140,7 @@ class ApiService {
     // Construire les headers
     const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
       ...headers,
     };
 
@@ -184,8 +185,8 @@ class ApiService {
 
         clearTimeout(timeoutId);
 
-        // Gestion de la déconnexion automatique
-        if (response.status === 401 && requireAuth) {
+        // Gestion de la déconnexion automatique (sauf pour les Edge Functions IA)
+        if (response.status === 401 && requireAuth && !endpoint.includes('/functions/v1/ai-') && !endpoint.includes('/functions/v1/chat-') && !endpoint.includes('/functions/v1/create-consultation')) {
           logger.warn('Session expirée, déconnexion', { component: 'api' });
           logout();
           return {
