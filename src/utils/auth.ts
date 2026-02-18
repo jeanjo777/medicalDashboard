@@ -29,7 +29,11 @@ const decodeToken = (token: string): TokenPayload | null => {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
 
-    const payload = JSON.parse(atob(parts[1]));
+    // Handle base64url encoding (JWT standard) - replace url-safe chars and add padding
+    let base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) base64 += '=';
+
+    const payload = JSON.parse(atob(base64));
     return payload as TokenPayload;
   } catch {
     return null;
