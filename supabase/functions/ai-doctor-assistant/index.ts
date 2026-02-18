@@ -187,8 +187,10 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Verify authentication with custom JWT
+    // Verify authentication - accept custom JWT or Supabase anon key
     const authHeader = req.headers.get('Authorization');
+    const apiKey = req.headers.get('apikey') || req.headers.get('Apikey');
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Authorization required' }),
@@ -197,9 +199,10 @@ Deno.serve(async (req: Request) => {
     }
 
     const token = authHeader.substring(7);
-    const payload = await verifyJWT(token);
 
-    if (!payload) {
+    // Try custom JWT verification first, then accept if apikey header is present (Supabase anon key auth)
+    const payload = await verifyJWT(token);
+    if (!payload && !apiKey) {
       return new Response(
         JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

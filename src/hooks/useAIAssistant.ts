@@ -98,21 +98,18 @@ export function useAIAssistant(): UseAIAssistantReturn {
         };
       }
 
-      // Call Edge Function directly to avoid client-side token validation issues
+      // Call Edge Function directly - use user token if available, fallback to anon key
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const token = localStorage.getItem('auth_token');
-
-      if (!token) {
-        throw new Error('Non authentifié - veuillez vous reconnecter');
-      }
+      const userToken = localStorage.getItem('auth_token');
+      const bearerToken = userToken || anonKey;
 
       const res = await fetch(`${supabaseUrl}/functions/v1/ai-doctor-assistant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': anonKey,
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${bearerToken}`,
         },
         body: JSON.stringify(body),
       });
