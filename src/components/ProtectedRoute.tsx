@@ -1,11 +1,18 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-// Authentication disabled - all routes are accessible
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const token = localStorage.getItem('auth_token');
+  const user = localStorage.getItem('user');
+
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <>{children}</>;
 };
 
