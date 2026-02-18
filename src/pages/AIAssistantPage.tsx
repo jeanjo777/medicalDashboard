@@ -19,12 +19,13 @@ import {
   Download,
   ScanLine,
   Tablets,
+  Clock,
   Search,
   FileText,
   UserCheck,
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext } from '../hooks/useAIAssistant';
+import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext, type ConversationSummary } from '../hooks/useAIAssistant';
 import { supabase } from '../lib/supabase';
 
 // ============================================
@@ -44,7 +45,7 @@ const MODE_CONFIG: Record<AssistantMode, { label: string; icon: React.ElementTyp
     icon: Pill,
     color: 'text-emerald-400',
     gradient: 'from-emerald-600 to-teal-600',
-    description: 'Aide therapeutique, posologies, interactions',
+    description: 'Prescriptions, conseils therapeutiques, plans de traitement',
   },
   radiology: {
     label: 'Radiologie',
@@ -84,10 +85,12 @@ const QUICK_PROMPTS: Record<AssistantMode, string[]> = {
     'Criteres diagnostiques du diabete de type 2',
   ],
   treatment: [
-    'Traitement de premiere intention HTA essentielle',
-    'Antibiotherapie pneumopathie communautaire adulte',
-    'Prise en charge douleur chronique non cancereuse',
-    'Corticotherapie courte: schema et surveillance',
+    'Prescrire un traitement complet pour HTA essentielle stade 2',
+    'Antibiotherapie pneumopathie communautaire: prescription complete',
+    'Plan de traitement diabete type 2 decouverte avec HbA1c a 8.5%',
+    'Ordonnance et conseils pour lombalgie aigue commune',
+    'Traitement anticoagulant pour FA: choix, posologie et surveillance',
+    'Prise en charge therapeutique complete d\'une depression moderee',
   ],
   radiology: [
     'Comment interpreter une radiographie thoracique systematiquement?',
@@ -403,6 +406,9 @@ interface PatientSearchResult {
   primary_pathology: string;
   riskScore: number;
   age: number;
+  medical_history: string;
+  allergies: string;
+  blood_type: string;
 }
 
 const PatientSearchSelector: React.FC<{
@@ -422,7 +428,7 @@ const PatientSearchSelector: React.FC<{
     try {
       const { data, error } = await supabase
         .from('patients')
-        .select('id, name, email, date_of_birth, gender, status, primary_pathology, riskScore, age')
+        .select('id, name, email, date_of_birth, gender, status, primary_pathology, riskScore, age, medical_history, allergies, blood_type')
         .or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,primary_pathology.ilike.%${searchQuery}%`)
         .limit(8);
 
@@ -633,8 +639,14 @@ const PatientContextPanel: React.FC<{
   const [pathology, setPathology] = useState(initialContext?.primaryPathology || '');
   const [showPatientSearch, setShowPatientSearch] = useState(false);
   const [selectedPatientName, setSelectedPatientName] = useState(initialContext?.patientName || '');
+  const [selectedPatientId, setSelectedPatientId] = useState(initialContext?.patientId || '');
+  const [medicalHistory, setMedicalHistory] = useState(initialContext?.medicalHistory || '');
+  const [allergiesState, setAllergiesState] = useState(initialContext?.allergies || '');
+  const [bloodType, setBloodType] = useState(initialContext?.bloodType || '');
+  const [patientAppointments, setPatientAppointments] = useState<Array<{ appointment_date: string; appointment_time: string; type_consultation: string; motif: string; status: string }>>([]);
 
-  const handleSelectPatient = (patient: PatientSearchResult) => {
+  const handleSelectPatient = async (patient: PatientSearchResult) => {
+    setSelectedPatientId(patient.id);
     setSelectedPatientName(patient.name);
     if (patient.age) setAge(patient.age.toString());
     else if (patient.date_of_birth) {
@@ -644,17 +656,42 @@ const PatientContextPanel: React.FC<{
     }
     if (patient.gender) setSex(patient.gender === 'male' || patient.gender === 'M' ? 'M' : patient.gender === 'female' || patient.gender === 'F' ? 'F' : '');
     if (patient.primary_pathology) setPathology(patient.primary_pathology);
+    if (patient.medical_history) setMedicalHistory(patient.medical_history);
+    if (patient.allergies) setAllergiesState(patient.allergies);
+    if (patient.blood_type) setBloodType(patient.blood_type);
     setShowPatientSearch(false);
+
+    // Fetch patient appointments
+    try {
+      const { data: appointments } = await supabase
+        .from('appointments')
+        .select('appointment_date, appointment_time, type_consultation, motif, status')
+        .eq('patient_id', patient.id)
+        .order('appointment_date', { ascending: false })
+        .limit(10);
+      if (appointments) setPatientAppointments(appointments);
+    } catch { /* silent */ }
   };
 
   const handleSave = () => {
     onSave({
+      patientId: selectedPatientId || undefined,
       patientName: selectedPatientName || undefined,
       patientAge: age ? parseInt(age) : undefined,
       patientSex: sex || undefined,
       antecedents: antecedents ? antecedents.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       currentMedications: medications ? medications.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       primaryPathology: pathology || undefined,
+      medicalHistory: medicalHistory || undefined,
+      allergies: allergiesState || undefined,
+      bloodType: bloodType || undefined,
+      appointments: patientAppointments.map(a => ({
+        date: a.appointment_date,
+        time: a.appointment_time,
+        type: a.type_consultation || '',
+        motif: a.motif || '',
+        status: a.status || '',
+      })),
     });
     onClose();
   };
@@ -768,16 +805,22 @@ const AIAssistantPage: React.FC = () => {
     isLoading,
     mode,
     patientContext,
+    currentConsultationId,
+    conversations,
+    conversationsLoading,
     sendMessage,
     setMode,
     setPatientContext,
     clearChat,
+    loadConversation,
+    newConversation,
   } = useAIAssistant();
 
   const [input, setInput] = useState('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showContext, setShowContext] = useState(false);
   const [showModeMenu, setShowModeMenu] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [imageAttachments, setImageAttachments] = useState<ImageAttachment[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -940,11 +983,79 @@ const AIAssistantPage: React.FC = () => {
                 )}
               </div>
 
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowHistory(!showHistory)}
+                  className={`p-2 rounded-xl border transition-all ${
+                    showHistory
+                      ? 'bg-cyan-600/20 border-cyan-500/40 text-cyan-400'
+                      : 'bg-[#334155] border-[#475569] text-gray-400 hover:text-cyan-400 hover:border-cyan-500/50'
+                  }`}
+                  title="Historique des conversations"
+                >
+                  <Clock size={16} />
+                </button>
+
+                {showHistory && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)} />
+                    <div className="absolute right-0 top-full mt-2 w-80 max-h-[28rem] bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden">
+                      <div className="p-3 border-b border-[#334155] flex items-center justify-between flex-shrink-0">
+                        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                          <Clock size={14} className="text-cyan-400" />
+                          Conversations
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => { newConversation(); setShowHistory(false); }}
+                          className="px-2.5 py-1 rounded-lg bg-cyan-600/20 text-cyan-400 text-xs font-medium hover:bg-cyan-600/30 transition-colors flex items-center gap-1"
+                        >
+                          <Plus size={12} />
+                          Nouvelle
+                        </button>
+                      </div>
+                      <div className="flex-1 overflow-y-auto">
+                        {conversationsLoading ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Loader2 size={16} className="text-cyan-400 animate-spin" />
+                            <span className="text-xs text-gray-400 ml-2">Chargement...</span>
+                          </div>
+                        ) : conversations.length === 0 ? (
+                          <p className="text-center text-gray-500 text-xs py-6">Aucune conversation enregistree</p>
+                        ) : (
+                          conversations.map(conv => (
+                            <button
+                              key={conv.id}
+                              type="button"
+                              onClick={() => { loadConversation(conv.id); setShowHistory(false); }}
+                              className={`w-full text-left px-3 py-2.5 transition-colors hover:bg-[#334155]/50 border-b border-[#334155]/30 cursor-pointer ${
+                                currentConsultationId === conv.id ? 'bg-cyan-600/10 border-l-2 border-l-cyan-500' : ''
+                              }`}
+                            >
+                              <div className="text-sm text-white font-medium truncate">{conv.title}</div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {conv.patientName && (
+                                  <span className="text-[10px] text-cyan-400 truncate max-w-[120px]">{conv.patientName}</span>
+                                )}
+                                <span className="text-[10px] text-gray-500">
+                                  {conv.updatedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                                </span>
+                              </div>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
               <button
                 type="button"
-                onClick={clearChat}
+                onClick={() => { clearChat(); }}
                 className="p-2 rounded-xl bg-[#334155] border border-[#475569] text-gray-400 hover:text-red-400 hover:border-red-500/50 transition-all"
-                title="Effacer la conversation"
+                title="Nouvelle conversation"
               >
                 <Trash2 size={16} />
               </button>
@@ -1011,6 +1122,30 @@ const AIAssistantPage: React.FC = () => {
                   ))}
                 </div>
               </div>
+
+              {conversations.length > 0 && (
+                <div className="w-full max-w-2xl mt-6">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 text-center">Conversations recentes</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {conversations.slice(0, 4).map(conv => (
+                      <button
+                        key={conv.id}
+                        type="button"
+                        onClick={() => loadConversation(conv.id)}
+                        className="text-left px-4 py-3 bg-[#1e293b] border border-[#334155] rounded-xl text-sm hover:border-cyan-500/50 transition-all group cursor-pointer"
+                      >
+                        <div className="text-gray-300 group-hover:text-cyan-300 transition-colors truncate">{conv.title}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          {conv.patientName && <span className="text-[10px] text-cyan-400">{conv.patientName}</span>}
+                          <span className="text-[10px] text-gray-500">
+                            {conv.updatedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 flex items-center gap-2 px-4 py-3 bg-sky-500/5 border border-sky-500/20 rounded-xl max-w-lg">
                 <ImageIcon size={14} className="text-sky-400 flex-shrink-0" />

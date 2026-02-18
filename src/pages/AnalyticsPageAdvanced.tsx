@@ -21,7 +21,6 @@ import SegmentationTab from '../components/Analytics/SegmentationTab';
 import AIAlertsTab from '../components/Analytics/AIAlertsTab';
 import ComparativeTab from '../components/Analytics/ComparativeTab';
 import ReportsTab from '../components/Analytics/ReportsTab';
-import KPICards from '../components/Analytics/KPICards';
 import NotificationCenter from '../components/Common/NotificationCenter';
 import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import { useDemoMode } from '../hooks/useDemoMode';
@@ -98,14 +97,14 @@ const AnalyticsPageAdvanced: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#0f172a] overflow-hidden">
+    <div className="flex h-screen theme-bg-primary overflow-hidden transition-colors duration-300">
       <MedicalSidebarRefined activeItem={pageConfig.sidebarId} onCollapsedChange={setSidebarCollapsed} />
 
       <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 md:px-6 py-3 sm:py-4">
+        <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 md:px-6 py-3 sm:py-4 transition-colors duration-300">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="min-w-0 ml-12 lg:ml-0">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center gap-2.5">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold theme-text-primary flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-lg ${
                   currentTab === 'overview'
                     ? 'bg-gradient-to-br from-cyan-500 to-teal-600 shadow-cyan-500/25'
@@ -115,7 +114,7 @@ const AnalyticsPageAdvanced: React.FC = () => {
                 </div>
                 {pageConfig.title}
               </h1>
-              <p className="text-xs md:text-sm text-gray-400 mt-1 truncate">
+              <p className="text-xs md:text-sm theme-text-muted mt-1 truncate">
                 {pageConfig.subtitle}
               </p>
             </div>
@@ -131,13 +130,13 @@ const AnalyticsPageAdvanced: React.FC = () => {
                   px-3 py-2 rounded-xl border transition-all flex items-center gap-2 text-sm font-medium
                   ${showFilters
                     ? 'bg-cyan-600 border-cyan-500 text-white'
-                    : 'bg-[#334155] border-[#475569] text-gray-300 hover:border-cyan-500'
+                    : 'bg-[var(--bg-tertiary)] border-[var(--border-color)] theme-text-secondary hover:border-cyan-500'
                   }
                 `}
               >
                 <Filter size={15} />
                 <span className="hidden sm:inline">Filtres</span>
-                {showFilters && <span className="text-[10px] bg-cyan-400 px-1.5 py-0.5 rounded-full font-bold">ON</span>}
+                {showFilters && <span className="text-[10px] bg-cyan-400 px-1.5 py-0.5 rounded-full font-bold text-white">ON</span>}
               </button>
 
               <div className="relative group">
@@ -147,17 +146,17 @@ const AnalyticsPageAdvanced: React.FC = () => {
                   <ChevronDown size={14} />
                 </button>
 
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                  <button type="button" onClick={() => handleExport('csv')} className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors rounded-t-xl text-sm font-medium">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  <button type="button" onClick={() => handleExport('csv')} className="w-full px-4 py-2.5 text-left theme-text-secondary hover:bg-[var(--bg-tertiary)] transition-colors rounded-t-xl text-sm font-medium">
                     Export CSV
                   </button>
-                  <button type="button" onClick={() => handleExport('json')} className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium">
+                  <button type="button" onClick={() => handleExport('json')} className="w-full px-4 py-2.5 text-left theme-text-secondary hover:bg-[var(--bg-tertiary)] transition-colors text-sm font-medium">
                     Export JSON
                   </button>
-                  <button type="button" onClick={() => handleExport('txt')} className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium">
+                  <button type="button" onClick={() => handleExport('txt')} className="w-full px-4 py-2.5 text-left theme-text-secondary hover:bg-[var(--bg-tertiary)] transition-colors text-sm font-medium">
                     Export TXT
                   </button>
-                  <button type="button" onClick={() => handleExport('clipboard')} className="w-full px-4 py-2.5 text-left text-gray-700 hover:bg-gray-50 transition-colors rounded-b-xl text-sm font-medium">
+                  <button type="button" onClick={() => handleExport('clipboard')} className="w-full px-4 py-2.5 text-left theme-text-secondary hover:bg-[var(--bg-tertiary)] transition-colors rounded-b-xl text-sm font-medium">
                     Copier
                   </button>
                 </div>
@@ -176,14 +175,9 @@ const AnalyticsPageAdvanced: React.FC = () => {
 
         <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#f5f4f0]">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-[var(--bg-primary)] transition-colors duration-300">
           <ErrorBoundary>
-            {currentTab !== 'overview' && (
-              <KPICards isDemoMode={isDemoMode} />
-            )}
-            <div className={currentTab !== 'overview' ? 'mt-4 md:mt-6' : ''}>
-              {renderContent()}
-            </div>
+            {renderContent()}
           </ErrorBoundary>
         </main>
       </div>

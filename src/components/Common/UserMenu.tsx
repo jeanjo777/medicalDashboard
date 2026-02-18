@@ -63,7 +63,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
           logger.info('[UserMenu] Button clicked, current isOpen:', isOpen);
           setIsOpen(!isOpen);
         }}
-        className="flex items-center gap-3 px-4 py-2 bg-[#0f172a] rounded-lg border border-[#334155] hover:border-blue-500 hover:bg-[#1e293b] transition-all duration-200 cursor-pointer group"
+        className="flex items-center gap-3 px-4 py-2 theme-bg-input rounded-lg border theme-border hover:border-blue-500 hover:bg-[var(--bg-secondary)] transition-all duration-200 cursor-pointer group"
         aria-label="User menu"
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -72,40 +72,40 @@ const UserMenu: React.FC<UserMenuProps> = ({
           <span className="text-white text-xs font-bold">{userInitials}</span>
         </div>
         <div className="text-left">
-          <div className="text-sm font-medium text-white group-hover:text-blue-400 transition-colors">{userName}</div>
-          <div className="text-xs text-gray-400">Médecin</div>
+          <div className="text-sm font-medium theme-text-primary group-hover:text-blue-400 transition-colors">{userName}</div>
+          <div className="text-xs theme-text-muted">Médecin</div>
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-[#1e293b] border border-[#334155] rounded-lg shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="px-4 py-3 border-b border-[#334155]">
-            <p className="text-white text-sm font-medium">{userName}</p>
-            <p className="text-gray-400 text-xs mt-1">Médecin</p>
+        <div className="absolute right-0 top-full mt-2 w-56 theme-bg-secondary border theme-border rounded-lg shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="px-4 py-3 border-b theme-border">
+            <p className="theme-text-primary text-sm font-medium">{userName}</p>
+            <p className="theme-text-muted text-xs mt-1">Médecin</p>
           </div>
 
           <div className="py-2">
             <button
               onClick={handleProfile}
-              className="w-full px-4 py-2 text-left text-white hover:bg-[#334155] transition-colors flex items-center gap-3"
+              className="w-full px-4 py-2 text-left theme-text-primary hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 cursor-pointer"
             >
-              <User size={16} className="text-gray-400" />
+              <User size={16} className="theme-text-muted" />
               <span className="text-sm">Mon Profil</span>
             </button>
 
             <button
               onClick={handleSettings}
-              className="w-full px-4 py-2 text-left text-white hover:bg-[#334155] transition-colors flex items-center gap-3"
+              className="w-full px-4 py-2 text-left theme-text-primary hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 cursor-pointer"
             >
-              <Settings size={16} className="text-gray-400" />
+              <Settings size={16} className="theme-text-muted" />
               <span className="text-sm">Paramètres</span>
             </button>
           </div>
 
-          <div className="border-t border-[#334155] pt-2">
+          <div className="border-t theme-border pt-2">
             <button
               onClick={handleLogout}
-              className="w-full px-4 py-2 text-left text-red-400 hover:bg-[#334155] transition-colors flex items-center gap-3"
+              className="w-full px-4 py-2 text-left text-red-400 hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 cursor-pointer"
             >
               <LogOut size={16} />
               <span className="text-sm font-medium">Déconnexion</span>

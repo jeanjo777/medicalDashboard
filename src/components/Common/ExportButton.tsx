@@ -164,10 +164,10 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-72 bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl z-50 py-2">
-          <div className="px-4 py-2 border-b border-[#334155]">
-            <p className="text-white text-sm font-semibold">Format d'export</p>
-            <p className="text-gray-400 text-xs mt-0.5">
+        <div className="absolute top-full right-0 mt-2 w-72 theme-bg-secondary border theme-border rounded-lg shadow-2xl z-50 py-2">
+          <div className="px-4 py-2 border-b theme-border">
+            <p className="theme-text-primary text-sm font-semibold">Format d'export</p>
+            <p className="theme-text-muted text-xs mt-0.5">
               {data.length} {data.length > 1 ? 'entrées' : 'entrée'}
             </p>
           </div>
@@ -176,12 +176,12 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
             <button
               key={format.value}
               onClick={() => handleExport(format.value)}
-              className="w-full px-4 py-3 flex items-start gap-3 hover:bg-[#334155] transition-colors text-left"
+              className="w-full px-4 py-3 flex items-start gap-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left cursor-pointer"
             >
               <div className="mt-0.5">{format.icon}</div>
               <div className="flex-1">
-                <p className="text-white text-sm font-medium">{format.label}</p>
-                <p className="text-gray-400 text-xs mt-0.5">{format.description}</p>
+                <p className="theme-text-primary text-sm font-medium">{format.label}</p>
+                <p className="theme-text-muted text-xs mt-0.5">{format.description}</p>
               </div>
             </button>
           ))}

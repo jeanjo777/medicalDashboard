@@ -7,6 +7,7 @@
 /* Theme CSS Variables */
 :root,
 html.dark {
+  color-scheme: dark;
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
@@ -25,15 +26,16 @@ html.dark {
 }
 
 html.light {
+  color-scheme: light;
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-tertiary: #e2e8f0;
   --bg-input: #f1f5f9;
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --border-color: #e2e8f0;
-  --border-hover: #cbd5e1;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --border-hover: #94a3b8;
   --accent-blue: #2563eb;
   --accent-blue-bg: rgba(37, 99, 235, 0.08);
   --accent-blue-bg-hover: rgba(37, 99, 235, 0.15);
@@ -51,6 +53,23 @@ html.light {
 .theme-text-secondary { color: var(--text-secondary); }
 .theme-text-muted { color: var(--text-muted); }
 .theme-border { border-color: var(--border-color); }
+.theme-divide > :not([hidden]) ~ :not([hidden]) { border-color: var(--border-color); }
+
+/* Light mode: force theme classes with !important to beat Tailwind utilities */
+html.light .theme-bg-primary { background-color: #f8fafc !important; }
+html.light .theme-bg-secondary { background-color: #ffffff !important; }
+html.light .theme-bg-tertiary { background-color: #e2e8f0 !important; }
+html.light .theme-bg-input { background-color: #f1f5f9 !important; }
+html.light .theme-text-primary { color: #0f172a !important; }
+html.light .theme-text-secondary { color: #475569 !important; }
+html.light .theme-text-muted { color: #64748b !important; }
+html.light .theme-border { border-color: #cbd5e1 !important; }
+
+/* Table theme utilities (opacity via CSS, not Tailwind /50 which doesn't work with var()) */
+.theme-table-header { background-color: var(--bg-input); }
+.theme-row-hover:hover { background-color: var(--bg-input); }
+html.light .theme-table-header { background-color: #f1f5f9 !important; }
+html.light .theme-row-hover:hover { background-color: #f1f5f9 !important; }
 
 body {
   font-family: 'Noto Sans', sans-serif;
@@ -271,6 +290,7 @@ h1, h2, h3, h4, h5, h6 {
   color: white;
   padding: 0.75rem 1rem;
   font-weight: 500;
+  cursor: pointer;
   font-size: 0.875rem;
   line-height: 1.25rem;
   transition: all 0.2s;
@@ -297,9 +317,10 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.875rem;
   line-height: 1.25rem;
   transition: all 0.2s;
-  background: #1e293b;
+  background: var(--bg-secondary, #1e293b);
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 .btn-secondary:hover {
@@ -367,10 +388,10 @@ h1, h2, h3, h4, h5, h6 {
 /* Enhanced input styles with WCAG compliance */
 .input-enhanced {
   @apply w-full px-4 py-3 border rounded-lg transition-all duration-200 focus:outline-none;
-  border-color: #475569;
+  border-color: var(--border-color, #475569);
   border-radius: 0.5rem;
-  background: #1e293b;
-  color: white;
+  background: var(--bg-input, #1e293b);
+  color: var(--text-primary, white);
 }
 
 .input-enhanced:focus {
@@ -444,71 +465,127 @@ html.light aside [class*="ring-offset-\[#1e293b\]"] { --tw-ring-offset-color: #f
 
 /* --- MAIN CONTENT LIGHT MODE --- */
 
-/* Override bg-[#0f172a] backgrounds */
-html.light .bg-\[\#0f172a\] { background-color: #f8fafc !important; }
-html.light .from-\[\#0f172a\] { --tw-gradient-from: #f8fafc !important; }
-html.light .to-\[\#0f172a\] { --tw-gradient-to: #f8fafc !important; }
-html.light .via-\[\#0f172a\] { --tw-gradient-via: #f1f5f9 !important; }
+/* Override ALL dark backgrounds using attribute selectors (catches /50, /80, /90 opacity variants) */
+html.light [class*="bg-[#0f172a]"]:not(aside *) { background-color: #f8fafc !important; }
+html.light [class*="bg-[#1e293b]"]:not(aside *) { background-color: #ffffff !important; }
+html.light [class*="bg-[#334155]"]:not(aside *) { background-color: #e2e8f0 !important; }
+html.light [class*="bg-[#0f172a]/"] { background-color: rgba(248, 250, 252, 0.5) !important; }
+html.light [class*="bg-[#1e293b]/"] { background-color: rgba(255, 255, 255, 0.9) !important; }
 
-/* Override bg-[#1e293b] backgrounds */
-html.light .bg-\[\#1e293b\] { background-color: #ffffff !important; }
-html.light .from-\[\#1e293b\] { --tw-gradient-from: #ffffff !important; }
-html.light .to-\[\#1e293b\] { --tw-gradient-to: #ffffff !important; }
-html.light .via-\[\#1a2332\] { --tw-gradient-via: #f8fafc !important; }
+/* Override ALL dark gradient endpoints (catches opacity variants) */
+html.light [class*="from-[#0f172a]"] { --tw-gradient-from: #f8fafc !important; }
+html.light [class*="to-[#0f172a]"] { --tw-gradient-to: #f8fafc !important; }
+html.light [class*="via-[#0f172a]"] { --tw-gradient-via: #f1f5f9 !important; }
+html.light [class*="from-[#1e293b]"] { --tw-gradient-from: #ffffff !important; }
+html.light [class*="to-[#1e293b]"] { --tw-gradient-to: #ffffff !important; }
+html.light [class*="via-[#1a2332]"] { --tw-gradient-via: #f8fafc !important; }
 
-/* Override bg-[#334155] backgrounds */
-html.light .bg-\[\#334155\] { background-color: #e2e8f0 !important; }
+/* Override ALL dark border variants */
+html.light [class*="border-[#334155]"] { border-color: #cbd5e1 !important; }
+html.light [class*="border-[#475569]"] { border-color: #94a3b8 !important; }
 
-/* Override border colors */
-html.light .border-\[\#334155\] { border-color: #e2e8f0 !important; }
-html.light .border-\[\#475569\] { border-color: #cbd5e1 !important; }
-
-/* Override text colors globally - sidebar active items restored below */
+/* Override text colors globally */
 html.light .text-white { color: #0f172a !important; }
 html.light .text-gray-400 { color: #64748b !important; }
 html.light .text-gray-300 { color: #475569 !important; }
 html.light .text-gray-500 { color: #64748b !important; }
+html.light .placeholder-gray-500::placeholder { color: #94a3b8 !important; }
 
 /* Keep accent colors intact */
 html.light .text-blue-400 { color: #2563eb !important; }
 html.light .text-blue-300 { color: #3b82f6 !important; }
+html.light .text-blue-500 { color: #3b82f6 !important; }
 html.light .text-emerald-400 { color: #059669 !important; }
 html.light .text-red-400 { color: #dc2626 !important; }
 html.light .text-amber-400 { color: #d97706 !important; }
 html.light .text-cyan-400 { color: #0891b2 !important; }
 html.light .text-purple-400 { color: #7c3aed !important; }
+html.light .text-indigo-400 { color: #6366f1 !important; }
+html.light .text-violet-400 { color: #8b5cf6 !important; }
+html.light .text-teal-400 { color: #14b8a6 !important; }
+html.light .text-rose-400 { color: #f43f5e !important; }
 
-/* Keep white text on colored gradient backgrounds */
+/* Keep white text on colored/gradient backgrounds */
+html.light [class*="from-blue-"][class*="to-indigo-"] { color: #ffffff !important; }
+html.light [class*="from-blue-"][class*="to-indigo-"] * { color: #ffffff !important; }
 html.light [class*="from-cyan-"] .text-white,
 html.light [class*="from-amber-"] .text-white,
 html.light [class*="from-violet-"] .text-white,
 html.light [class*="from-blue-"] .text-white,
 html.light [class*="from-emerald-"] .text-white,
 html.light [class*="from-rose-"] .text-white,
+html.light [class*="from-purple-"] .text-white,
+html.light [class*="from-red-"] .text-white,
+html.light [class*="from-orange-"] .text-white,
+html.light .bg-blue-600 .text-white,
 html.light .bg-blue-500 .text-white,
 html.light .bg-emerald-500 .text-white,
 html.light .bg-red-500 .text-white,
-html.light .bg-gradient-to-r .text-white,
-html.light .bg-gradient-to-br .text-white,
-html.light [class*="bg-blue-"] > .text-white,
-html.light [class*="bg-gradient"] .text-white,
-html.light button.bg-blue-500,
-html.light button.bg-emerald-500,
-html.light .bg-gradient-to-br.from-cyan-600 .text-white { color: #ffffff !important; }
+html.light .bg-purple-600 .text-white { color: #ffffff !important; }
+
+/* Gradient buttons must keep white text */
+html.light button[class*="bg-gradient"] { color: #ffffff !important; }
+html.light button[class*="bg-gradient"] span { color: #ffffff !important; }
+html.light button[class*="from-blue-"] { color: #ffffff !important; }
+html.light button[class*="from-blue-"] span { color: #ffffff !important; }
+html.light button[class*="from-purple-"] { color: #ffffff !important; }
+html.light button[class*="from-purple-"] span { color: #ffffff !important; }
+html.light button.bg-blue-600 { color: #ffffff !important; }
+html.light button.bg-purple-600 { color: #ffffff !important; }
+
+/* Colored icon containers - keep white icons */
+html.light [class*="bg-gradient-to-br"][class*="from-blue-"] .text-white { color: #ffffff !important; }
+html.light [class*="bg-gradient-to-br"][class*="from-emerald-"] .text-white { color: #ffffff !important; }
+html.light [class*="bg-gradient-to-br"][class*="from-amber-"] .text-white { color: #ffffff !important; }
+html.light [class*="bg-gradient-to-br"][class*="from-red-"] .text-white { color: #ffffff !important; }
+html.light [class*="bg-gradient-to-br"][class*="from-purple-"] .text-white { color: #ffffff !important; }
+html.light [class*="bg-gradient-to-br"][class*="from-orange-"] .text-white { color: #ffffff !important; }
+html.light [class*="bg-gradient-to-br"][class*="from-cyan-"] .text-white { color: #ffffff !important; }
+html.light [class*="bg-gradient-to-br"] .text-white { color: #ffffff !important; }
+
+/* Badge colors - keep badge text readable on colored backgrounds */
+html.light [class*="bg-blue-500/10"] { background-color: rgba(59, 130, 246, 0.1) !important; }
+html.light [class*="bg-emerald-500/10"] { background-color: rgba(16, 185, 129, 0.1) !important; }
+html.light [class*="bg-red-500/10"] { background-color: rgba(239, 68, 68, 0.1) !important; }
+html.light [class*="bg-amber-500/10"] { background-color: rgba(245, 158, 11, 0.1) !important; }
+html.light [class*="bg-indigo-500/10"] { background-color: rgba(99, 102, 241, 0.1) !important; }
+html.light [class*="bg-cyan-500/10"] { background-color: rgba(6, 182, 212, 0.1) !important; }
+html.light [class*="bg-rose-500/10"] { background-color: rgba(244, 63, 94, 0.1) !important; }
+html.light [class*="bg-violet-500/10"] { background-color: rgba(139, 92, 246, 0.1) !important; }
+html.light [class*="bg-teal-500/10"] { background-color: rgba(20, 184, 166, 0.1) !important; }
+html.light [class*="bg-purple-500/10"] { background-color: rgba(168, 85, 247, 0.1) !important; }
+html.light [class*="bg-gray-500/10"] { background-color: rgba(107, 114, 128, 0.1) !important; }
 
 /* Fix hover states */
-html.light .hover\:bg-\[\#334155\]:hover { background-color: #e2e8f0 !important; }
-html.light .hover\:bg-\[\#475569\]:hover { background-color: #cbd5e1 !important; }
+html.light [class*="hover:bg-[#334155]"]:hover { background-color: #e2e8f0 !important; }
+html.light [class*="hover:bg-[#475569]"]:hover { background-color: #cbd5e1 !important; }
+html.light [class*="hover:bg-[#0f172a]"]:hover { background-color: #f1f5f9 !important; }
+html.light [class*="hover:bg-[#1e293b]"]:hover { background-color: #ffffff !important; }
 html.light .hover\:text-white:hover { color: #0f172a !important; }
-html.light .hover\:border-\[\#475569\]:hover { border-color: #cbd5e1 !important; }
+html.light [class*="hover:border-[#475569]"]:hover { border-color: #cbd5e1 !important; }
 
 /* Card shadows */
 html.light .shadow-2xl { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important; }
 html.light .shadow-lg { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important; }
 
 /* Input/select backgrounds */
-html.light select { background-color: #f1f5f9 !important; color: #0f172a !important; }
-html.light .input-enhanced { background: #f1f5f9 !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
+html.light input[type="search"],
+html.light input[type="text"],
+html.light input[type="email"],
+html.light input[type="password"],
+html.light input[type="number"],
+html.light input[type="date"],
+html.light input[type="time"],
+html.light textarea { background-color: #f1f5f9 !important; color: #0f172a !important; border-color: #94a3b8 !important; color-scheme: light !important; }
+html.light select { background-color: #f1f5f9 !important; color: #0f172a !important; border-color: #94a3b8 !important; color-scheme: light !important; -webkit-appearance: menulist !important; }
+html.light select option { background-color: #ffffff !important; color: #0f172a !important; }
+html.light .input-enhanced { background: #f1f5f9 !important; color: #0f172a !important; border-color: #94a3b8 !important; }
+
+/* Force all form elements in light mode to use light color scheme */
+html.light input,
+html.light select,
+html.light textarea,
+html.light button { color-scheme: light; }
 
 /* Scrollbar for light mode */
 html.light::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -516,6 +593,16 @@ html.light::-webkit-scrollbar-track { background: #f1f5f9; }
 /* Charts and graphs - keep visible */
 html.light .recharts-text { fill: #475569 !important; }
 html.light .recharts-cartesian-grid line { stroke: #e2e8f0 !important; }
+
+/* Dividers */
+html.light .divide-\[\#334155\] > :not([hidden]) ~ :not([hidden]) { border-color: #e2e8f0 !important; }
+
+/* Ring colors for active states */
+html.light .ring-blue-500 { --tw-ring-color: #3b82f6 !important; }
+html.light .ring-emerald-500 { --tw-ring-color: #10b981 !important; }
+html.light .ring-amber-500 { --tw-ring-color: #f59e0b !important; }
+html.light .ring-red-500 { --tw-ring-color: #ef4444 !important; }
+html.light .ring-purple-500 { --tw-ring-color: #a855f7 !important; }
 
 /* Smooth scrolling */
 html {

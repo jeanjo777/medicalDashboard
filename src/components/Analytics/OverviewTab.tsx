@@ -64,11 +64,12 @@ interface OverviewTabProps {
 const COLORS = ['#0891B2', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981'];
 
 const tooltipStyle = {
-  backgroundColor: 'white',
-  border: 'none',
+  backgroundColor: 'var(--bg-secondary)',
+  border: '1px solid var(--border-color)',
   borderRadius: '12px',
   boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
-  padding: '12px 16px'
+  padding: '12px 16px',
+  color: 'var(--text-primary)'
 };
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }) => {
@@ -320,9 +321,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
                   <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="month" stroke="#94a3b8" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
-              <YAxis stroke="#94a3b8" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} width={40} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+              <XAxis dataKey="month" stroke="#94a3b8" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <YAxis stroke="#94a3b8" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={40} />
               <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: '#0891B2', strokeWidth: 1, strokeDasharray: '4 4' }} />
               <Area type="monotone" dataKey="consultations" stroke="#3b82f6" strokeWidth={2.5}
                 fill="url(#ov-gradConsult)" name="Consultations"
@@ -518,8 +519,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
 
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={weeklyData} margin={{ top: 0, right: 0, left: -10, bottom: 0 }} barGap={2}>
-            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} width={30} />
+            <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
+            <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} width={30} />
             <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(8,145,178,0.05)', radius: 8 }} />
             <Bar dataKey="appointments" fill="#0891B2" radius={[4, 4, 0, 0]} name="Programmes" maxBarSize={24} />
             <Bar dataKey="completed" fill="#10b981" radius={[4, 4, 0, 0]} name="Completes" maxBarSize={24} />
@@ -547,8 +548,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
 
         <ResponsiveContainer width="100%" height={260}>
           <RadarChart data={radarData} cx="50%" cy="50%">
-            <PolarGrid stroke="#e2e8f0" />
-            <PolarAngleAxis dataKey="system" tick={{ fill: '#64748b', fontSize: 11 }} />
+            <PolarGrid stroke="var(--border-color)" />
+            <PolarAngleAxis dataKey="system" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
             <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
             <Radar name="Score" dataKey="value" stroke="#0891B2" fill="#0891B2" fillOpacity={0.15} strokeWidth={2}
               dot={{ fill: '#0891B2', r: 3, strokeWidth: 0 }} />
@@ -566,9 +567,9 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
 
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={recoveryData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
-            <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} width={35} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+            <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} />
+            <YAxis domain={[60, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} width={35} />
             <Tooltip contentStyle={tooltipStyle}
               formatter={(value: number, name: string) => [`${value}%`, name === 'objectif' ? 'Objectif' : 'Taux reel']} />
             <Line type="monotone" dataKey="objectif" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="6 4" dot={false} name="objectif" />

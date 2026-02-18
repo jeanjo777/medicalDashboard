@@ -52,18 +52,18 @@ const RecentActivity: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#1e293b] rounded-xl p-4 sm:p-5 lg:p-6 border border-[#334155]">
+      <div>
         <div className="mb-4 sm:mb-5 lg:mb-6">
-          <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Activité récente</h3>
-          <p className="text-gray-400 text-xs sm:text-sm">Dernières mises à jour patients</p>
+          <h3 className="theme-text-primary text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Activité récente</h3>
+          <p className="theme-text-muted text-xs sm:text-sm">Dernières mises à jour patients</p>
         </div>
         <div className="space-y-3 sm:space-y-4">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center gap-3 p-2 animate-pulse">
-              <div className="w-10 h-10 bg-gray-700 rounded-full flex-shrink-0" />
+              <div className="w-10 h-10 bg-[var(--bg-tertiary)] rounded-full flex-shrink-0" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-700 rounded w-3/4" />
-                <div className="h-3 bg-gray-700 rounded w-1/2" />
+                <div className="h-4 bg-[var(--bg-tertiary)] rounded w-3/4" />
+                <div className="h-3 bg-[var(--bg-tertiary)] rounded w-1/2" />
               </div>
             </div>
           ))}
@@ -74,10 +74,10 @@ const RecentActivity: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-[#1e293b] rounded-xl p-4 sm:p-5 lg:p-6 border border-[#334155]">
+      <div>
         <div className="mb-4 sm:mb-5 lg:mb-6">
-          <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Activité récente</h3>
-          <p className="text-gray-400 text-xs sm:text-sm">Dernières mises à jour patients</p>
+          <h3 className="theme-text-primary text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Activité récente</h3>
+          <p className="theme-text-muted text-xs sm:text-sm">Dernières mises à jour patients</p>
         </div>
         <ErrorState
           type="network"
@@ -91,10 +91,10 @@ const RecentActivity: React.FC = () => {
   const hasActivity = activities.length > 0;
 
   return (
-    <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155]">
+    <div>
       <div className="mb-6">
-        <h3 className="text-white text-lg font-semibold mb-1">Activité récente</h3>
-        <p className="text-gray-400 text-sm">Dernières mises à jour patients</p>
+        <h3 className="theme-text-primary text-lg font-semibold mb-1">Activité récente</h3>
+        <p className="theme-text-muted text-sm">Dernières mises à jour patients</p>
       </div>
       {!hasActivity ? (
         <EmptyState
@@ -113,17 +113,17 @@ const RecentActivity: React.FC = () => {
             });
 
             return (
-              <div key={activity.id} className="flex items-center gap-3 group hover:bg-[#334155]/30 p-2 -mx-2 rounded-lg transition-colors">
+              <div key={activity.id} className="flex items-center gap-3 group hover:bg-[var(--bg-tertiary)]/30 p-2 -mx-2 rounded-lg transition-colors">
                 <div className={`w-8 h-8 sm:w-10 sm:h-10 ${bgColor} rounded-full flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
                   <span className="text-white text-xs sm:text-sm font-semibold">
                     {activity.user_initials}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-xs sm:text-sm font-medium truncate">
+                  <p className="theme-text-primary text-xs sm:text-sm font-medium truncate">
                     {activity.action}
                   </p>
-                  <p className="text-gray-400 text-xs flex items-center gap-1">
+                  <p className="theme-text-muted text-xs flex items-center gap-1">
                     {activity.entity_name && (
                       <>
                         <span>{activity.entity_name}</span>

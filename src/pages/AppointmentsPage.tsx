@@ -115,11 +115,11 @@ const StatCard: React.FC<{
   active?: boolean;
 }> = ({ icon: Icon, label, value, color, onClick, active }) => {
   const colorClasses = {
-    blue: { gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-500' },
-    green: { gradient: 'from-emerald-500 to-emerald-600', ring: 'ring-emerald-500' },
-    orange: { gradient: 'from-amber-500 to-orange-600', ring: 'ring-amber-500' },
-    red: { gradient: 'from-red-500 to-rose-600', ring: 'ring-red-500' },
-    purple: { gradient: 'from-purple-500 to-violet-600', ring: 'ring-purple-500' },
+    blue: { gradient: 'from-blue-500 to-blue-600', ring: 'ring-blue-500', activeBg: 'bg-blue-500/10', activeBorder: 'border-blue-500' },
+    green: { gradient: 'from-emerald-500 to-emerald-600', ring: 'ring-emerald-500', activeBg: 'bg-emerald-500/10', activeBorder: 'border-emerald-500' },
+    orange: { gradient: 'from-amber-500 to-orange-600', ring: 'ring-amber-500', activeBg: 'bg-amber-500/10', activeBorder: 'border-amber-500' },
+    red: { gradient: 'from-red-500 to-rose-600', ring: 'ring-red-500', activeBg: 'bg-red-500/10', activeBorder: 'border-red-500' },
+    purple: { gradient: 'from-purple-500 to-violet-600', ring: 'ring-purple-500', activeBg: 'bg-purple-500/10', activeBorder: 'border-purple-500' },
   };
 
   const classes = colorClasses[color];
@@ -128,10 +128,10 @@ const StatCard: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className={`w-full bg-[#1e293b] rounded-xl border p-4 transition-all duration-300 group hover:shadow-lg cursor-pointer text-left ${
+      className={`w-full theme-bg-secondary rounded-xl border p-4 transition-all duration-200 group hover:shadow-lg cursor-pointer text-left ${
         active
-          ? `border-${color}-500 ring-2 ${classes.ring}`
-          : 'border-[#334155] hover:border-[#475569]'
+          ? `${classes.activeBorder} ring-2 ${classes.ring} ${classes.activeBg}`
+          : 'theme-border hover:border-[var(--border-hover)]'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -139,8 +139,8 @@ const StatCard: React.FC<{
           <Icon size={22} className="text-white" />
         </div>
         <div>
-          <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">{label}</p>
-          <p className="text-2xl font-bold text-white mt-0.5">{value}</p>
+          <p className="text-xs theme-text-muted uppercase tracking-wide font-medium">{label}</p>
+          <p className="text-2xl font-bold theme-text-primary mt-0.5">{value}</p>
         </div>
       </div>
     </button>
@@ -227,10 +227,12 @@ const AppointmentsPage: React.FC = () => {
   }, [searchTerm, statusFilter, typeFilter]);
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user ? `Dr. ${user.prenom} ${user.nom}` : 'Professionnel';
-  const userInitials = user
-    ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase()
-    : 'MD';
+  const userName = user?.prenom && user?.nom
+    ? `Dr. ${user.prenom} ${user.nom}`
+    : user?.username ? `Dr. ${user.username}` : 'Professionnel';
+  const userInitials = user?.prenom && user?.nom
+    ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
+    : user?.username ? user.username.slice(0, 2).toUpperCase() : 'MD';
 
   // TEMP: Auth check disabled for testing
   // useEffect(() => {
@@ -302,6 +304,18 @@ const AppointmentsPage: React.FC = () => {
     setCancelLoading(true);
 
     try {
+      // In demo mode, simulate success
+      if (isDemoMode) {
+        showToast({
+          type: 'success',
+          title: 'Rendez-vous annulé',
+          message: `Le rendez-vous de ${selectedAppointment.patient_name} a été annulé (démo)`
+        });
+        setShowConfirmDialog(false);
+        setSelectedAppointment(null);
+        return;
+      }
+
       const { error: updateError } = await supabase
         .from('appointments')
         .update({
@@ -344,29 +358,29 @@ const AppointmentsPage: React.FC = () => {
     const badges: Record<string, { label: string; classes: string; icon: React.ElementType }> = {
       a_venir: {
         label: 'À venir',
-        classes: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+        classes: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
         icon: Calendar
       },
       termine: {
         label: 'Terminé',
-        classes: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        classes: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
         icon: CheckCircle2
       },
       annule: {
         label: 'Annulé',
-        classes: 'bg-red-500/10 text-red-400 border-red-500/20',
+        classes: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
         icon: XCircle
       },
       en_cours: {
         label: 'En cours',
-        classes: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+        classes: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
         icon: PlayCircle
       }
     };
 
     const badge = badges[status] || {
       label: status,
-      classes: 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+      classes: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
       icon: AlertCircle
     };
 
@@ -382,16 +396,16 @@ const AppointmentsPage: React.FC = () => {
 
   const getTypeBadge = (type?: string) => {
     const types: Record<string, { label: string; classes: string }> = {
-      consultation: { label: 'Consultation', classes: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
-      suivi: { label: 'Suivi', classes: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' },
-      urgence: { label: 'Urgence', classes: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
-      controle: { label: 'Contrôle', classes: 'bg-violet-500/10 text-violet-400 border-violet-500/20' },
-      teleconsultation: { label: 'Téléconsultation', classes: 'bg-teal-500/10 text-teal-400 border-teal-500/20' }
+      consultation: { label: 'Consultation', classes: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20' },
+      suivi: { label: 'Suivi', classes: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20' },
+      urgence: { label: 'Urgence', classes: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' },
+      controle: { label: 'Contrôle', classes: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20' },
+      teleconsultation: { label: 'Téléconsultation', classes: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20' }
     };
 
     const typeInfo = types[type?.toLowerCase() || ''] || {
       label: type || 'Consultation',
-      classes: 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+      classes: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20'
     };
 
     return (
@@ -404,7 +418,7 @@ const AppointmentsPage: React.FC = () => {
   const getDurationBadge = (duration?: number) => {
     const mins = duration || 30;
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+      <span className="inline-flex items-center gap-1 text-xs theme-text-muted">
         <Timer size={12} />
         {mins} min
       </span>
@@ -445,12 +459,12 @@ const AppointmentsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#0f172a]">
+      <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
         <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
         <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-          <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30">
+          <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30 transition-colors duration-300">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-white">Rendez-vous</h1>
+              <h1 className="text-xl font-bold theme-text-primary">Rendez-vous</h1>
               <UserMenu userName={userName} userInitials={userInitials} />
             </div>
           </header>
@@ -464,23 +478,23 @@ const AppointmentsPage: React.FC = () => {
 
   if (error && !isDemoMode) {
     return (
-      <div className="flex min-h-screen bg-[#0f172a]">
+      <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
         <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
         <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-          <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30">
+          <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30 transition-colors duration-300">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-white ml-12 lg:ml-0">Rendez-vous</h1>
+              <h1 className="text-xl font-bold theme-text-primary ml-12 lg:ml-0">Rendez-vous</h1>
               <UserMenu userName={userName} userInitials={userInitials} />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8">
-            <div className="bg-[#1e293b] rounded-xl border border-red-500/30 p-8 text-center max-w-lg mx-auto">
+            <div className="theme-bg-secondary rounded-xl border border-red-500/30 p-8 text-center max-w-lg mx-auto">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle size={32} className="text-red-400" />
               </div>
-              <h3 className="text-white text-lg font-semibold mb-2">Erreur de connexion</h3>
-              <p className="text-gray-400 text-sm mb-1">{error?.message || 'Une erreur est survenue'}</p>
-              <p className="text-gray-500 text-xs mb-6">Vérifiez votre connexion ou réessayez</p>
+              <h3 className="theme-text-primary text-lg font-semibold mb-2">Erreur de connexion</h3>
+              <p className="theme-text-secondary text-sm mb-1">{error?.message || 'Une erreur est survenue'}</p>
+              <p className="theme-text-muted text-xs mb-6">Vérifiez votre connexion ou réessayez</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
                   type="button"
@@ -507,18 +521,20 @@ const AppointmentsPage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0f172a]">
+    <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
       <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
 
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
+        <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1 lg:ml-0 ml-14">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-2">
-                <CalendarDays className="text-blue-500" size={24} />
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold theme-text-primary flex items-center gap-2">
+                <div className="p-1.5 bg-blue-500/20 rounded-lg">
+                  <CalendarDays className="text-blue-500" size={22} />
+                </div>
                 Rendez-vous
               </h1>
-              <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
+              <p className="theme-text-secondary text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
                 Gérez et planifiez vos consultations médicales
               </p>
             </div>
@@ -579,35 +595,35 @@ const AppointmentsPage: React.FC = () => {
           </div>
 
           {/* Main Content Card */}
-          <div className="bg-[#1e293b] rounded-xl border border-[#334155] overflow-hidden">
-            <div className="px-4 sm:px-6 py-4 border-b border-[#334155] bg-gradient-to-r from-[#1e293b] to-[#1e293b]/90">
+          <div className="theme-bg-secondary rounded-xl border theme-border overflow-hidden transition-colors duration-300">
+            <div className="px-4 sm:px-6 py-4 border-b theme-border">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 {/* Left: Title & Date Navigation */}
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div>
-                    <h2 className="text-white text-lg font-semibold flex items-center gap-2">
+                    <h2 className="theme-text-primary text-lg font-semibold flex items-center gap-2">
                       <Stethoscope size={20} className="text-blue-400" />
                       Gestion des Rendez-vous
                     </h2>
-                    <p className="text-gray-400 text-sm mt-0.5">
+                    <p className="theme-text-secondary text-sm mt-0.5">
                       {filteredAppointments.length} rendez-vous trouvé{filteredAppointments.length > 1 ? 's' : ''}
                     </p>
                   </div>
 
                   {/* Date Navigator */}
-                  <div className={`flex items-center gap-1 bg-[#0f172a] rounded-lg p-1 border transition-all ${dateFilterActive ? 'border-blue-500 ring-1 ring-blue-500' : 'border-[#334155]'}`}>
+                  <div className={`flex items-center gap-1 bg-[var(--bg-input)] rounded-lg p-1 border transition-all ${dateFilterActive ? 'border-blue-500 ring-1 ring-blue-500' : 'border-[var(--border-color)]'}`}>
                     <button
                       type="button"
                       onClick={() => { setDateFilterActive(true); handlePrevDay(); }}
-                      className="p-2 hover:bg-[#334155] rounded-md transition-colors cursor-pointer"
+                      className="p-2 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors cursor-pointer"
                       aria-label="Jour précédent"
                     >
-                      <ChevronLeft size={16} className="text-gray-400" />
+                      <ChevronLeft size={16} className="theme-text-muted" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setDateFilterActive(!dateFilterActive)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors min-w-[120px] cursor-pointer ${dateFilterActive ? 'bg-blue-600 text-white' : 'text-white hover:bg-[#334155]'}`}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors min-w-[120px] cursor-pointer ${dateFilterActive ? 'bg-blue-600 text-white' : 'theme-text-primary hover:bg-[var(--bg-tertiary)]'}`}
                       title={dateFilterActive ? 'Cliquez pour voir tous les RDV' : 'Cliquez pour filtrer par cette date'}
                     >
                       {format(selectedDate, 'dd MMM yyyy', { locale: fr })}
@@ -615,10 +631,10 @@ const AppointmentsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => { setDateFilterActive(true); handleNextDay(); }}
-                      className="p-2 hover:bg-[#334155] rounded-md transition-colors cursor-pointer"
+                      className="p-2 hover:bg-[var(--bg-tertiary)] rounded-md transition-colors cursor-pointer"
                       aria-label="Jour suivant"
                     >
-                      <ChevronRight size={16} className="text-gray-400" />
+                      <ChevronRight size={16} className="theme-text-muted" />
                     </button>
                   </div>
 
@@ -645,7 +661,7 @@ const AppointmentsPage: React.FC = () => {
                     type="button"
                     onClick={() => refetch()}
                     disabled={isRefetching || loading}
-                    className="flex items-center gap-2 px-3 py-2 bg-[#334155] hover:bg-[#475569] text-gray-300 hover:text-white border border-[#475569] rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-3 py-2 theme-bg-tertiary hover:opacity-80 theme-text-secondary hover:theme-text-primary border theme-border rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     title="Rafraîchir les rendez-vous"
                   >
                     <RefreshCw size={16} className={isRefetching ? 'animate-spin' : ''} />
@@ -671,7 +687,7 @@ const AppointmentsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowAddModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 cursor-pointer"
                     aria-label="Créer un nouveau rendez-vous"
                   >
                     <Plus size={18} aria-hidden="true" />
@@ -684,24 +700,24 @@ const AppointmentsPage: React.FC = () => {
               {/* Filters Row */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4">
                 <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} aria-hidden="true" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted" size={18} aria-hidden="true" />
                   <input
                     type="search"
                     placeholder="Rechercher un patient, téléphone, motif..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                     aria-label="Rechercher parmi les rendez-vous"
                   />
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <Filter size={16} className="text-gray-400" aria-hidden="true" />
+                    <Filter size={16} className="theme-text-muted" aria-hidden="true" />
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="px-3 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                      className="px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-primary transition-colors cursor-pointer"
                       aria-label="Filtrer par statut"
                     >
                       <option value="all">Tous les statuts</option>
@@ -715,7 +731,7 @@ const AppointmentsPage: React.FC = () => {
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="px-3 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
+                    className="px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] focus:outline-none focus:border-primary transition-colors cursor-pointer"
                     aria-label="Filtrer par type"
                   >
                     <option value="all">Tous les types</option>
@@ -729,11 +745,11 @@ const AppointmentsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                    className="p-2.5 hover:bg-[#334155] rounded-lg transition-colors border border-[#334155] bg-[#0f172a]"
+                    className="p-2.5 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors border border-[var(--border-color)] bg-[var(--bg-input)] cursor-pointer"
                     title={`Trier par date ${sortOrder === 'asc' ? 'décroissante' : 'croissante'}`}
                     aria-label={`Trier par date ${sortOrder === 'asc' ? 'décroissante' : 'croissante'}`}
                   >
-                    <ArrowUpDown size={16} className="text-gray-400" />
+                    <ArrowUpDown size={16} className="theme-text-muted" />
                   </button>
                 </div>
               </div>
@@ -757,48 +773,48 @@ const AppointmentsPage: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-[#0f172a]/50 border-b border-[#334155]">
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <tr className="theme-table-header border-b theme-border">
+                      <th className="px-4 sm:px-6 py-3.5 text-left text-xs font-semibold theme-text-secondary uppercase tracking-wider">
                         Date/Heure
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3.5 text-left text-xs font-semibold theme-text-secondary uppercase tracking-wider">
                         Patient
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
+                      <th className="px-4 sm:px-6 py-3.5 text-left text-xs font-semibold theme-text-secondary uppercase tracking-wider hidden md:table-cell">
                         Type
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3.5 text-left text-xs font-semibold theme-text-secondary uppercase tracking-wider">
                         Motif
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3.5 text-left text-xs font-semibold theme-text-secondary uppercase tracking-wider">
                         Statut
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider hidden lg:table-cell">
+                      <th className="px-4 sm:px-6 py-3.5 text-left text-xs font-semibold theme-text-secondary uppercase tracking-wider hidden lg:table-cell">
                         Contact
                       </th>
-                      <th className="px-4 sm:px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <th className="px-4 sm:px-6 py-3.5 text-right text-xs font-semibold theme-text-secondary uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#334155]">
+                  <tbody className="divide-y theme-divide">
                     {paginatedAppointments.map((appointment) => (
                       <tr
                         key={appointment.id}
-                        className="hover:bg-[#0f172a]/50 transition-colors group"
+                        className="theme-row-hover transition-colors duration-150 group"
                       >
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
                               <Calendar size={14} className="text-blue-400" />
-                              <span className="text-sm font-medium text-white">
+                              <span className="text-sm font-medium theme-text-primary">
                                 {formatDate(appointment.appointment_date)}
                               </span>
                             </div>
                             <div className="flex items-center gap-3">
                               <div className="flex items-center gap-2">
-                                <Clock size={14} className="text-gray-500" />
-                                <span className="text-sm text-gray-400">
+                                <Clock size={14} className="theme-text-muted" />
+                                <span className="text-sm theme-text-secondary">
                                   {appointment.appointment_time}
                                 </span>
                               </div>
@@ -808,14 +824,14 @@ const AppointmentsPage: React.FC = () => {
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 bg-gradient-to-br ${getAvatarGradient(appointment.patient_name)} rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg`}>
+                            <div className={`w-10 h-10 bg-gradient-to-br ${getAvatarGradient(appointment.patient_name)} rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-lg flex-shrink-0`}>
                               {getPatientInitials(appointment.patient_name)}
                             </div>
                             <div>
-                              <span className="text-sm font-medium text-white block">
+                              <span className="text-sm font-medium theme-text-primary block">
                                 {appointment.patient_name}
                               </span>
-                              <span className="text-xs text-gray-500 lg:hidden">
+                              <span className="text-xs theme-text-muted lg:hidden">
                                 {appointment.patient_phone}
                               </span>
                             </div>
@@ -825,7 +841,7 @@ const AppointmentsPage: React.FC = () => {
                           {getTypeBadge(appointment.type_consultation)}
                         </td>
                         <td className="px-4 sm:px-6 py-4">
-                          <span className="text-sm text-gray-300 line-clamp-2 max-w-[200px]">
+                          <span className="text-sm theme-text-secondary line-clamp-2 max-w-[200px]">
                             {appointment.motif || 'Non spécifié'}
                           </span>
                         </td>
@@ -834,8 +850,8 @@ const AppointmentsPage: React.FC = () => {
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                           <div className="flex items-center gap-2">
-                            <Phone size={12} className="text-gray-500" />
-                            <span className="text-sm text-gray-400">
+                            <Phone size={12} className="theme-text-muted" />
+                            <span className="text-sm theme-text-secondary">
                               {appointment.patient_phone}
                             </span>
                           </div>
@@ -845,7 +861,7 @@ const AppointmentsPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleViewDetails(appointment)}
-                              className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-all opacity-70 group-hover:opacity-100"
+                              className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-all duration-150 opacity-70 group-hover:opacity-100 cursor-pointer"
                               title="Voir les détails"
                               aria-label={`Voir les détails du rendez-vous de ${appointment.patient_name}`}
                             >
@@ -854,7 +870,7 @@ const AppointmentsPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleEditAppointment(appointment)}
-                              className="p-2 text-gray-400 hover:text-white hover:bg-[#334155] rounded-lg transition-all opacity-70 group-hover:opacity-100"
+                              className="p-2 theme-text-muted hover:theme-text-primary hover:bg-[var(--bg-tertiary)] rounded-lg transition-all duration-150 opacity-70 group-hover:opacity-100 cursor-pointer"
                               title="Modifier"
                               aria-label={`Modifier le rendez-vous de ${appointment.patient_name}`}
                             >
@@ -864,7 +880,7 @@ const AppointmentsPage: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => handleCancelClick(appointment)}
-                                className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all opacity-70 group-hover:opacity-100"
+                                className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all duration-150 opacity-70 group-hover:opacity-100 cursor-pointer"
                                 title="Annuler"
                                 aria-label={`Annuler le rendez-vous de ${appointment.patient_name}`}
                               >
@@ -882,7 +898,7 @@ const AppointmentsPage: React.FC = () => {
 
             {/* Pagination */}
             {filteredAppointments.length > 0 && (
-              <div className="px-6 py-4 border-t border-[#334155]">
+              <div className="px-6 py-4 border-t theme-border">
                 <Pagination
                   currentPage={pagination.currentPage}
                   totalPages={pagination.totalPages}
@@ -930,6 +946,7 @@ const AppointmentsPage: React.FC = () => {
       {showEditModal && selectedAppointment && (
         <EditAppointmentModal
           appointment={selectedAppointment}
+          isDemoMode={isDemoMode}
           onClose={() => {
             setShowEditModal(false);
             setSelectedAppointment(null);

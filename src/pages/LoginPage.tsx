@@ -74,7 +74,7 @@ const LoginPage = () => {
           className="inline-flex items-center text-gray-500 hover:text-cyan-700 transition-all duration-200 mb-6 group"
         >
           <ArrowLeft size={18} className="mr-2 group-hover:-translate-x-1 transition-transform duration-200" />
-          <span className="font-medium text-sm">Retour a l'accueil</span>
+          <span className="font-medium text-sm">Retour à l'accueil</span>
         </a>
 
         {/* Login card */}
@@ -89,7 +89,7 @@ const LoginPage = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-1 text-center font-heading">
             Medical AI
           </h2>
-          <p className="text-gray-500 text-sm text-center mb-8">Connectez-vous a votre tableau de bord</p>
+          <p className="text-gray-500 text-sm text-center mb-8">Connectez-vous à votre tableau de bord</p>
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
@@ -161,7 +161,7 @@ const LoginPage = () => {
                 href="/forgot-password"
                 className="text-sm text-cyan-700 hover:text-cyan-800 font-medium transition-colors duration-200 hover:underline"
               >
-                Mot de passe oublie ?
+                Mot de passe oublié ?
               </a>
             </div>
           </form>

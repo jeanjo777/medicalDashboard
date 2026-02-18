@@ -152,6 +152,10 @@ Deno.serve(async (req: Request) => {
         user: {
           id: user.id,
           username: user.username,
+          nom: user.nom || '',
+          prenom: user.prenom || '',
+          email: user.email || '',
+          specialite: user.specialite || 'Médecin',
           role: 'doctor',
         },
       }),

@@ -89,24 +89,24 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     >
       <div
         ref={dialogRef}
-        className="bg-[#1e293b] border border-[#334155] rounded-xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200"
+        className="theme-bg-secondary border theme-border rounded-xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200"
       >
         <div className="flex items-start gap-4 mb-4">
           <div className={`p-3 rounded-lg ${styles.iconBg}`}>
             <AlertTriangle size={24} className={styles.icon} />
           </div>
           <div className="flex-1">
-            <h2 id="dialog-title" className="text-white text-lg font-semibold mb-1">
+            <h2 id="dialog-title" className="theme-text-primary text-lg font-semibold mb-1">
               {title}
             </h2>
-            <p id="dialog-description" className="text-gray-400 text-sm">
+            <p id="dialog-description" className="theme-text-secondary text-sm">
               {message}
             </p>
           </div>
           <button
             onClick={onClose}
             disabled={loading}
-            className="text-gray-400 hover:text-white transition-colors disabled:opacity-50"
+            className="theme-text-muted hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 cursor-pointer"
             aria-label="Fermer"
           >
             <X size={20} />
@@ -117,7 +117,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <button
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-[#334155] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-medium theme-text-secondary hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {cancelText}
           </button>
@@ -128,7 +128,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             className={`
               px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors
               disabled:opacity-50 disabled:cursor-not-allowed
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#1e293b]
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)] cursor-pointer
               ${styles.button}
             `}
           >

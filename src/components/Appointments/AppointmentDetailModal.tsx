@@ -88,26 +88,26 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-[#1e293b] rounded-t-xl sm:rounded-xl border border-[#334155] w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-[#1e293b] border-b border-[#334155] px-4 sm:px-6 py-3 sm:py-4">
+      <div className="theme-bg-secondary rounded-t-xl sm:rounded-xl border theme-border w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 theme-bg-secondary border-b theme-border px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-bold text-white truncate">Détails du Rendez-vous</h2>
-              <p className="text-xs sm:text-sm text-gray-400 mt-0.5 sm:mt-1">Informations complètes</p>
+              <h2 className="text-lg sm:text-xl font-bold theme-text-primary truncate">Détails du Rendez-vous</h2>
+              <p className="text-xs sm:text-sm theme-text-muted mt-0.5 sm:mt-1">Informations complètes</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={onEdit}
-                className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors"
+                className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 rounded-lg transition-colors cursor-pointer"
                 title="Modifier"
               >
                 <Edit2 size={20} />
               </button>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-[#334155] rounded-lg transition-colors"
+                className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors cursor-pointer"
               >
-                <X size={20} className="text-gray-400" />
+                <X size={20} className="theme-text-muted" />
               </button>
             </div>
           </div>
@@ -115,67 +115,67 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
         <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">Statut</h3>
+            <h3 className="text-lg font-semibold theme-text-primary">Statut</h3>
             {getStatusBadge(appointment.status)}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                   <User size={16} />
                   Patient
                 </label>
-                <p className="text-white text-lg font-medium">{appointment.patient_name}</p>
+                <p className="theme-text-primary text-lg font-medium">{appointment.patient_name}</p>
               </div>
 
               {appointment.patient_email && (
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                  <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                     <Mail size={16} />
                     Email
                   </label>
-                  <p className="text-white">{appointment.patient_email}</p>
+                  <p className="theme-text-primary">{appointment.patient_email}</p>
                 </div>
               )}
 
               {appointment.patient_phone && (
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                  <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                     <Phone size={16} />
                     Téléphone
                   </label>
-                  <p className="text-white">{appointment.patient_phone}</p>
+                  <p className="theme-text-primary">{appointment.patient_phone}</p>
                 </div>
               )}
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                   <Calendar size={16} />
                   Date
                 </label>
-                <p className="text-white text-lg font-medium">
+                <p className="theme-text-primary text-lg font-medium">
                   {formatDate(appointment.appointment_date)}
                 </p>
               </div>
 
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                   <Clock size={16} />
                   Heure
                 </label>
-                <p className="text-white text-lg font-medium">{appointment.appointment_time}</p>
+                <p className="theme-text-primary text-lg font-medium">{appointment.appointment_time}</p>
               </div>
 
               {appointment.duration && (
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+                  <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                     <Clock size={16} />
                     Durée
                   </label>
-                  <p className="text-white">{appointment.duration} minutes</p>
+                  <p className="theme-text-primary">{appointment.duration} minutes</p>
                 </div>
               )}
             </div>
@@ -183,32 +183,32 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
 
           {appointment.motif && (
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+              <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                 <FileText size={16} />
                 Motif
               </label>
-              <p className="text-white">{appointment.motif}</p>
+              <p className="theme-text-primary">{appointment.motif}</p>
             </div>
           )}
 
           {appointment.type_consultation && (
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+              <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                 <Tag size={16} />
                 Type de consultation
               </label>
-              <p className="text-white">{appointment.type_consultation}</p>
+              <p className="theme-text-primary">{appointment.type_consultation}</p>
             </div>
           )}
 
           {appointment.notes && (
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-400 mb-2">
+              <label className="flex items-center gap-2 text-sm font-medium theme-text-muted mb-2">
                 <FileText size={16} />
                 Notes privées
               </label>
-              <div className="p-4 bg-[#0f172a] border border-[#334155] rounded-lg">
-                <p className="text-white whitespace-pre-wrap">{appointment.notes}</p>
+              <div className="p-4 theme-bg-input border theme-border rounded-lg">
+                <p className="theme-text-primary whitespace-pre-wrap">{appointment.notes}</p>
               </div>
             </div>
           )}
@@ -227,32 +227,32 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
             </div>
           )}
 
-          <div className="pt-4 border-t border-[#334155]">
+          <div className="pt-4 border-t theme-border">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <label className="text-gray-400">Créé le</label>
-                <p className="text-gray-300 mt-1">{formatDateTime(appointment.created_at)}</p>
+                <label className="theme-text-muted">Créé le</label>
+                <p className="theme-text-secondary mt-1">{formatDateTime(appointment.created_at)}</p>
               </div>
               {appointment.updated_at && appointment.updated_at !== appointment.created_at && (
                 <div>
-                  <label className="text-gray-400">Modifié le</label>
-                  <p className="text-gray-300 mt-1">{formatDateTime(appointment.updated_at)}</p>
+                  <label className="theme-text-muted">Modifié le</label>
+                  <p className="theme-text-secondary mt-1">{formatDateTime(appointment.updated_at)}</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-[#1e293b] border-t border-[#334155] px-6 py-4 flex items-center justify-end gap-3">
+        <div className="sticky bottom-0 theme-bg-secondary border-t theme-border px-6 py-4 flex items-center justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-400 hover:text-white hover:bg-[#334155] rounded-lg transition-colors"
+            className="px-4 py-2 theme-text-muted hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors cursor-pointer"
           >
             Fermer
           </button>
           <button
             onClick={onEdit}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors cursor-pointer"
           >
             Modifier
           </button>

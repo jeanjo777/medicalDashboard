@@ -63,13 +63,13 @@ const Pagination: React.FC<PaginationProps> = ({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between bg-[#1e293b] rounded-lg px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border border-[#334155] gap-3 sm:gap-0">
-      <div className="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
+    <div className="flex flex-col sm:flex-row items-center justify-between theme-bg-secondary rounded-lg px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border theme-border gap-3 sm:gap-0">
+      <div className="text-xs sm:text-sm theme-text-muted text-center sm:text-left">
         <span className="hidden sm:inline">Affichage de </span>
-        <span className="font-medium text-white">{startItem}</span> à{' '}
-        <span className="font-medium text-white">{endItem}</span>
+        <span className="font-medium theme-text-primary">{startItem}</span> à{' '}
+        <span className="font-medium theme-text-primary">{endItem}</span>
         <span className="hidden sm:inline"> sur{' '}
-        <span className="font-medium text-white">{totalItems}</span> résultats</span>
+        <span className="font-medium theme-text-primary">{totalItems}</span> résultats</span>
         <span className="sm:hidden"> / {totalItems}</span>
       </div>
 
@@ -77,7 +77,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(1)}
           disabled={currentPage === 1}
-          className="p-1.5 sm:p-2 rounded-lg border border-[#334155] text-gray-400 hover:text-white hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center"
+          className="p-1.5 sm:p-2 rounded-lg border theme-border theme-text-muted hover:text-[var(--text-primary)] hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center cursor-pointer"
           aria-label="First page"
         >
           <ChevronsLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
@@ -86,7 +86,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={onPrevious}
           disabled={currentPage === 1}
-          className="p-1.5 sm:p-2 rounded-lg border border-[#334155] text-gray-400 hover:text-white hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center"
+          className="p-1.5 sm:p-2 rounded-lg border theme-border theme-text-muted hover:text-[var(--text-primary)] hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center cursor-pointer"
           aria-label="Previous page"
         >
           <ChevronLeft size={16} className="sm:w-[18px] sm:h-[18px]" />
@@ -96,7 +96,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {getPageNumbers().map((page, index) => {
             if (page === '...') {
               return (
-                <span key={`ellipsis-${index}`} className="px-1 sm:px-2 py-1 sm:py-2 text-gray-400 text-xs sm:text-sm">
+                <span key={`ellipsis-${index}`} className="px-1 sm:px-2 py-1 sm:py-2 theme-text-muted text-xs sm:text-sm">
                   ...
                 </span>
               );
@@ -107,11 +107,11 @@ const Pagination: React.FC<PaginationProps> = ({
                 key={page}
                 onClick={() => onPageChange(page as number)}
                 className={`
-                  min-w-[32px] sm:min-w-[40px] px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95
+                  min-w-[32px] sm:min-w-[40px] px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors active:scale-95 cursor-pointer
                   ${
                     currentPage === page
                       ? 'bg-blue-500 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-[#334155]'
+                      : 'theme-text-muted hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                   }
                 `}
               >
@@ -124,7 +124,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={onNext}
           disabled={currentPage === totalPages}
-          className="p-1.5 sm:p-2 rounded-lg border border-[#334155] text-gray-400 hover:text-white hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center"
+          className="p-1.5 sm:p-2 rounded-lg border theme-border theme-text-muted hover:text-[var(--text-primary)] hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center cursor-pointer"
           aria-label="Next page"
         >
           <ChevronRight size={16} className="sm:w-[18px] sm:h-[18px]" />
@@ -133,7 +133,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
-          className="p-1.5 sm:p-2 rounded-lg border border-[#334155] text-gray-400 hover:text-white hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center"
+          className="p-1.5 sm:p-2 rounded-lg border theme-border theme-text-muted hover:text-[var(--text-primary)] hover:border-blue-500 hover:bg-blue-500/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 min-w-[36px] sm:min-w-[40px] flex items-center justify-center cursor-pointer"
           aria-label="Last page"
         >
           <ChevronsRight size={16} className="sm:w-[18px] sm:h-[18px]" />

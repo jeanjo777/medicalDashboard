@@ -42,13 +42,13 @@ const MedicalFlowCard: React.FC<MedicalFlowCardProps> = ({
   const config = statusConfig[status];
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
-      <div className="mb-1 text-xs font-medium text-gray-500">{title}</div>
+    <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
+      <div className="mb-1 text-xs font-medium theme-text-muted">{title}</div>
       <div className="mb-2 flex items-end gap-2">
-        <span className="text-3xl sm:text-4xl font-bold text-gray-900">{value}</span>
+        <span className="text-3xl sm:text-4xl font-bold theme-text-primary">{value}</span>
         {trend && trendValue && (
           <span className={`flex items-center gap-0.5 text-xs font-medium ${
-            trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500'
+            trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-red-500' : 'theme-text-muted'
           }`}>
             {trend === 'up' ? (
               <TrendingUp className="h-3 w-3" />
@@ -63,9 +63,9 @@ const MedicalFlowCard: React.FC<MedicalFlowCardProps> = ({
         {config.badge}
       </div>
       {alert && (
-        <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-gray-50 p-2">
-          <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gray-500" />
-          <p className="text-[10px] leading-relaxed text-gray-600">{alert}</p>
+        <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-[var(--bg-input)] p-2">
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 theme-text-muted" />
+          <p className="text-[10px] leading-relaxed theme-text-secondary">{alert}</p>
         </div>
       )}
     </div>

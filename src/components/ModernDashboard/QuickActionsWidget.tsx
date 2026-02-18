@@ -15,19 +15,19 @@ const QuickActionsWidget: React.FC = () => {
   ];
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
-      <h2 className="text-base font-semibold text-gray-900 mb-3">Actions rapides</h2>
+    <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
+      <h2 className="text-base font-semibold theme-text-primary mb-3">Actions rapides</h2>
       <div className="grid grid-cols-3 gap-2">
         {actions.map((action) => (
           <button
             key={action.label}
             onClick={() => navigate(action.route)}
-            className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-gray-50 transition-all group"
+            className="flex flex-col items-center gap-1.5 p-3 rounded-xl hover:bg-[var(--bg-tertiary)] transition-all group cursor-pointer"
           >
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${action.color} text-white shadow-sm group-hover:scale-110 group-hover:shadow-md transition-all`}>
               {action.icon}
             </div>
-            <span className="text-[10px] font-medium text-gray-600 text-center leading-tight">{action.label}</span>
+            <span className="text-[10px] font-medium theme-text-secondary text-center leading-tight">{action.label}</span>
           </button>
         ))}
       </div>

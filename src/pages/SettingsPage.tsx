@@ -91,7 +91,7 @@ const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ 
           <div>
             <label className="block text-sm theme-text-secondary mb-2">Mot de passe actuel</label>
             <div className="relative">
-              <input type={showCurrent ? 'text' : 'password'} placeholder="Entrez votre mot de passe actuel" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none pr-10" />
+              <input type={showCurrent ? 'text' : 'password'} placeholder="Entrez votre mot de passe actuel" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none pr-10" />
               <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted">
                 {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -100,7 +100,7 @@ const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ 
           <div>
             <label className="block text-sm theme-text-secondary mb-2">Nouveau mot de passe</label>
             <div className="relative">
-              <input type={showNew ? 'text' : 'password'} placeholder="Entrez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none pr-10" />
+              <input type={showNew ? 'text' : 'password'} placeholder="Entrez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none pr-10" />
               <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted">
                 {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -108,12 +108,12 @@ const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ 
           </div>
           <div>
             <label className="block text-sm theme-text-secondary mb-2">Confirmer le mot de passe</label>
-            <input type="password" placeholder="Confirmez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none" />
+            <input type="password" placeholder="Confirmez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none" />
           </div>
         </div>
         <div className="flex gap-3 justify-end mt-6">
-          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg theme-bg-tertiary theme-text-primary hover:opacity-80">Annuler</button>
-          <button type="button" onClick={onSave} className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white">Enregistrer</button>
+          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg theme-bg-tertiary theme-text-primary hover:opacity-80 cursor-pointer">Annuler</button>
+          <button type="button" onClick={onSave} className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white cursor-pointer">Enregistrer</button>
         </div>
       </div>
     </div>
@@ -247,7 +247,7 @@ const SettingsPage: React.FC = () => {
                   <input
                     type="text"
                     defaultValue={user?.prenom || 'John'}
-                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -255,7 +255,7 @@ const SettingsPage: React.FC = () => {
                   <input
                     type="text"
                     defaultValue={user?.nom || 'Doe'}
-                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -263,7 +263,7 @@ const SettingsPage: React.FC = () => {
                   <input
                     type="email"
                     defaultValue={user?.email || 'contact@medicare.com'}
-                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
@@ -271,14 +271,14 @@ const SettingsPage: React.FC = () => {
                   <input
                     type="tel"
                     defaultValue="+33 6 12 34 56 78"
-                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
               </div>
             </div>
             <div>
               <h3 className="text-lg font-semibold theme-text-primary mb-4">Spécialité</h3>
-              <select className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors">
+              <select className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors">
                 <option>Médecine générale</option>
                 <option>Cardiologie</option>
                 <option>Neurologie</option>
@@ -309,8 +309,8 @@ const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setNotifications((prev: typeof notifications) => ({ ...prev, [item.key]: !prev[item.key as keyof typeof notifications] }))}
-                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      notifications[item.key as keyof typeof notifications] ? 'bg-blue-500' : 'bg-gray-500'
+                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 cursor-pointer ${
+                      notifications[item.key as keyof typeof notifications] ? 'bg-primary' : 'bg-gray-500'
                     }`}
                     aria-label={`Toggle ${item.label}`}
                   >
@@ -330,42 +330,93 @@ const SettingsPage: React.FC = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold theme-text-primary mb-4">Thème de l'interface</h3>
-            <div className="grid grid-cols-3 gap-2 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               {[
-                { value: 'light' as ThemeMode, label: 'Clair', icon: <Sun size={24} />, desc: 'Interface lumineuse' },
-                { value: 'dark' as ThemeMode, label: 'Sombre', icon: <Moon size={24} />, desc: 'Interface sombre' },
-                { value: 'system' as ThemeMode, label: 'Système', icon: <Monitor size={24} />, desc: 'Suit les préférences OS' }
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleThemeChange(option.value)}
-                  className={`p-3 sm:p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-2 sm:gap-3 ${
-                    theme === option.value
-                      ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
-                      : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[var(--border-hover)]'
-                  }`}
-                >
-                  <span className={theme === option.value ? 'text-blue-400' : 'theme-text-muted'}>
-                    {option.icon}
-                  </span>
-                  <span className={`font-medium ${theme === option.value ? 'text-blue-400' : 'theme-text-secondary'}`}>
-                    {option.label}
-                  </span>
-                </button>
-              ))}
+                { value: 'light' as ThemeMode, label: 'Clair', icon: <Sun size={20} />, desc: 'Interface lumineuse', previewBg: '#f8fafc', previewCard: '#ffffff', previewText: '#0f172a', previewMuted: '#94a3b8', previewBorder: '#e2e8f0', previewAccent: '#2563eb' },
+                { value: 'dark' as ThemeMode, label: 'Sombre', icon: <Moon size={20} />, desc: 'Interface sombre', previewBg: '#0f172a', previewCard: '#1e293b', previewText: '#ffffff', previewMuted: '#64748b', previewBorder: '#334155', previewAccent: '#3b82f6' },
+                { value: 'system' as ThemeMode, label: 'Système', icon: <Monitor size={20} />, desc: 'Préférences OS', previewBg: 'linear-gradient(135deg, #f8fafc 50%, #0f172a 50%)', previewCard: '#1e293b', previewText: '#ffffff', previewMuted: '#64748b', previewBorder: '#334155', previewAccent: '#3b82f6' }
+              ].map((option) => {
+                const isSelected = theme === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => handleThemeChange(option.value)}
+                    className={`group relative p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 sm:gap-3 cursor-pointer ${
+                      isSelected
+                        ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20 ring-1 ring-primary/30'
+                        : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[var(--border-hover)] hover:shadow-md'
+                    }`}
+                  >
+                    {/* Selected indicator */}
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                        <Check size={12} className="text-white" />
+                      </div>
+                    )}
+
+                    {/* Mini preview mockup */}
+                    <div
+                      className="w-full aspect-[4/3] rounded-lg overflow-hidden border border-[var(--border-color)] relative"
+                      style={{ background: option.previewBg }}
+                    >
+                      {/* Mini sidebar */}
+                      <div
+                        className="absolute left-0 top-0 bottom-0 w-[18%] rounded-l-lg"
+                        style={{ backgroundColor: option.value === 'light' ? '#ffffff' : '#1e293b', borderRight: `1px solid ${option.previewBorder}` }}
+                      />
+                      {/* Mini header */}
+                      <div
+                        className="absolute left-[18%] top-0 right-0 h-[16%]"
+                        style={{ backgroundColor: option.previewCard, borderBottom: `1px solid ${option.previewBorder}` }}
+                      />
+                      {/* Mini content cards */}
+                      <div className="absolute left-[22%] top-[22%] right-[6%] flex flex-col gap-[4px]">
+                        <div className="flex gap-[4px]">
+                          <div className="flex-1 h-[10px] rounded-sm" style={{ backgroundColor: option.previewCard, border: `1px solid ${option.previewBorder}` }} />
+                          <div className="flex-1 h-[10px] rounded-sm" style={{ backgroundColor: option.previewCard, border: `1px solid ${option.previewBorder}` }} />
+                        </div>
+                        <div className="h-[16px] rounded-sm" style={{ backgroundColor: option.previewCard, border: `1px solid ${option.previewBorder}` }} />
+                        <div className="flex gap-[4px]">
+                          <div className="flex-1 h-[8px] rounded-sm" style={{ backgroundColor: option.previewAccent, opacity: 0.2 }} />
+                          <div className="flex-1 h-[8px] rounded-sm" style={{ backgroundColor: option.previewCard, border: `1px solid ${option.previewBorder}` }} />
+                          <div className="flex-1 h-[8px] rounded-sm" style={{ backgroundColor: option.previewCard, border: `1px solid ${option.previewBorder}` }} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Label + icon */}
+                    <div className="flex items-center gap-2">
+                      <span className={`transition-colors duration-200 ${isSelected ? 'text-primary' : 'theme-text-muted group-hover:theme-text-secondary'}`}>
+                        {option.icon}
+                      </span>
+                      <span className={`font-semibold text-sm transition-colors duration-200 ${isSelected ? 'text-primary' : 'theme-text-primary'}`}>
+                        {option.label}
+                      </span>
+                    </div>
+
+                    {/* Description */}
+                    <span className={`text-xs transition-colors duration-200 ${isSelected ? 'text-primary/70' : 'theme-text-muted'}`}>
+                      {option.desc}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Theme preview */}
-            <div className="mt-6 p-4 rounded-xl border theme-border theme-bg-input">
-              <p className="text-sm theme-text-secondary mb-2">Aperçu actuel</p>
+            <div className="mt-6 p-4 rounded-xl border theme-border theme-bg-input flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`w-4 h-4 rounded-full ${resolvedTheme === 'dark' ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                <span className="theme-text-primary font-medium">
-                  {resolvedTheme === 'dark' ? 'Mode sombre' : 'Mode clair'}
-                  {theme === 'system' && ' (détecté automatiquement)'}
+                <div className={`w-3 h-3 rounded-full ${resolvedTheme === 'dark' ? 'bg-blue-400' : 'bg-amber-400'}`} />
+                <span className="theme-text-primary font-medium text-sm">
+                  {resolvedTheme === 'dark' ? 'Mode sombre actif' : 'Mode clair actif'}
                 </span>
               </div>
+              {theme === 'system' && (
+                <span className="text-xs theme-text-muted bg-[var(--bg-tertiary)] px-2.5 py-1 rounded-full">
+                  Automatique
+                </span>
+              )}
             </div>
           </div>
         );
@@ -383,9 +434,9 @@ const SettingsPage: React.FC = () => {
                   key={option.value}
                   type="button"
                   onClick={() => handleLanguageChange(option.value)}
-                  className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-4 ${
+                  className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-4 cursor-pointer ${
                     language === option.value
-                      ? 'border-blue-500 bg-blue-500/10'
+                      ? 'border-primary bg-primary/10'
                       : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[var(--border-hover)]'
                   }`}
                 >
@@ -394,7 +445,7 @@ const SettingsPage: React.FC = () => {
                     {option.label}
                   </span>
                   {language === option.value && (
-                    <Check size={20} className="text-blue-400 ml-auto" />
+                    <Check size={20} className="text-primary ml-auto" />
                   )}
                 </button>
               ))}
@@ -421,7 +472,7 @@ const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPasswordModal(true)}
-                    className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+                    className="px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors cursor-pointer"
                   >
                     Modifier
                   </button>
@@ -438,7 +489,7 @@ const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleToggle2FA}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    className={`px-4 py-2 rounded-lg transition-colors cursor-pointer ${
                       twoFactorEnabled
                         ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                         : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
@@ -474,7 +525,7 @@ const SettingsPage: React.FC = () => {
                         <p className="text-xs theme-text-muted">Il y a 2 heures</p>
                       </div>
                     </div>
-                    <button type="button" className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
+                    <button type="button" className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 cursor-pointer">
                       <LogOut size={14} />
                       Déconnecter
                     </button>
@@ -499,7 +550,7 @@ const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleExportData}
-                    className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <Download size={16} />
                     Exporter
@@ -515,7 +566,7 @@ const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowClearCacheConfirm(true)}
-                    className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <Trash2 size={16} />
                     Vider
@@ -531,7 +582,7 @@ const SettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <AlertTriangle size={16} />
                     Supprimer
@@ -554,8 +605,8 @@ const SettingsPage: React.FC = () => {
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center gap-2 sm:gap-3 ml-14 lg:ml-0">
-            <div className="p-1.5 sm:p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
-              <Settings size={20} className="text-blue-400 sm:w-6 sm:h-6" />
+            <div className="p-1.5 sm:p-2 bg-primary/20 rounded-lg flex-shrink-0">
+              <Settings size={20} className="text-primary sm:w-6 sm:h-6" />
             </div>
             <div className="min-w-0">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold theme-text-primary">Paramètres</h1>
@@ -576,9 +627,9 @@ const SettingsPage: React.FC = () => {
                         key={section.id}
                         type="button"
                         onClick={() => setActiveSection(section.id)}
-                        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all whitespace-nowrap lg:w-full ${
+                        className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all whitespace-nowrap lg:w-full cursor-pointer ${
                           activeSection === section.id
-                            ? 'bg-blue-500/20 text-blue-400'
+                            ? 'bg-primary/20 text-primary'
                             : 'theme-text-secondary hover:bg-[var(--bg-tertiary)] hover:theme-text-primary'
                         }`}
                       >
@@ -600,10 +651,10 @@ const SettingsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleSave}
-                      className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all ${
+                      className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all cursor-pointer ${
                         saved
                           ? 'bg-emerald-500 text-white'
-                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          : 'bg-primary hover:bg-primary-dark text-white'
                       }`}
                     >
                       {saved ? (

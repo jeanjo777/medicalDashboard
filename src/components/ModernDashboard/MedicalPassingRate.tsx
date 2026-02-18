@@ -21,26 +21,26 @@ const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
   title = "Taux de consultations",
 }) => {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">{title}</h2>
-        <button className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
-          <FileText className="h-3.5 w-3.5 text-gray-500" />
+        <h2 className="text-base font-semibold theme-text-primary">{title}</h2>
+        <button className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer">
+          <FileText className="h-3.5 w-3.5 theme-text-muted" />
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center">
         <div>
-          <div className="mb-1 text-[10px] text-gray-500">Effectuées</div>
-          <div className="text-2xl font-bold text-gray-900">{complete}%</div>
+          <div className="mb-1 text-[10px] theme-text-muted">Effectuées</div>
+          <div className="text-2xl font-bold theme-text-primary">{complete}%</div>
         </div>
         <div>
-          <div className="mb-1 text-[10px] text-gray-500">Annulées</div>
-          <div className="text-2xl font-bold text-gray-900">{cancelled}%</div>
+          <div className="mb-1 text-[10px] theme-text-muted">Annulées</div>
+          <div className="text-2xl font-bold theme-text-primary">{cancelled}%</div>
         </div>
         <div>
-          <div className="mb-1 text-[10px] text-gray-500">En attente</div>
-          <div className="text-2xl font-bold text-gray-900">{pending}%</div>
+          <div className="mb-1 text-[10px] theme-text-muted">En attente</div>
+          <div className="text-2xl font-bold theme-text-primary">{pending}%</div>
         </div>
       </div>
 
@@ -54,7 +54,7 @@ const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
           style={{ width: `${cancelled}%` }}
         />
         <div
-          className="bg-gray-300 transition-all duration-500"
+          className="bg-[var(--bg-tertiary)] transition-all duration-500"
           style={{ width: `${pending}%` }}
         />
       </div>
@@ -62,15 +62,15 @@ const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
       <div className="mt-3 flex items-center justify-center gap-4 text-[10px]">
         <div className="flex items-center gap-1">
           <div className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span className="text-gray-600">Effectuées</span>
+          <span className="theme-text-secondary">Effectuées</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="h-2 w-2 rounded-full bg-orange-500" />
-          <span className="text-gray-600">Annulées</span>
+          <span className="theme-text-secondary">Annulées</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="h-2 w-2 rounded-full bg-gray-300" />
-          <span className="text-gray-600">En attente</span>
+          <div className="h-2 w-2 rounded-full bg-[var(--bg-tertiary)]" />
+          <span className="theme-text-secondary">En attente</span>
         </div>
       </div>
     </div>

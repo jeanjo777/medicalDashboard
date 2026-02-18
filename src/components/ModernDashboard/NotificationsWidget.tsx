@@ -42,15 +42,15 @@ const NotificationsWidget: React.FC = () => {
   ];
 
   const typeStyles = {
-    info: 'bg-blue-50 text-blue-500',
-    warning: 'bg-amber-50 text-amber-500',
-    success: 'bg-emerald-50 text-emerald-500',
+    info: 'bg-blue-500/10 text-blue-500',
+    warning: 'bg-amber-500/10 text-amber-500',
+    success: 'bg-emerald-500/10 text-emerald-500',
   };
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base font-semibold text-gray-900">Notifications</h2>
+        <h2 className="text-base font-semibold theme-text-primary">Notifications</h2>
         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white">
           <span className="text-[10px] font-bold">{notifications.length}</span>
         </div>
@@ -60,16 +60,16 @@ const NotificationsWidget: React.FC = () => {
         {notifications.map((notif) => (
           <div
             key={notif.id}
-            className="flex items-start gap-2.5 p-2.5 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
+            className="flex items-start gap-2.5 p-2.5 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer group"
           >
             <div className={`flex h-7 w-7 items-center justify-center rounded-lg flex-shrink-0 ${typeStyles[notif.type]}`}>
               {notif.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-700 leading-snug group-hover:text-gray-900 transition-colors">
+              <p className="text-xs font-medium theme-text-secondary leading-snug group-hover:text-[var(--text-primary)] transition-colors">
                 {notif.text}
               </p>
-              <p className="text-[10px] text-gray-400 mt-0.5">{notif.time}</p>
+              <p className="text-[10px] theme-text-muted mt-0.5">{notif.time}</p>
             </div>
           </div>
         ))}

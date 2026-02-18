@@ -162,17 +162,17 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1e293b] rounded-xl border border-[#334155] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-[#1e293b] border-b border-[#334155] px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Nouveau Rendez-vous</h2>
+      <div className="theme-bg-secondary rounded-xl border theme-border w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 theme-bg-secondary border-b theme-border px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold theme-text-primary">Nouveau Rendez-vous</h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-[#334155] rounded-lg transition-colors"
+            className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors cursor-pointer"
             title="Fermer"
             aria-label="Fermer le formulaire"
           >
-            <X size={20} className="text-gray-400" />
+            <X size={20} className="theme-text-muted" />
           </button>
         </div>
 
@@ -205,17 +205,17 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-secondary mb-2">
               <User size={16} className="inline mr-2" />
               Patient *
             </label>
             {formData.patient_id ? (
-              <div className="flex items-center justify-between p-3 bg-[#0f172a] border border-[#334155] rounded-lg">
-                <span className="text-white">{formData.patient_name}</span>
+              <div className="flex items-center justify-between p-3 theme-bg-input border theme-border rounded-lg">
+                <span className="theme-text-primary">{formData.patient_name}</span>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, patient_id: '', patient_name: '', patient_email: '', patient_phone: '' })}
-                  className="text-sm text-blue-400 hover:text-blue-300"
+                  className="text-sm text-blue-400 hover:text-blue-300 cursor-pointer"
                 >
                   Changer
                 </button>
@@ -227,12 +227,12 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Rechercher un patient..."
-                  className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary placeholder-[var(--text-muted)] focus:outline-none focus:border-primary"
                 />
                 {searchTerm && (
-                  <div className="mt-2 max-h-48 overflow-y-auto bg-[#0f172a] border border-[#334155] rounded-lg">
+                  <div className="mt-2 max-h-48 overflow-y-auto theme-bg-input border theme-border rounded-lg">
                     {filteredPatients.length === 0 ? (
-                      <div className="p-4 text-center text-gray-400 text-sm">
+                      <div className="p-4 text-center theme-text-muted text-sm">
                         Aucun patient trouvé
                       </div>
                     ) : (
@@ -241,13 +241,13 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
                           key={patient.id}
                           type="button"
                           onClick={() => handleSelectPatient(patient)}
-                          className="w-full px-4 py-3 text-left hover:bg-[#1e293b] transition-colors border-b border-[#334155] last:border-b-0"
+                          className="w-full px-4 py-3 text-left hover:bg-[var(--bg-secondary)] transition-colors border-b theme-border last:border-b-0 cursor-pointer"
                         >
-                          <div className="text-white font-medium">
+                          <div className="theme-text-primary font-medium">
                             {patient.first_name} {patient.last_name}
                           </div>
                           {patient.phone && (
-                            <div className="text-sm text-gray-400 mt-1">
+                            <div className="text-sm theme-text-muted mt-1">
                               {patient.phone}
                             </div>
                           )}
@@ -265,7 +265,7 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
                   value={formData.patient_name}
                   onChange={(e) => setFormData({ ...formData, patient_name: e.target.value })}
                   placeholder="Ou entrez le nom manuellement"
-                  className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary placeholder-[var(--text-muted)] focus:outline-none focus:border-primary"
                 />
               </div>
             )}
@@ -273,33 +273,33 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium theme-text-secondary mb-2">
                 Email
               </label>
               <input
                 type="email"
                 value={formData.patient_email}
                 onChange={(e) => setFormData({ ...formData, patient_email: e.target.value })}
-                className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary placeholder-[var(--text-muted)] focus:outline-none focus:border-primary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium theme-text-secondary mb-2">
                 Téléphone
               </label>
               <input
                 type="tel"
                 value={formData.patient_phone}
                 onChange={(e) => setFormData({ ...formData, patient_phone: e.target.value })}
-                className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary placeholder-[var(--text-muted)] focus:outline-none focus:border-primary"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="appointment_date" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="appointment_date" className="block text-sm font-medium theme-text-secondary mb-2">
                 <Calendar size={16} className="inline mr-2" />
                 Date *
               </label>
@@ -310,12 +310,12 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
                 onChange={(e) => setFormData({ ...formData, appointment_date: e.target.value })}
                 required
                 title="Date du rendez-vous"
-                className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary focus:outline-none focus:border-primary"
               />
             </div>
 
             <div>
-              <label htmlFor="appointment_time" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="appointment_time" className="block text-sm font-medium theme-text-secondary mb-2">
                 <Clock size={16} className="inline mr-2" />
                 Heure *
               </label>
@@ -326,16 +326,16 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
                 onChange={(e) => setFormData({ ...formData, appointment_time: e.target.value })}
                 required
                 title="Heure du rendez-vous"
-                className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary focus:outline-none focus:border-primary"
               />
               {checkingConflict && (
-                <p className="text-xs text-gray-400 mt-1">Vérification des conflits...</p>
+                <p className="text-xs theme-text-muted mt-1">Vérification des conflits...</p>
               )}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-secondary mb-2">
               <FileText size={16} className="inline mr-2" />
               Motif
             </label>
@@ -344,13 +344,13 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
               value={formData.motif}
               onChange={(e) => setFormData({ ...formData, motif: e.target.value })}
               placeholder="Raison de la consultation"
-              className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary placeholder-[var(--text-muted)] focus:outline-none focus:border-primary"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="type_consultation" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="type_consultation" className="block text-sm font-medium theme-text-secondary mb-2">
                 <Tag size={16} className="inline mr-2" />
                 Type de consultation
               </label>
@@ -359,7 +359,7 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
                 value={formData.type_consultation}
                 onChange={(e) => setFormData({ ...formData, type_consultation: e.target.value })}
                 title="Type de consultation"
-                className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary focus:outline-none focus:border-primary"
               >
                 <option value="Consultation">Consultation</option>
                 <option value="Contrôle">Contrôle</option>
@@ -370,7 +370,7 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
             </div>
 
             <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="duration" className="block text-sm font-medium theme-text-secondary mb-2">
                 <Clock size={16} className="inline mr-2" />
                 Durée (minutes)
               </label>
@@ -382,13 +382,13 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
                 min="15"
                 step="15"
                 title="Durée en minutes"
-                className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-blue-500"
+                className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary focus:outline-none focus:border-primary"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-secondary mb-2">
               Notes privées
             </label>
             <textarea
@@ -396,22 +396,22 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows={3}
               placeholder="Notes internes (non visibles par le patient)"
-              className="w-full px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full px-4 py-2 theme-bg-input border theme-border rounded-lg theme-text-primary placeholder-[var(--text-muted)] focus:outline-none focus:border-primary resize-none"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#334155]">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t theme-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-400 hover:text-white hover:bg-[#334155] rounded-lg transition-colors"
+              className="px-4 py-2 theme-text-muted hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors cursor-pointer"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {loading ? 'Création...' : 'Créer le rendez-vous'}
             </button>

@@ -47,11 +47,11 @@ const KPIPerformanceWidget: React.FC = () => {
   ];
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-gray-900">Indicateurs de performance</h2>
-          <p className="text-xs text-gray-500 mt-0.5">Ce mois-ci vs mois précédent</p>
+          <h2 className="text-base font-semibold theme-text-primary">Indicateurs de performance</h2>
+          <p className="text-xs theme-text-muted mt-0.5">Ce mois-ci vs mois précédent</p>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ const KPIPerformanceWidget: React.FC = () => {
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
-            className="rounded-xl border border-gray-100 p-3 hover:border-gray-200 hover:shadow-sm transition-all"
+            className="rounded-xl border border-[var(--border-color)] p-3 hover:shadow-sm transition-all"
           >
             <div className="flex items-center justify-between mb-2">
               <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${kpi.color}`}>
@@ -78,8 +78,8 @@ const KPIPerformanceWidget: React.FC = () => {
                 {kpi.change}
               </span>
             </div>
-            <div className="text-lg font-bold text-gray-900">{kpi.value}</div>
-            <div className="text-[10px] text-gray-500 mt-0.5">{kpi.label}</div>
+            <div className="text-lg font-bold theme-text-primary">{kpi.value}</div>
+            <div className="text-[10px] theme-text-muted mt-0.5">{kpi.label}</div>
           </div>
         ))}
       </div>

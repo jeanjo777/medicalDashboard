@@ -72,14 +72,14 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
   const gridCircles = [30, 60, 90, 120];
 
   return (
-    <div className="rounded-2xl bg-white p-4 sm:p-5 shadow-sm">
+    <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 sm:p-5 shadow-sm transition-colors duration-300">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+        <h2 className="text-base sm:text-lg font-semibold theme-text-primary">
           Vue d'ensemble
         </h2>
-        <button className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
-          <Settings className="h-4 w-4 text-gray-500" />
+        <button className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer">
+          <Settings className="h-4 w-4 theme-text-muted" />
         </button>
       </div>
 
@@ -87,10 +87,10 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
       <div className="flex gap-2 mb-4">
         <button
           onClick={() => setActiveTab('patient')}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
             activeTab === 'patient'
               ? 'bg-emerald-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-[var(--bg-tertiary)] theme-text-secondary hover:bg-[var(--bg-input)]'
           }`}
         >
           <Activity className="h-3.5 w-3.5" />
@@ -98,10 +98,10 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('cabinet')}
-          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
             activeTab === 'cabinet'
               ? 'bg-emerald-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              : 'bg-[var(--bg-tertiary)] theme-text-secondary hover:bg-[var(--bg-input)]'
           }`}
         >
           <Building2 className="h-3.5 w-3.5" />
@@ -120,7 +120,7 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
               cy={centerY}
               r={r}
               fill="none"
-              stroke="#e5e7eb"
+              stroke="var(--border-color)"
               strokeWidth="1"
             />
           ))}
@@ -137,7 +137,7 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
                 y1={centerY}
                 x2={endX}
                 y2={endY}
-                stroke="#e5e7eb"
+                stroke="var(--border-color)"
                 strokeWidth="1"
               />
             );
@@ -179,7 +179,8 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
                 y={y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-gray-600 text-[10px] font-medium"
+                className="text-[10px] font-medium"
+                fill="var(--text-muted)"
               >
                 {i + 1}
               </text>
@@ -211,7 +212,7 @@ interface MetricRowProps {
   color: string;
 }
 
-const MetricRow: React.FC<MetricRowProps> = ({ number, label, value, color }) => {
+const MetricRow: React.FC<MetricRowProps> = ({ number, label, value }) => {
   const numericValue = parseInt(value);
 
   const getBarColor = () => {
@@ -222,16 +223,16 @@ const MetricRow: React.FC<MetricRowProps> = ({ number, label, value, color }) =>
 
   return (
     <div className="flex items-center gap-2">
-      <span className="w-4 text-xs font-medium text-gray-500">{number}</span>
-      <span className="flex-1 text-xs text-gray-700">{label}</span>
+      <span className="w-4 text-xs font-medium theme-text-muted">{number}</span>
+      <span className="flex-1 text-xs theme-text-secondary">{label}</span>
       <div className="flex items-center gap-2">
-        <div className="h-1.5 w-14 overflow-hidden rounded-full bg-gray-100">
+        <div className="h-1.5 w-14 overflow-hidden rounded-full bg-[var(--bg-tertiary)]">
           <div
             className={`h-full ${getBarColor()} transition-all duration-500`}
             style={{ width: value }}
           />
         </div>
-        <span className="w-9 text-right text-xs font-semibold text-gray-900">
+        <span className="w-9 text-right text-xs font-semibold theme-text-primary">
           {value}
         </span>
       </div>

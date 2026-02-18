@@ -13,7 +13,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Clock, Mail, Phone, MoreVertical, Check, X } from 'lucide-react';
+import { Clock, Mail, Phone, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import EmptyState from '../EmptyState';
@@ -176,7 +176,6 @@ const UpcomingAppointments: React.FC = () => {
 
         setAppointments(formattedAppointments);
       } else {
-        // No real data - use demo appointments as fallback
         logger.info('[UpcomingAppointments] No data from Supabase, using demo fallback');
         setAppointments(getTodayDemoAppointments());
       }
@@ -238,17 +237,11 @@ const UpcomingAppointments: React.FC = () => {
     return colors[index % colors.length];
   };
 
-  /**
-   * Open detail modal
-   */
   const handleAppointmentClick = (id: string) => {
     setSelectedAppointmentId(id);
     setIsModalOpen(true);
   };
 
-  /**
-   * Quick action: Email
-   */
   const handleEmail = (e: React.MouseEvent, appointment: Appointment) => {
     e.stopPropagation();
     if (appointment.email) {
@@ -256,9 +249,6 @@ const UpcomingAppointments: React.FC = () => {
     }
   };
 
-  /**
-   * Quick action: Phone
-   */
   const handlePhone = (e: React.MouseEvent, appointment: Appointment) => {
     e.stopPropagation();
     if (appointment.phone) {
@@ -266,17 +256,11 @@ const UpcomingAppointments: React.FC = () => {
     }
   };
 
-  /**
-   * Quick action: More (open modal)
-   */
   const handleMore = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     handleAppointmentClick(id);
   };
 
-  /**
-   * Handle keyboard navigation
-   */
   const handleKeyPress = (e: React.KeyboardEvent, id: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -294,27 +278,27 @@ const UpcomingAppointments: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155]">
+      <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-white text-lg font-semibold mb-1">Rendez-vous à venir</h3>
-            <p className="text-gray-400 text-sm">Planning du jour</p>
+            <h3 className="theme-text-primary text-lg font-semibold mb-1">Rendez-vous à venir</h3>
+            <p className="theme-text-muted text-sm">Planning du jour</p>
           </div>
         </div>
         <div className="space-y-3">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="flex items-center gap-4 p-4 bg-[#0f172a] rounded-lg border border-[#334155] animate-pulse"
+              className="flex items-center gap-4 p-4 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-color)] animate-pulse"
             >
-              <div className="w-12 h-12 bg-[#334155] rounded-lg" />
+              <div className="w-12 h-12 bg-[var(--bg-tertiary)] rounded-lg" />
               <div className="flex-1">
-                <div className="h-4 bg-[#334155] rounded w-32 mb-2" />
-                <div className="h-3 bg-[#334155] rounded w-24" />
+                <div className="h-4 bg-[var(--bg-tertiary)] rounded w-32 mb-2" />
+                <div className="h-3 bg-[var(--bg-tertiary)] rounded w-24" />
               </div>
               <div className="text-right">
-                <div className="h-4 bg-[#334155] rounded w-16 mb-2" />
-                <div className="h-3 bg-[#334155] rounded w-12" />
+                <div className="h-4 bg-[var(--bg-tertiary)] rounded w-16 mb-2" />
+                <div className="h-3 bg-[var(--bg-tertiary)] rounded w-12" />
               </div>
             </div>
           ))}
@@ -325,18 +309,18 @@ const UpcomingAppointments: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-[#1e293b] rounded-xl p-6 border border-[#334155]">
+      <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-white text-lg font-semibold mb-1">Rendez-vous à venir</h3>
-            <p className="text-gray-400 text-sm">Planning du jour</p>
+            <h3 className="theme-text-primary text-lg font-semibold mb-1">Rendez-vous à venir</h3>
+            <p className="theme-text-muted text-sm">Planning du jour</p>
           </div>
         </div>
         <div className="text-center py-8">
           <p className="text-red-400 mb-4">{error}</p>
           <button
             onClick={fetchTodayAppointments}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
           >
             Réessayer
           </button>
@@ -349,11 +333,11 @@ const UpcomingAppointments: React.FC = () => {
 
   return (
     <>
-      <div className="bg-[#1e293b] rounded-xl p-4 sm:p-5 lg:p-6 border border-[#334155] hover:border-[#475569] transition-colors">
+      <div>
         <div className="flex items-center justify-between mb-4 sm:mb-5 lg:mb-6 gap-2">
           <div className="min-w-0 flex-1">
-            <h3 className="text-white text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Rendez-vous à venir</h3>
-            <p className="text-gray-400 text-xs sm:text-sm truncate">
+            <h3 className="theme-text-primary text-base sm:text-lg font-semibold mb-0.5 sm:mb-1">Rendez-vous à venir</h3>
+            <p className="theme-text-muted text-xs sm:text-sm truncate">
               {hasAppointments
                 ? `${appointments.length} rendez-vous aujourd'hui`
                 : "Planning du jour"
@@ -363,7 +347,7 @@ const UpcomingAppointments: React.FC = () => {
           {hasAppointments && (
             <button
               onClick={handleViewAll}
-              className="text-blue-500 hover:text-blue-400 text-xs sm:text-sm font-medium transition-colors duration-200 flex-shrink-0 hover:bg-blue-500/10 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg active:scale-95"
+              className="text-blue-500 hover:text-blue-400 text-xs sm:text-sm font-medium transition-colors duration-200 flex-shrink-0 hover:bg-blue-500/10 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg active:scale-95 cursor-pointer"
               aria-label="Voir tous les rendez-vous"
             >
               <span className="hidden sm:inline">Voir tout</span>
@@ -385,7 +369,7 @@ const UpcomingAppointments: React.FC = () => {
                 onKeyPress={(e) => handleKeyPress(e, appointment.id)}
                 onMouseEnter={() => setHoveredId(appointment.id)}
                 onMouseLeave={() => setHoveredId(null)}
-                className="group relative flex items-center gap-2 sm:gap-3 lg:gap-4 p-3 sm:p-4 bg-[#0f172a] rounded-lg hover:bg-[#1e293b] transition-all duration-200 border border-[#334155] hover:border-blue-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#0f172a]"
+                className="group relative flex items-center gap-2 sm:gap-3 lg:gap-4 p-3 sm:p-4 bg-[var(--bg-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition-all duration-200 border border-[var(--border-color)] hover:border-blue-500/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[var(--bg-secondary)]"
                 aria-label={`Rendez-vous avec ${appointment.name} à ${appointment.time}`}
                 title="Cliquer pour voir les détails"
               >
@@ -396,53 +380,46 @@ const UpcomingAppointments: React.FC = () => {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-white font-medium text-xs sm:text-sm mb-0.5 truncate group-hover:text-blue-400 transition-colors">
+                  <h4 className="theme-text-primary font-medium text-xs sm:text-sm mb-0.5 truncate group-hover:text-blue-400 transition-colors">
                     {appointment.name}
                   </h4>
-                  <p className="text-gray-400 text-xs truncate">{appointment.department}</p>
+                  <p className="theme-text-muted text-xs truncate">{appointment.department}</p>
                 </div>
 
                 {/* Time + Actions */}
                 <div className="flex items-center gap-1 sm:gap-2">
-                  {/* Time (always visible) */}
                   <div className="text-right flex-shrink-0">
-                    <div className="flex items-center gap-1 text-gray-300 text-xs sm:text-sm mb-0.5 sm:mb-1">
+                    <div className="flex items-center gap-1 theme-text-secondary text-xs sm:text-sm mb-0.5 sm:mb-1">
                       <Clock size={12} className="sm:w-[14px] sm:h-[14px]" />
                       <span>{appointment.time}</span>
                     </div>
-                    <span className="text-xs text-gray-400 hidden sm:block">{appointment.type}</span>
+                    <span className="text-xs theme-text-muted hidden sm:block">{appointment.type}</span>
                   </div>
 
-                  {/* Quick Actions (visible on hover - hidden on mobile) */}
                   <div className={`hidden sm:flex items-center gap-1 transition-opacity duration-200 ${hoveredId === appointment.id ? 'opacity-100' : 'opacity-0'}`}>
-                    {/* Email */}
                     {appointment.email && (
                       <button
                         onClick={(e) => handleEmail(e, appointment)}
-                        className="p-2 hover:bg-blue-600 rounded-lg transition-colors text-gray-400 hover:text-white"
+                        className="p-2 hover:bg-blue-600 rounded-lg transition-colors theme-text-muted hover:text-white cursor-pointer"
                         aria-label={`Envoyer email à ${appointment.name}`}
                         title="Envoyer email"
                       >
                         <Mail size={16} />
                       </button>
                     )}
-
-                    {/* Phone */}
                     {appointment.phone && (
                       <button
                         onClick={(e) => handlePhone(e, appointment)}
-                        className="p-2 hover:bg-green-600 rounded-lg transition-colors text-gray-400 hover:text-white"
+                        className="p-2 hover:bg-green-600 rounded-lg transition-colors theme-text-muted hover:text-white cursor-pointer"
                         aria-label={`Appeler ${appointment.name}`}
                         title="Appeler"
                       >
                         <Phone size={16} />
                       </button>
                     )}
-
-                    {/* More Actions */}
                     <button
                       onClick={(e) => handleMore(e, appointment.id)}
-                      className="p-2 hover:bg-purple-600 rounded-lg transition-colors text-gray-400 hover:text-white"
+                      className="p-2 hover:bg-purple-600 rounded-lg transition-colors theme-text-muted hover:text-white cursor-pointer"
                       aria-label="Plus d'actions"
                       title="Plus d'actions"
                     >
@@ -456,7 +433,6 @@ const UpcomingAppointments: React.FC = () => {
         )}
       </div>
 
-      {/* Detail Modal */}
       <AppointmentDetailModal
         appointmentId={selectedAppointmentId}
         isOpen={isModalOpen}

@@ -166,11 +166,11 @@ const StatCard: React.FC<{
   active?: boolean;
 }> = React.memo(({ icon: Icon, label, value, color, onClick, active }) => {
   const styles = {
-    blue: { icon: 'from-blue-500 to-blue-600', bg: 'bg-blue-50/80 hover:bg-blue-50', ring: 'ring-blue-400/50', text: 'text-blue-700' },
-    green: { icon: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50/80 hover:bg-emerald-50', ring: 'ring-emerald-400/50', text: 'text-emerald-700' },
-    orange: { icon: 'from-amber-500 to-orange-600', bg: 'bg-amber-50/80 hover:bg-amber-50', ring: 'ring-amber-400/50', text: 'text-amber-700' },
-    red: { icon: 'from-red-500 to-rose-600', bg: 'bg-red-50/80 hover:bg-red-50', ring: 'ring-red-400/50', text: 'text-red-700' },
-    purple: { icon: 'from-purple-500 to-violet-600', bg: 'bg-purple-50/80 hover:bg-purple-50', ring: 'ring-purple-400/50', text: 'text-purple-700' },
+    blue: { icon: 'from-blue-500 to-blue-600', bg: 'bg-blue-500/10 hover:bg-blue-500/15', ring: 'ring-blue-400/50', text: 'text-blue-500' },
+    green: { icon: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-500/10 hover:bg-emerald-500/15', ring: 'ring-emerald-400/50', text: 'text-emerald-500' },
+    orange: { icon: 'from-amber-500 to-orange-600', bg: 'bg-amber-500/10 hover:bg-amber-500/15', ring: 'ring-amber-400/50', text: 'text-amber-500' },
+    red: { icon: 'from-red-500 to-rose-600', bg: 'bg-red-500/10 hover:bg-red-500/15', ring: 'ring-red-400/50', text: 'text-red-500' },
+    purple: { icon: 'from-purple-500 to-violet-600', bg: 'bg-purple-500/10 hover:bg-purple-500/15', ring: 'ring-purple-400/50', text: 'text-purple-500' },
   };
 
   const s = styles[color];
@@ -179,14 +179,14 @@ const StatCard: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className={`${s.bg} rounded-xl p-3 transition-all duration-200 border border-gray-100 cursor-pointer w-full text-left group ${active ? `ring-2 ${s.ring} border-transparent` : 'hover:border-gray-200'}`}
+      className={`${s.bg} rounded-xl p-3 transition-all duration-200 border theme-border cursor-pointer w-full text-left group ${active ? `ring-2 ${s.ring} border-transparent` : 'hover:border-[var(--border-hover)]'}`}
     >
       <div className="flex items-center gap-2.5">
         <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${s.icon} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-200`}>
           <Icon size={16} className="text-white" strokeWidth={2.5} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">{label}</p>
+          <p className="text-[10px] theme-text-secondary uppercase tracking-wider font-semibold">{label}</p>
           <p className={`text-lg font-bold ${s.text}`}>{value}</p>
         </div>
       </div>
@@ -223,19 +223,19 @@ const UpcomingAppointments: React.FC<{
 
   if (upcoming.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-100 p-4">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Prochains RDV</h3>
+      <div className="theme-bg-secondary rounded-xl border theme-border p-4">
+        <h3 className="text-xs font-semibold theme-text-secondary uppercase tracking-wider mb-3">Prochains RDV</h3>
         <div className="text-center py-4">
-          <CalendarDays size={28} className="mx-auto text-gray-300 mb-2" />
-          <p className="text-xs text-gray-400">Aucun RDV à venir</p>
+          <CalendarDays size={28} className="mx-auto theme-text-muted mb-2" />
+          <p className="text-xs theme-text-muted">Aucun RDV à venir</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4">
-      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Prochains RDV</h3>
+    <div className="theme-bg-secondary rounded-xl border theme-border p-4">
+      <h3 className="text-xs font-semibold theme-text-secondary uppercase tracking-wider mb-3">Prochains RDV</h3>
       <div className="space-y-2">
         {upcoming.map((apt) => {
           const status = STATUS_CONFIG[apt.status] || STATUS_CONFIG.a_venir;
@@ -253,15 +253,15 @@ const UpcomingAppointments: React.FC<{
                   {getPatientInitials(apt.patient_name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-gray-800 truncate">{apt.patient_name}</p>
+                  <p className="text-xs font-semibold theme-text-primary truncate">{apt.patient_name}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <Clock size={10} className="text-gray-400 shrink-0" />
-                    <span className="text-[10px] text-gray-500">
+                    <Clock size={10} className="theme-text-muted shrink-0" />
+                    <span className="text-[10px] theme-text-secondary">
                       {isToday ? "Aujourd'hui" : format(parseISO(apt.appointment_date), 'dd MMM', { locale: fr })} · {apt.appointment_time}
                     </span>
                   </div>
                 </div>
-                <ChevronRight size={12} className="text-gray-300 group-hover:text-gray-500 transition-colors shrink-0" />
+                <ChevronRight size={12} className="theme-text-muted group-hover:theme-text-secondary transition-colors shrink-0" />
               </div>
             </button>
           );
@@ -310,32 +310,32 @@ const MiniCalendar: React.FC<{
   }, [appointmentDates]);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+    <div className="theme-bg-secondary rounded-xl border theme-border p-4 shadow-sm">
       <div className="flex items-center justify-between mb-3">
         <button
           type="button"
           onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-          className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors"
           aria-label="Mois précédent"
         >
-          <ChevronLeft size={15} className="text-gray-500" />
+          <ChevronLeft size={15} className="theme-text-secondary" />
         </button>
-        <span className="text-sm font-bold text-gray-800 capitalize">
+        <span className="text-sm font-bold theme-text-primary capitalize">
           {format(currentMonth, 'MMMM yyyy', { locale: fr })}
         </span>
         <button
           type="button"
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-          className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors"
           aria-label="Mois suivant"
         >
-          <ChevronRight size={15} className="text-gray-500" />
+          <ChevronRight size={15} className="theme-text-secondary" />
         </button>
       </div>
 
       <div className="grid grid-cols-7 gap-0.5 mb-1.5">
         {['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'].map(day => (
-          <div key={day} className="text-[10px] text-gray-400 text-center font-semibold py-1">
+          <div key={day} className="text-[10px] theme-text-muted text-center font-semibold py-1">
             {day}
           </div>
         ))}
@@ -355,7 +355,7 @@ const MiniCalendar: React.FC<{
               onClick={() => onDateSelect(day)}
               className={`
                 relative w-8 h-8 text-xs rounded-lg transition-all duration-150 font-medium
-                ${!isCurrentMonth ? 'text-gray-300' : 'text-gray-700 hover:bg-gray-100'}
+                ${!isCurrentMonth ? 'theme-text-muted' : 'theme-text-primary hover:bg-[var(--bg-tertiary)]'}
                 ${isSelected ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30 hover:bg-cyan-700' : ''}
                 ${isToday && !isSelected ? 'bg-cyan-50 text-cyan-700 font-bold ring-1 ring-cyan-300' : ''}
               `}
@@ -416,7 +416,7 @@ const FilterDropdown: React.FC<{
         className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-sm font-medium ${
           hasActiveFilters
             ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
-            : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-gray-600 hover:border-[var(--border-color)]'
         }`}
       >
         <Filter size={14} />
@@ -432,9 +432,9 @@ const FilterDropdown: React.FC<{
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl border border-gray-200 shadow-xl z-50 p-4">
+          <div className="absolute right-0 top-full mt-2 w-64 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-xl z-50 p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold text-gray-800">Filtrer par statut</span>
+              <span className="text-sm font-bold theme-text-primary">Filtrer par statut</span>
               {hasActiveFilters && (
                 <button
                   type="button"
@@ -449,16 +449,16 @@ const FilterDropdown: React.FC<{
               {statusOptions.map(option => (
                 <label
                   key={option.value}
-                  className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-[var(--bg-input)] cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
                     checked={filters.status.includes(option.value)}
                     onChange={() => toggleStatus(option.value)}
-                    className="w-4 h-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+                    className="w-4 h-4 rounded border-[var(--border-color)] text-cyan-600 focus:ring-cyan-500"
                   />
                   <div className={`w-2.5 h-2.5 rounded-full ${option.dot}`} />
-                  <span className="text-sm text-gray-700 font-medium">{option.label}</span>
+                  <span className="text-sm theme-text-primary font-medium">{option.label}</span>
                 </label>
               ))}
             </div>
@@ -502,11 +502,11 @@ const MonthlyView: React.FC<{
   }, [appointments]);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <div className="theme-bg-secondary rounded-2xl border theme-border overflow-hidden shadow-sm">
       {/* Day Headers */}
-      <div className="grid grid-cols-7 border-b border-gray-100">
+      <div className="grid grid-cols-7 border-b border-[var(--border-color)]">
         {['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'].map(day => (
-          <div key={day} className="p-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50/80 border-r border-gray-100 last:border-r-0">
+          <div key={day} className="p-3 text-center text-xs font-bold theme-text-secondary uppercase tracking-wider bg-[var(--bg-input)] border-r border-[var(--border-color)] last:border-r-0">
             <span className="hidden sm:inline">{day}</span>
             <span className="sm:hidden">{day.slice(0, 3)}</span>
           </div>
@@ -525,14 +525,14 @@ const MonthlyView: React.FC<{
               key={index}
               onClick={() => onDateClick(day)}
               className={`
-                min-h-[110px] p-2 border-r border-b border-gray-50 last:border-r-0 cursor-pointer transition-all duration-150
-                ${!isCurrentMonth ? 'bg-gray-50/30' : 'bg-white hover:bg-cyan-50/30'}
+                min-h-[110px] p-2 border-r border-b border-[var(--border-color)]/50 last:border-r-0 cursor-pointer transition-all duration-150
+                ${!isCurrentMonth ? 'bg-[var(--bg-input)]/30' : 'bg-[var(--bg-secondary)] hover:bg-cyan-50/30'}
                 ${isToday ? 'bg-cyan-50/50' : ''}
               `}
             >
               <div className={`
                 w-7 h-7 flex items-center justify-center rounded-full mb-1.5 text-xs font-semibold transition-colors
-                ${isToday ? 'bg-cyan-600 text-white shadow-sm' : isCurrentMonth ? 'text-gray-700' : 'text-gray-300'}
+                ${isToday ? 'bg-cyan-600 text-white shadow-sm' : isCurrentMonth ? 'theme-text-primary' : 'theme-text-muted'}
               `}>
                 {format(day, 'd')}
               </div>
@@ -584,15 +584,15 @@ const DayView: React.FC<{
   }, [appointments, selectedDate]);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+    <div className="theme-bg-secondary rounded-2xl border theme-border overflow-hidden shadow-sm">
       {/* Day Header */}
-      <div className="bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 border-b border-gray-100 p-5">
+      <div className="bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 border-b border-[var(--border-color)] p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-gray-800 capitalize">
+            <h3 className="text-lg font-bold theme-text-primary capitalize">
               {format(selectedDate, 'EEEE d MMMM yyyy', { locale: fr })}
             </h3>
-            <p className="text-sm text-gray-500 mt-0.5 flex items-center gap-1.5">
+            <p className="text-sm theme-text-secondary mt-0.5 flex items-center gap-1.5">
               <Stethoscope size={14} />
               {dayAppointments.length} rendez-vous programmé{dayAppointments.length > 1 ? 's' : ''}
             </p>
@@ -618,10 +618,10 @@ const DayView: React.FC<{
           return (
             <div
               key={hour}
-              className="flex border-b border-gray-50 min-h-[80px] group/slot"
+              className="flex border-b border-[var(--border-color)]/50 min-h-[80px] group/slot"
             >
-              <div className="w-20 flex-shrink-0 p-3 text-right border-r border-gray-100 bg-gray-50/50">
-                <span className="text-xs font-semibold text-gray-400">
+              <div className="w-20 flex-shrink-0 p-3 text-right border-r border-[var(--border-color)] bg-[var(--bg-input)]/50">
+                <span className="text-xs font-semibold theme-text-muted">
                   {hour.toString().padStart(2, '0')}:00
                 </span>
               </div>
@@ -642,7 +642,7 @@ const DayView: React.FC<{
                       className={`bg-gradient-to-r ${status.gradient} text-white rounded-xl p-3.5 shadow-lg hover:shadow-xl transition-all cursor-pointer border-l-4 border-l-white/30 mb-2`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--bg-secondary)]/20 flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
                           <span className="text-sm font-bold">{getPatientInitials(appointment.patient_name)}</span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -666,7 +666,7 @@ const DayView: React.FC<{
 
                 {hourAppointments.length === 0 && (
                   <div className="h-full flex items-center justify-center opacity-0 group-hover/slot:opacity-100 transition-opacity duration-200">
-                    <div className="flex items-center gap-2 text-gray-400 text-xs font-medium bg-white/80 px-3 py-1.5 rounded-full border border-dashed border-gray-300">
+                    <div className="flex items-center gap-2 theme-text-muted text-xs font-medium bg-[var(--bg-secondary)]/80 px-3 py-1.5 rounded-full border border-dashed border-[var(--border-color)]">
                       <Plus size={12} />
                       <span>Ajouter</span>
                     </div>
@@ -705,7 +705,7 @@ const AppointmentCard: React.FC<{
       }}
     >
       <div className="flex items-start gap-1.5">
-        <div className="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center flex-shrink-0">
+        <div className="w-5 h-5 rounded-md bg-[var(--bg-secondary)]/20 flex items-center justify-center flex-shrink-0">
           <span className="text-[8px] font-bold">{getPatientInitials(appointment.patient_name)}</span>
         </div>
         <div className="min-w-0 flex-1">
@@ -932,18 +932,18 @@ const CalendarViewPage: React.FC = () => {
   // Loading
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-[#0f172a]">
+      <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
         <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
         <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-          <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30">
+          <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30">
             <div className="flex items-center justify-between">
               <div className="ml-12 lg:ml-0">
-                <h1 className="text-xl font-bold text-white">Calendrier</h1>
+                <h1 className="text-xl font-bold theme-text-primary">Calendrier</h1>
               </div>
               <UserMenu userName={userName} userInitials={userInitials} />
             </div>
           </header>
-          <main className="flex-1 p-4 lg:p-8 bg-[#f5f4f0]">
+          <main className="flex-1 p-4 lg:p-8 bg-[var(--bg-primary)]">
             <LoadingSkeleton.Calendar />
           </main>
         </div>
@@ -954,18 +954,18 @@ const CalendarViewPage: React.FC = () => {
   // Error
   if (error) {
     return (
-      <div className="flex min-h-screen bg-[#0f172a]">
+      <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
         <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
         <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-          <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30">
+          <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30">
             <div className="flex items-center justify-between">
               <div className="ml-12 lg:ml-0">
-                <h1 className="text-xl font-bold text-white">Calendrier</h1>
+                <h1 className="text-xl font-bold theme-text-primary">Calendrier</h1>
               </div>
               <UserMenu userName={userName} userInitials={userInitials} />
             </div>
           </header>
-          <main className="flex-1 p-4 lg:p-8 bg-[#f5f4f0]">
+          <main className="flex-1 p-4 lg:p-8 bg-[var(--bg-primary)]">
             <ErrorState message={error} onRetry={fetchAppointments} />
           </main>
         </div>
@@ -974,12 +974,12 @@ const CalendarViewPage: React.FC = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#0f172a]">
+    <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
       <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
 
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         {/* Header */}
-        <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
+        <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1 ml-12 lg:ml-0">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-2.5">
@@ -988,7 +988,7 @@ const CalendarViewPage: React.FC = () => {
                 </div>
                 Calendrier
               </h1>
-              <p className="text-gray-400 text-xs sm:text-sm mt-1 truncate capitalize">
+              <p className="theme-text-secondary text-xs sm:text-sm mt-1 truncate capitalize">
                 {viewMode === 'week' ? 'Vue hebdomadaire' : viewMode === 'day' ? 'Vue journalière' : 'Vue mensuelle'} · {getPeriodLabel()}
               </p>
             </div>
@@ -1001,7 +1001,7 @@ const CalendarViewPage: React.FC = () => {
 
         <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
 
-        <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto bg-[#f5f4f0]">
+        <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto bg-[var(--bg-primary)]">
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-5">
             {/* Sidebar */}
             <div className="lg:w-[260px] flex-shrink-0 space-y-3">
@@ -1071,11 +1071,11 @@ const CalendarViewPage: React.FC = () => {
             {/* Main Calendar */}
             <div className="flex-1 min-w-0">
               {/* Calendar Header */}
-              <div className="bg-white rounded-xl border border-gray-100 p-3 sm:p-4 mb-4 shadow-sm">
+              <div className="theme-bg-secondary rounded-xl border theme-border p-3 sm:p-4 mb-4 shadow-sm">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2 flex-wrap">
                     {/* View Toggle */}
-                    <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                    <div className="flex items-center bg-[var(--bg-tertiary)] rounded-lg p-0.5">
                       {[
                         { mode: 'day' as ViewMode, icon: List, label: 'Jour' },
                         { mode: 'week' as ViewMode, icon: LayoutGrid, label: 'Semaine' },
@@ -1087,8 +1087,8 @@ const CalendarViewPage: React.FC = () => {
                           onClick={() => setViewMode(mode)}
                           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all text-xs font-semibold ${
                             viewMode === mode
-                              ? 'bg-white text-gray-800 shadow-sm'
-                              : 'text-gray-500 hover:text-gray-700'
+                              ? 'bg-[var(--bg-secondary)] theme-text-primary shadow-sm'
+                              : 'theme-text-secondary hover:theme-text-primary'
                           }`}
                         >
                           <Icon size={14} />
@@ -1098,11 +1098,11 @@ const CalendarViewPage: React.FC = () => {
                     </div>
 
                     {/* Navigation */}
-                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                    <div className="flex items-center gap-1 bg-[var(--bg-tertiary)] rounded-lg p-0.5">
                       <button
                         type="button"
                         onClick={previousPeriod}
-                        className="p-1.5 hover:bg-white rounded-md transition-colors"
+                        className="p-1.5 hover:bg-[var(--bg-input)] rounded-md transition-colors"
                         aria-label="Période précédente"
                       >
                         <ChevronLeft size={16} className="text-gray-600" />
@@ -1110,14 +1110,14 @@ const CalendarViewPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={goToToday}
-                        className="px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-white rounded-md transition-colors"
+                        className="px-3 py-1.5 text-xs font-semibold theme-text-primary hover:bg-[var(--bg-input)] rounded-md transition-colors"
                       >
                         Aujourd'hui
                       </button>
                       <button
                         type="button"
                         onClick={nextPeriod}
-                        className="p-1.5 hover:bg-white rounded-md transition-colors"
+                        className="p-1.5 hover:bg-[var(--bg-input)] rounded-md transition-colors"
                         aria-label="Période suivante"
                       >
                         <ChevronRight size={16} className="text-gray-600" />
@@ -1131,7 +1131,7 @@ const CalendarViewPage: React.FC = () => {
                       type="button"
                       onClick={() => fetchAppointments(true)}
                       disabled={refreshing}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 rounded-lg transition-all text-xs font-semibold disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-2 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] text-gray-600 hover:theme-text-primary rounded-lg transition-all text-xs font-semibold disabled:opacity-50"
                     >
                       <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
                       <span className="hidden sm:inline">Actualiser</span>
@@ -1140,11 +1140,11 @@ const CalendarViewPage: React.FC = () => {
                 </div>
 
                 {/* Legend */}
-                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 flex-wrap">
+                <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--border-color)] flex-wrap">
                   {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                     <div key={key} className="flex items-center gap-1.5">
                       <div className={`w-2 h-2 rounded-full ${config.dot}`} />
-                      <span className="text-gray-500 text-[11px] font-medium">{config.label}</span>
+                      <span className="theme-text-secondary text-[11px] font-medium">{config.label}</span>
                     </div>
                   ))}
                 </div>
@@ -1167,13 +1167,13 @@ const CalendarViewPage: React.FC = () => {
                 />
               ) : (
                 /* Week View */
-                <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+                <div className="theme-bg-secondary rounded-2xl border theme-border overflow-hidden shadow-sm">
                   <div className="overflow-x-auto">
                     <div className="min-w-[800px]">
                       {/* Day Headers */}
-                      <div className="grid grid-cols-8 border-b border-gray-100">
-                        <div className="p-3 bg-gray-50/80 border-r border-gray-100 flex items-center justify-center">
-                          <Clock size={16} className="text-gray-400" />
+                      <div className="grid grid-cols-8 border-b border-[var(--border-color)]">
+                        <div className="p-3 bg-[var(--bg-input)] border-r border-[var(--border-color)] flex items-center justify-center">
+                          <Clock size={16} className="theme-text-muted" />
                         </div>
                         {weekDays.map((day, index) => {
                           const isToday = isSameDay(day.date, new Date());
@@ -1186,16 +1186,16 @@ const CalendarViewPage: React.FC = () => {
                                 setSelectedDay(day.date);
                                 setViewMode('day');
                               }}
-                              className={`p-3 text-center border-r border-gray-100 transition-all duration-150 ${
-                                isToday ? 'bg-cyan-50' : isSelected ? 'bg-gray-50' : 'bg-gray-50/50 hover:bg-gray-50'
+                              className={`p-3 text-center border-r border-[var(--border-color)] transition-all duration-150 ${
+                                isToday ? 'bg-cyan-50' : isSelected ? 'bg-gray-50' : 'bg-[var(--bg-input)]/50 hover:bg-[var(--bg-input)]'
                               }`}
                             >
-                              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{day.dayName}</div>
-                              <div className={`text-lg font-bold mt-0.5 ${isToday ? 'text-cyan-600' : 'text-gray-800'}`}>
+                              <div className="text-[10px] font-bold theme-text-muted uppercase tracking-wider">{day.dayName}</div>
+                              <div className={`text-lg font-bold mt-0.5 ${isToday ? 'text-cyan-600' : 'theme-text-primary'}`}>
                                 {format(day.date, 'dd')}
                               </div>
                               {day.appointments.length > 0 && (
-                                <div className={`text-[10px] font-bold mt-0.5 ${isToday ? 'text-cyan-500' : 'text-gray-400'}`}>
+                                <div className={`text-[10px] font-bold mt-0.5 ${isToday ? 'text-cyan-500' : 'theme-text-muted'}`}>
                                   {day.appointments.length} RDV
                                 </div>
                               )}
@@ -1209,9 +1209,9 @@ const CalendarViewPage: React.FC = () => {
                         <CurrentTimeIndicator startHour={8} />
 
                         {timeSlots.map((hour) => (
-                          <div key={hour} className="grid grid-cols-8 border-b border-gray-50">
-                            <div className="p-2 bg-gray-50/50 border-r border-gray-100 text-center sticky left-0">
-                              <span className="text-[11px] font-semibold text-gray-400">
+                          <div key={hour} className="grid grid-cols-8 border-b border-[var(--border-color)]/50">
+                            <div className="p-2 bg-[var(--bg-input)]/50 border-r border-[var(--border-color)] text-center sticky left-0">
+                              <span className="text-[11px] font-semibold theme-text-muted">
                                 {hour.toString().padStart(2, '0')}:00
                               </span>
                             </div>
@@ -1228,8 +1228,8 @@ const CalendarViewPage: React.FC = () => {
                               return (
                                 <div
                                   key={dayIndex}
-                                  className={`relative border-r border-gray-50 h-20 transition-colors group cursor-pointer ${
-                                    isToday ? 'bg-cyan-50/30' : isSelected ? 'bg-gray-50/50' : 'bg-white hover:bg-gray-50/50'
+                                  className={`relative border-r border-[var(--border-color)]/50 h-20 transition-colors group cursor-pointer ${
+                                    isToday ? 'bg-cyan-50/30' : isSelected ? 'bg-[var(--bg-input)]/50' : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-input)]/50'
                                   }`}
                                   onMouseEnter={() => setHoveredSlot({ day: dayIndex, hour })}
                                   onMouseLeave={() => setHoveredSlot(null)}

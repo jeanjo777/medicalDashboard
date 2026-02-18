@@ -29,14 +29,14 @@ const MedicalAIReports: React.FC<MedicalAIReportsProps> = ({
   onCopy,
 }) => {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm">
+    <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">Rapports IA</h2>
+        <h2 className="text-base font-semibold theme-text-primary">Rapports IA</h2>
         <button
           onClick={onCopy}
-          className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+          className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
         >
-          <Copy className="h-3.5 w-3.5 text-gray-500" />
+          <Copy className="h-3.5 w-3.5 theme-text-muted" />
         </button>
       </div>
 
@@ -60,7 +60,7 @@ const ReportCircle: React.FC<ReportCircleProps> = ({ icon, label, progress }) =>
   const offset = circumference - (progress / 100) * circumference;
 
   const renderIcon = () => {
-    const iconClass = "h-5 w-5 text-gray-700";
+    const iconClass = "h-5 w-5 theme-text-secondary";
     switch (icon) {
       case 'patients':
         return <Users className={iconClass} />;
@@ -83,7 +83,7 @@ const ReportCircle: React.FC<ReportCircleProps> = ({ icon, label, progress }) =>
             cy="50"
             r="45"
             fill="none"
-            stroke="#f0f0f0"
+            stroke="var(--border-color)"
             strokeWidth="3"
           />
           <circle
@@ -99,11 +99,11 @@ const ReportCircle: React.FC<ReportCircleProps> = ({ icon, label, progress }) =>
             className="transition-all duration-500"
           />
         </svg>
-        <div className="relative z-10 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-white shadow-sm group-hover:shadow-md transition-shadow">
+        <div className="relative z-10 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl bg-[var(--bg-secondary)] shadow-sm group-hover:shadow-md transition-shadow">
           {renderIcon()}
         </div>
       </div>
-      <div className="text-[10px] sm:text-xs font-medium text-gray-700">{label}</div>
+      <div className="text-[10px] sm:text-xs font-medium theme-text-secondary">{label}</div>
       <div className="text-[10px] text-emerald-600 font-semibold">{progress}%</div>
     </div>
   );
