@@ -506,8 +506,6 @@ html.light .text-teal-400 { color: #14b8a6 !important; }
 html.light .text-rose-400 { color: #f43f5e !important; }
 
 /* Keep white text on colored/gradient backgrounds */
-html.light [class*="from-blue-"][class*="to-indigo-"] { color: #ffffff !important; }
-html.light [class*="from-blue-"][class*="to-indigo-"] * { color: #ffffff !important; }
 html.light [class*="from-cyan-"] .text-white,
 html.light [class*="from-amber-"] .text-white,
 html.light [class*="from-violet-"] .text-white,
