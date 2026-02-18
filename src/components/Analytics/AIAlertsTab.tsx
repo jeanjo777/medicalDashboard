@@ -565,26 +565,26 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
       </div>
 
       {/* Footer avec infos IA */}
-      <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white">
         <div className="flex items-center gap-3 mb-4">
           <Sparkles size={20} className="text-yellow-400" />
           <h3 className="font-semibold">Système d'Alertes IA</h3>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Modèle</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Modèle</p>
             <p className="text-sm font-medium">Détection anomalies</p>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Précision</p>
-            <p className="text-sm font-medium text-emerald-400">94.2%</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Précision</p>
+            <p className="text-sm font-medium text-emerald-300">94.2%</p>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Sources analysées</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Sources analysées</p>
             <p className="text-sm font-medium">12 flux</p>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Actualisation</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Actualisation</p>
             <p className="text-sm font-medium">Temps réel</p>
           </div>
         </div>

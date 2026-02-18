@@ -420,29 +420,29 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
       </div>
 
       {/* Model Performance Card */}
-      <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl p-6 text-white">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold flex items-center gap-2">
             <Sparkles size={18} className="text-yellow-400" />
             Performance du Modèle IA
           </h3>
-          <span className="text-xs text-gray-400">Métriques temps réel</span>
+          <span className="text-xs text-indigo-200">Métriques temps réel</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Type</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Type</p>
             <p className="text-sm font-medium">Ensemble ML</p>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Algorithmes</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Algorithmes</p>
             <p className="text-sm font-medium">ARIMA + RF</p>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Accuracy</p>
-            <p className="text-sm font-medium text-emerald-400">{(model.accuracy * 100).toFixed(0)}%</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Accuracy</p>
+            <p className="text-sm font-medium text-emerald-300">{(model.accuracy * 100).toFixed(0)}%</p>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-            <p className="text-xs text-gray-400 mb-1">Horizon</p>
+          <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
+            <p className="text-xs text-indigo-200 mb-1">Horizon</p>
             <p className="text-sm font-medium">{futurePredictions.length} mois</p>
           </div>
         </div>
