@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Calendar, TrendingUp, TrendingDown, Minus, ArrowRight, Sparkles, Target, CheckCircle, AlertTriangle, Lightbulb, Loader, AlertCircle, RefreshCw } from 'lucide-react';
 import ExportButton from '../Common/ExportButton';
-import { demoComparative } from '../../data/demoData';
+import { demoComparative, demoComparativeByType } from '../../data/demoData';
 import { useComparative } from '../../hooks/useAnalyticsData';
 
 interface ComparativeTabProps {
@@ -16,17 +16,17 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
   const { data: apiData, isLoading, isError, refetch } = useComparative(comparisonType);
 
   const compareData = useMemo(() => {
-    if (isDemoMode) return demoComparative;
-    return apiData || demoComparative;
-  }, [isDemoMode, apiData]);
+    if (isDemoMode) return demoComparativeByType[comparisonType] || demoComparative;
+    return apiData || demoComparativeByType[comparisonType] || demoComparative;
+  }, [isDemoMode, apiData, comparisonType]);
 
   if (!isDemoMode && isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <Loader className="animate-spin text-blue-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-600">Chargement de l'analyse comparative...</p>
-          <p className="text-xs text-gray-500 mt-2">Comparaison des périodes en cours</p>
+          <p className="theme-text-secondary">Chargement de l'analyse comparative...</p>
+          <p className="text-xs theme-text-muted mt-2">Comparaison des périodes en cours</p>
         </div>
       </div>
     );
@@ -37,8 +37,8 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <AlertCircle className="text-red-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-800 font-medium mb-2">Erreur lors du chargement des données comparatives</p>
-          <p className="text-gray-500 text-sm mb-4">Vérifiez votre connexion et réessayez</p>
+          <p className="theme-text-primary font-medium mb-2">Erreur lors du chargement des données comparatives</p>
+          <p className="theme-text-muted text-sm mb-4">Vérifiez votre connexion et réessayez</p>
           <button type="button" onClick={() => refetch()} className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto">
             <RefreshCw size={16} /> Réessayer
           </button>
@@ -49,14 +49,10 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
 
   const { periods, kpiComparison, timeSeriesComparison, departmentComparison, insights } = compareData;
 
-  // Compute period labels based on selector
+  // Period labels come directly from data now
   const periodLabel = useMemo(() => {
-    switch (comparisonType) {
-      case 'month': return { current: periods.current, previous: periods.previous };
-      case 'quarter': return { current: 'T1 2026', previous: 'T4 2025' };
-      case 'year': return { current: '2026', previous: '2025' };
-    }
-  }, [comparisonType, periods]);
+    return { current: periods.current, previous: periods.previous };
+  }, [periods]);
 
   // Compute summary stats from timeSeriesComparison instead of hardcoded values
   const summaryStats = useMemo(() => {
@@ -95,13 +91,13 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
   const getTrendIcon = (trend: string) => {
     if (trend === 'up') return <TrendingUp size={18} className="text-emerald-500" />;
     if (trend === 'down') return <TrendingDown size={18} className="text-red-500" />;
-    return <Minus size={18} className="text-gray-400" />;
+    return <Minus size={18} className="theme-text-muted" />;
   };
 
   const getTrendColor = (change: number) => {
     if (change > 0) return 'text-emerald-600';
     if (change < 0) return 'text-red-600';
-    return 'text-gray-500';
+    return 'theme-text-muted';
   };
 
   const getTrendBg = (change: number) => {
@@ -115,20 +111,20 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Analyse Comparative</h2>
-          <p className="text-gray-500 text-sm mt-1">{periodLabel.current} vs {periodLabel.previous}</p>
+          <h2 className="text-xl font-bold theme-text-primary">Analyse Comparative</h2>
+          <p className="theme-text-muted text-sm mt-1">{periodLabel.current} vs {periodLabel.previous}</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex bg-gray-100 rounded-xl p-1">
+          <div className="flex bg-[var(--bg-tertiary)] rounded-xl p-1">
             {(['month', 'quarter', 'year'] as const).map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setComparisonType(type)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                   comparisonType === type
-                    ? 'bg-white text-gray-800 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-[var(--bg-secondary)] theme-text-primary shadow-sm'
+                    : 'theme-text-muted hover:theme-text-secondary'
                 }`}
               >
                 {type === 'month' ? 'Mois' : type === 'quarter' ? 'Trimestre' : 'Année'}
@@ -147,27 +143,27 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpiComparison.map((kpi, index) => (
-          <div key={index} className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all">
+          <div key={index} className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] p-5 shadow-sm hover:shadow-md transition-all">
             <div className="flex items-start justify-between mb-3">
-              <p className="text-gray-500 text-sm font-medium">{kpi.metric}</p>
+              <p className="theme-text-muted text-sm font-medium">{kpi.metric}</p>
               {getTrendIcon(kpi.trend)}
             </div>
-            <p className="text-2xl font-bold text-gray-800 mb-1">{kpi.current}{kpi.unit}</p>
+            <p className="text-2xl font-bold theme-text-primary mb-1">{kpi.current}{kpi.unit}</p>
             <div className="flex items-center gap-2">
               <span className={`text-sm font-semibold px-2 py-0.5 rounded-full ${getTrendBg(kpi.change)} ${getTrendColor(kpi.change)}`}>
                 {kpi.change > 0 ? '+' : ''}{kpi.change}%
               </span>
-              <span className="text-xs text-gray-400">vs {kpi.previous}{kpi.unit}</span>
+              <span className="text-xs theme-text-muted">vs {kpi.previous}{kpi.unit}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Evolution Chart */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Évolution Comparative</h3>
-          <p className="text-sm text-gray-500">Comparaison période actuelle vs période précédente</p>
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <h3 className="text-lg font-semibold theme-text-primary mb-1">Évolution Comparative</h3>
+          <p className="text-sm theme-text-muted">Comparaison période actuelle vs période précédente</p>
         </div>
 
         <div className="p-5">
@@ -179,15 +175,16 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-              <XAxis dataKey="month" stroke="#6b7280" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+              <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
+              <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '12px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                  color: 'var(--text-primary)'
                 }}
               />
               <Legend />
@@ -221,7 +218,7 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
             </AreaChart>
           </ResponsiveContainer>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-[var(--border-color)]">
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
               <p className="text-xs text-emerald-600 font-medium mb-1">Croissance moyenne</p>
               <p className="text-2xl font-bold text-emerald-700">{summaryStats.avgGrowth > 0 ? '+' : ''}{summaryStats.avgGrowth.toFixed(1)}%</p>
@@ -242,24 +239,25 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
       </div>
 
       {/* Department Comparison */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Comparaison par Département</h3>
-          <p className="text-sm text-gray-500">Évolution du nombre de patients par service</p>
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <h3 className="text-lg font-semibold theme-text-primary mb-1">Comparaison par Département</h3>
+          <p className="text-sm theme-text-muted">Évolution du nombre de patients par service</p>
         </div>
 
         <div className="p-5">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={departmentComparison} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={true} vertical={false} />
-              <XAxis type="number" stroke="#6b7280" tick={{ fontSize: 12 }} />
-              <YAxis type="category" dataKey="department" width={130} stroke="#6b7280" tick={{ fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" horizontal={true} vertical={false} />
+              <XAxis type="number" stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
+              <YAxis type="category" dataKey="department" width={130} stroke="var(--text-muted)" tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '12px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                  color: 'var(--text-primary)'
                 }}
               />
               <Legend />
@@ -270,9 +268,9 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
 
           <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {departmentComparison.map((dept, index) => (
-              <div key={index} className="p-3 bg-gray-50 rounded-xl text-center hover:bg-gray-100 transition-colors">
-                <p className="text-xs text-gray-500 mb-1 truncate" title={dept.department}>{dept.department}</p>
-                <p className="text-lg font-bold text-gray-800">{dept.current}</p>
+              <div key={index} className="p-3 bg-[var(--bg-primary)] rounded-xl text-center hover:bg-[var(--bg-tertiary)] transition-colors">
+                <p className="text-xs theme-text-muted mb-1 truncate" title={dept.department}>{dept.department}</p>
+                <p className="text-lg font-bold theme-text-primary">{dept.current}</p>
                 <p className={`text-xs font-medium ${getTrendColor(dept.diff)}`}>
                   {dept.diff > 0 ? '+' : ''}{dept.diff}
                 </p>

@@ -1227,34 +1227,100 @@ export const demoSegmentation = {
 };
 
 // Données comparatives pour ComparativeTab
-export const demoComparative = {
-  periods: { current: 'Novembre 2025', previous: 'Octobre 2025' },
-  kpiComparison: [
-    { metric: 'Croissance Patients', current: 1247, previous: 1158, change: 7.7, unit: '', trend: 'up' as const },
-    { metric: 'Temps Consultation', current: 22, previous: 24, change: -8.3, unit: 'min', trend: 'down' as const },
-    { metric: 'Satisfaction', current: 4.7, previous: 4.6, change: 2.2, unit: '/5', trend: 'up' as const },
-    { metric: 'RDV Honorés', current: 87, previous: 82, change: 6.1, unit: '%', trend: 'up' as const }
-  ],
-  timeSeriesComparison: [
-    { month: 'Sem 1', current: 125, previous: 118, target: 130 },
-    { month: 'Sem 2', current: 142, previous: 128, target: 130 },
-    { month: 'Sem 3', current: 138, previous: 135, target: 130 },
-    { month: 'Sem 4', current: 156, previous: 142, target: 130 }
-  ],
-  departmentComparison: [
-    { department: 'Médecine Générale', current: 485, previous: 452, diff: 33 },
-    { department: 'Cardiologie', current: 312, previous: 278, diff: 34 },
-    { department: 'Pneumologie', current: 198, previous: 210, diff: -12 },
-    { department: 'Endocrinologie', current: 156, previous: 132, diff: 24 },
-    { department: 'Neurologie', current: 134, previous: 126, diff: 8 },
-    { department: 'Rhumatologie', current: 112, previous: 108, diff: 4 }
-  ],
-  insights: {
-    positive: ['Croissance de 7.7% du nombre de patients', 'Amélioration de la satisfaction de 0.1 point', 'Cardiologie: +12.2% de consultations'],
-    stable: ['Temps moyen de consultation maintenu sous 25min', 'Taux de récupération stable à 85%'],
-    attention: ['Pneumologie: baisse de 5.7% à surveiller', 'Pic d\'activité prévu en décembre']
+export const demoComparativeByType: Record<string, {
+  periods: { current: string; previous: string };
+  kpiComparison: { metric: string; current: number; previous: number; change: number; unit: string; trend: 'up' | 'down' | 'stable' }[];
+  timeSeriesComparison: { month: string; current: number; previous: number; target: number }[];
+  departmentComparison: { department: string; current: number; previous: number; diff: number }[];
+  insights: { positive: string[]; stable: string[]; attention: string[] };
+}> = {
+  month: {
+    periods: { current: 'Novembre 2025', previous: 'Octobre 2025' },
+    kpiComparison: [
+      { metric: 'Croissance Patients', current: 1247, previous: 1158, change: 7.7, unit: '', trend: 'up' as const },
+      { metric: 'Temps Consultation', current: 22, previous: 24, change: -8.3, unit: 'min', trend: 'down' as const },
+      { metric: 'Satisfaction', current: 4.7, previous: 4.6, change: 2.2, unit: '/5', trend: 'up' as const },
+      { metric: 'RDV Honorés', current: 87, previous: 82, change: 6.1, unit: '%', trend: 'up' as const }
+    ],
+    timeSeriesComparison: [
+      { month: 'Sem 1', current: 125, previous: 118, target: 130 },
+      { month: 'Sem 2', current: 142, previous: 128, target: 130 },
+      { month: 'Sem 3', current: 138, previous: 135, target: 130 },
+      { month: 'Sem 4', current: 156, previous: 142, target: 130 }
+    ],
+    departmentComparison: [
+      { department: 'Médecine Générale', current: 485, previous: 452, diff: 33 },
+      { department: 'Cardiologie', current: 312, previous: 278, diff: 34 },
+      { department: 'Pneumologie', current: 198, previous: 210, diff: -12 },
+      { department: 'Endocrinologie', current: 156, previous: 132, diff: 24 },
+      { department: 'Neurologie', current: 134, previous: 126, diff: 8 },
+      { department: 'Rhumatologie', current: 112, previous: 108, diff: 4 }
+    ],
+    insights: {
+      positive: ['Croissance de 7.7% du nombre de patients', 'Amélioration de la satisfaction de 0.1 point', 'Cardiologie: +12.2% de consultations'],
+      stable: ['Temps moyen de consultation maintenu sous 25min', 'Taux de récupération stable à 85%'],
+      attention: ['Pneumologie: baisse de 5.7% à surveiller', 'Pic d\'activité prévu en décembre']
+    }
+  },
+  quarter: {
+    periods: { current: 'T4 2025', previous: 'T3 2025' },
+    kpiComparison: [
+      { metric: 'Croissance Patients', current: 3680, previous: 3412, change: 7.9, unit: '', trend: 'up' as const },
+      { metric: 'Temps Consultation', current: 21, previous: 23, change: -8.7, unit: 'min', trend: 'down' as const },
+      { metric: 'Satisfaction', current: 4.7, previous: 4.5, change: 4.4, unit: '/5', trend: 'up' as const },
+      { metric: 'RDV Honorés', current: 89, previous: 84, change: 6.0, unit: '%', trend: 'up' as const }
+    ],
+    timeSeriesComparison: [
+      { month: 'Mois 1', current: 1158, previous: 1095, target: 1150 },
+      { month: 'Mois 2', current: 1275, previous: 1142, target: 1150 },
+      { month: 'Mois 3', current: 1247, previous: 1175, target: 1150 }
+    ],
+    departmentComparison: [
+      { department: 'Médecine Générale', current: 1420, previous: 1310, diff: 110 },
+      { department: 'Cardiologie', current: 895, previous: 812, diff: 83 },
+      { department: 'Pneumologie', current: 578, previous: 615, diff: -37 },
+      { department: 'Endocrinologie', current: 442, previous: 395, diff: 47 },
+      { department: 'Neurologie', current: 398, previous: 372, diff: 26 },
+      { department: 'Rhumatologie', current: 327, previous: 308, diff: 19 }
+    ],
+    insights: {
+      positive: ['Croissance trimestrielle de 7.9%', 'Satisfaction en hausse constante sur 3 mois', 'Cardiologie: +10.2% sur le trimestre'],
+      stable: ['Temps de consultation en amélioration continue', 'Objectifs atteints 2 mois sur 3'],
+      attention: ['Pneumologie: tendance baissière persistante (-6%)', 'Charge de travail élevée en fin de trimestre']
+    }
+  },
+  year: {
+    periods: { current: '2025', previous: '2024' },
+    kpiComparison: [
+      { metric: 'Croissance Patients', current: 14250, previous: 12680, change: 12.4, unit: '', trend: 'up' as const },
+      { metric: 'Temps Consultation', current: 21, previous: 25, change: -16.0, unit: 'min', trend: 'down' as const },
+      { metric: 'Satisfaction', current: 4.7, previous: 4.4, change: 6.8, unit: '/5', trend: 'up' as const },
+      { metric: 'RDV Honorés', current: 89, previous: 80, change: 11.3, unit: '%', trend: 'up' as const }
+    ],
+    timeSeriesComparison: [
+      { month: 'T1', current: 3250, previous: 2980, target: 3100 },
+      { month: 'T2', current: 3520, previous: 3150, target: 3200 },
+      { month: 'T3', current: 3800, previous: 3340, target: 3400 },
+      { month: 'T4', current: 3680, previous: 3210, target: 3500 }
+    ],
+    departmentComparison: [
+      { department: 'Médecine Générale', current: 5520, previous: 4890, diff: 630 },
+      { department: 'Cardiologie', current: 3480, previous: 3050, diff: 430 },
+      { department: 'Pneumologie', current: 2210, previous: 2340, diff: -130 },
+      { department: 'Endocrinologie', current: 1720, previous: 1480, diff: 240 },
+      { department: 'Neurologie', current: 1540, previous: 1380, diff: 160 },
+      { department: 'Rhumatologie', current: 1280, previous: 1140, diff: 140 }
+    ],
+    insights: {
+      positive: ['Croissance annuelle de 12.4%', 'Satisfaction patient en hausse de 0.3 points', 'Temps de consultation réduit de 4 minutes en moyenne'],
+      stable: ['Objectifs annuels dépassés pour 4 départements sur 6', 'Taux de RDV honorés au plus haut historique'],
+      attention: ['Pneumologie: seul département en recul (-5.6%)', 'Besoin de recrutement estimé pour 2026']
+    }
   }
 };
+
+// Backward-compatible default export
+export const demoComparative = demoComparativeByType.month;
 
 // Données pour les rapports (ReportsTab)
 export const demoReports = {
