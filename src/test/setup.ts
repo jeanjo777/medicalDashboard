@@ -1,0 +1,70 @@
+/**
+ * Test Setup Configuration
+ *
+ * This file runs before all tests and sets up the testing environment.
+ */
+
+import '@testing-library/jest-dom';
+import { afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  localStorage.clear();
+  sessionStorage.clear();
+});
+
+// Mock window.matchMedia
+beforeAll(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
+
+  // Mock ResizeObserver
+  global.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
+
+  // Mock IntersectionObserver
+  global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
+
+  // Mock scrollTo
+  window.scrollTo = vi.fn();
+
+  // Mock fetch
+  global.fetch = vi.fn();
+});
+
+afterAll(() => {
+  vi.restoreAllMocks();
+});
+
+// Suppress console errors during tests (optional)
+// const originalError = console.error;
+// beforeAll(() => {
+//   console.error = (...args: any[]) => {
+//     if (args[0]?.includes?.('Warning:')) return;
+//     originalError.call(console, ...args);
+//   };
+// });
+// afterAll(() => {
+//   console.error = originalError;
+// });
