@@ -203,13 +203,58 @@ const PatientsViewPageEnhanced: React.FC = () => {
     URL.revokeObjectURL(url);
   }, [patients, isDemoMode]);
 
-  // Données à afficher (démo ou réelles)
-  const displayedPatients = isDemoMode ? demoPatients : patients;
-  const displayedTotal = isDemoMode ? demoPatients.length : total;
+  // Filtrage côté client pour le mode démo
+  const filteredDemoPatients = useMemo(() => {
+    if (!isDemoMode) return [];
+    let data = [...demoPatients];
+
+    // Recherche textuelle
+    if (filters.query && filters.query.trim()) {
+      const q = filters.query.toLowerCase();
+      data = data.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        (p.phone && p.phone.toLowerCase().includes(q)) ||
+        (p.primary_pathology && p.primary_pathology.toLowerCase().includes(q))
+      );
+    }
+
+    // Filtre par statut
+    if (filters.status && filters.status !== 'all') {
+      data = data.filter(p => p.status === filters.status);
+    }
+
+    // Filtre par date de début
+    if (filters.dateFrom) {
+      data = data.filter(p => p.created_at >= filters.dateFrom!);
+    }
+
+    // Filtre par date de fin
+    if (filters.dateTo) {
+      data = data.filter(p => p.created_at.slice(0, 10) <= filters.dateTo!);
+    }
+
+    // Tri
+    if (filters.sortBy) {
+      data.sort((a, b) => {
+        const key = filters.sortBy as keyof Patient;
+        const valA = String(a[key] ?? '');
+        const valB = String(b[key] ?? '');
+        const cmp = valA.localeCompare(valB);
+        return filters.sortOrder === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    return data;
+  }, [isDemoMode, filters]);
+
+  // Données à afficher (démo filtrées ou réelles)
+  const displayedPatients = isDemoMode ? filteredDemoPatients : patients;
+  const displayedTotal = isDemoMode ? filteredDemoPatients.length : total;
 
   // Calcul des statistiques
   const stats = useMemo(() => {
-    const data = isDemoMode ? demoPatients : patients;
+    const data = isDemoMode ? filteredDemoPatients : patients;
     const activeCount = data.filter(p => p.status === 'active').length;
     const inTreatmentCount = data.filter(p => p.status === 'in-treatment' || p.status === 'in_treatment').length;
     const recoveredCount = data.filter(p => p.status === 'recovered').length;
