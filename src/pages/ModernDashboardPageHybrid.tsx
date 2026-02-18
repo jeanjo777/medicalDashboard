@@ -99,7 +99,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   </ErrorBoundary>
 
                   <ErrorBoundary>
-                    <MedicalUpgradeCard onUpgrade={() => navigate('/analytics-advanced')} />
+                    <MedicalUpgradeCard onUpgrade={() => navigate('/ai-assistant')} />
                   </ErrorBoundary>
 
                   <ErrorBoundary>
