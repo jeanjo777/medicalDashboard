@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { Calendar, TrendingUp, TrendingDown, Minus, ArrowRight, Sparkles, Target, CheckCircle, AlertTriangle, Lightbulb, Loader, AlertCircle, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Sparkles, Target, CheckCircle, AlertTriangle } from 'lucide-react';
 import ExportButton from '../Common/ExportButton';
 import { demoComparative, demoComparativeByType } from '../../data/demoData';
 import { useComparative } from '../../hooks/useAnalyticsData';
@@ -13,39 +13,12 @@ interface ComparativeTabProps {
 
 const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = false }) => {
   const [comparisonType, setComparisonType] = useState<'month' | 'quarter' | 'year'>('month');
-  const { data: apiData, isLoading, isError, refetch } = useComparative(comparisonType);
+  const { data: apiData } = useComparative(comparisonType);
 
   const compareData = useMemo(() => {
     if (isDemoMode) return demoComparativeByType[comparisonType] || demoComparative;
     return apiData || demoComparativeByType[comparisonType] || demoComparative;
   }, [isDemoMode, apiData, comparisonType]);
-
-  if (!isDemoMode && isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <Loader className="animate-spin text-blue-500 mx-auto mb-4" size={48} />
-          <p className="theme-text-secondary">Chargement de l'analyse comparative...</p>
-          <p className="text-xs theme-text-muted mt-2">Comparaison des périodes en cours</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isDemoMode && isError && !apiData) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <AlertCircle className="text-red-500 mx-auto mb-4" size={48} />
-          <p className="theme-text-primary font-medium mb-2">Erreur lors du chargement des données comparatives</p>
-          <p className="theme-text-muted text-sm mb-4">Vérifiez votre connexion et réessayez</p>
-          <button type="button" onClick={() => refetch()} className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto">
-            <RefreshCw size={16} /> Réessayer
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const { periods, kpiComparison, timeSeriesComparison, departmentComparison, insights } = compareData;
 
