@@ -21,6 +21,9 @@ import UpcomingAppointments from '../components/ModernDashboard/UpcomingAppointm
 import PatientAlertsWidget from '../components/ModernDashboard/PatientAlertsWidget';
 import KPIPerformanceWidget from '../components/ModernDashboard/KPIPerformanceWidget';
 import WeeklyOverviewWidget from '../components/ModernDashboard/WeeklyOverviewWidget';
+import TodayPatientsWidget from '../components/ModernDashboard/TodayPatientsWidget';
+import QuickActionsWidget from '../components/ModernDashboard/QuickActionsWidget';
+import NotificationsWidget from '../components/ModernDashboard/NotificationsWidget';
 import UserMenu from '../components/Common/UserMenu';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
@@ -95,6 +98,14 @@ const ModernDashboardPageHybrid: React.FC = () => {
 
                   <ErrorBoundary>
                     <MedicalUpgradeCard />
+                  </ErrorBoundary>
+
+                  <ErrorBoundary>
+                    <TodayPatientsWidget />
+                  </ErrorBoundary>
+
+                  <ErrorBoundary>
+                    <QuickActionsWidget />
                   </ErrorBoundary>
                 </div>
 
@@ -178,6 +189,11 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   {/* Weekly Overview */}
                   <ErrorBoundary>
                     <WeeklyOverviewWidget />
+                  </ErrorBoundary>
+
+                  {/* Notifications */}
+                  <ErrorBoundary>
+                    <NotificationsWidget />
                   </ErrorBoundary>
                 </div>
               </div>
