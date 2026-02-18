@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { useTheme } from '../contexts/ThemeContext';
 import {
@@ -13,7 +13,16 @@ import {
   Check,
   Moon,
   Sun,
-  Monitor
+  Monitor,
+  Download,
+  Trash2,
+  AlertTriangle,
+  X,
+  Eye,
+  EyeOff,
+  LogOut,
+  Smartphone,
+  Laptop
 } from 'lucide-react';
 
 type ThemeMode = 'light' | 'dark' | 'system';
@@ -25,6 +34,92 @@ interface SettingSection {
   icon: React.ReactNode;
 }
 
+// Toast notification component
+const Toast: React.FC<{ message: string; type: 'success' | 'error' | 'info'; onClose: () => void }> = ({ message, type, onClose }) => {
+  const bgColor = type === 'success' ? 'bg-emerald-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+  return (
+    <div className={`fixed top-4 right-4 z-50 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 animate-slide-in-right`}>
+      {type === 'success' && <Check size={18} />}
+      {type === 'error' && <AlertTriangle size={18} />}
+      <span className="font-medium">{message}</span>
+      <button type="button" onClick={onClose} className="ml-2 hover:opacity-70" aria-label="Fermer la notification">
+        <X size={16} />
+      </button>
+    </div>
+  );
+};
+
+// Confirmation modal
+const ConfirmModal: React.FC<{
+  title: string;
+  message: string;
+  confirmLabel: string;
+  confirmColor?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}> = ({ title, message, confirmLabel, confirmColor = 'bg-red-500 hover:bg-red-600', onConfirm, onCancel }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="theme-bg-secondary rounded-xl border theme-border p-6 max-w-md w-full mx-4 shadow-2xl">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-red-500/20 rounded-lg">
+          <AlertTriangle size={24} className="text-red-400" />
+        </div>
+        <h3 className="text-lg font-bold theme-text-primary">{title}</h3>
+      </div>
+      <p className="theme-text-secondary mb-6">{message}</p>
+      <div className="flex gap-3 justify-end">
+        <button type="button" onClick={onCancel} className="px-4 py-2 rounded-lg theme-bg-tertiary theme-text-primary hover:opacity-80 transition-colors">
+          Annuler
+        </button>
+        <button type="button" onClick={onConfirm} className={`px-4 py-2 rounded-lg text-white transition-colors ${confirmColor}`}>
+          {confirmLabel}
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Password change modal
+const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ onClose, onSave }) => {
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="theme-bg-secondary rounded-xl border theme-border p-6 max-w-md w-full mx-4 shadow-2xl">
+        <h3 className="text-lg font-bold theme-text-primary mb-4">Modifier le mot de passe</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm theme-text-secondary mb-2">Mot de passe actuel</label>
+            <div className="relative">
+              <input type={showCurrent ? 'text' : 'password'} placeholder="Entrez votre mot de passe actuel" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none pr-10" />
+              <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted">
+                {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm theme-text-secondary mb-2">Nouveau mot de passe</label>
+            <div className="relative">
+              <input type={showNew ? 'text' : 'password'} placeholder="Entrez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none pr-10" />
+              <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted">
+                {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm theme-text-secondary mb-2">Confirmer le mot de passe</label>
+            <input type="password" placeholder="Confirmez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none" />
+          </div>
+        </div>
+        <div className="flex gap-3 justify-end mt-6">
+          <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg theme-bg-tertiary theme-text-primary hover:opacity-80">Annuler</button>
+          <button type="button" onClick={onSave} className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SettingsPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('profile');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -33,20 +128,37 @@ const SettingsPage: React.FC = () => {
   });
 
   // Theme from context
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   // Settings state
-  const [language, setLanguage] = useState<Language>('fr');
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    sms: false,
-    appointments: true,
-    updates: false
+  const [language, setLanguage] = useState<Language>(() => {
+    return (localStorage.getItem('app-language') as Language) || 'fr';
+  });
+  const [notifications, setNotifications] = useState(() => {
+    const saved = localStorage.getItem('app-notifications');
+    return saved ? JSON.parse(saved) : {
+      email: true,
+      push: true,
+      sms: false,
+      appointments: true,
+      updates: false
+    };
   });
   const [saved, setSaved] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showClearCacheConfirm, setShowClearCacheConfirm] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(() => {
+    return localStorage.getItem('2fa-enabled') === 'true';
+  });
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   const settingSections: SettingSection[] = [
     { id: 'profile', label: 'Profil', icon: <User size={20} /> },
@@ -61,7 +173,65 @@ const SettingsPage: React.FC = () => {
     localStorage.setItem('app-language', language);
     localStorage.setItem('app-notifications', JSON.stringify(notifications));
     setSaved(true);
+    showToast('Paramètres enregistrés avec succès');
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleThemeChange = (newTheme: ThemeMode) => {
+    setTheme(newTheme);
+    const labels: Record<ThemeMode, string> = { light: 'Thème clair activé', dark: 'Thème sombre activé', system: 'Thème système activé' };
+    showToast(labels[newTheme], 'info');
+  };
+
+  const handleLanguageChange = (newLang: Language) => {
+    setLanguage(newLang);
+    localStorage.setItem('app-language', newLang);
+    showToast(newLang === 'fr' ? 'Langue changée en Français' : 'Language changed to English', 'info');
+  };
+
+  const handlePasswordChange = () => {
+    setShowPasswordModal(false);
+    showToast('Mot de passe modifié avec succès');
+  };
+
+  const handleToggle2FA = () => {
+    const newValue = !twoFactorEnabled;
+    setTwoFactorEnabled(newValue);
+    localStorage.setItem('2fa-enabled', String(newValue));
+    showToast(newValue ? 'Authentification à deux facteurs activée' : 'Authentification à deux facteurs désactivée');
+  };
+
+  const handleExportData = () => {
+    const exportData = {
+      user,
+      settings: { language, notifications, theme },
+      exportedAt: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `medical-ai-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Données exportées avec succès');
+  };
+
+  const handleClearCache = () => {
+    const keysToKeep = ['user', 'theme', 'app-language', '2fa-enabled'];
+    const allKeys = Object.keys(localStorage);
+    allKeys.forEach(key => {
+      if (!keysToKeep.includes(key)) {
+        localStorage.removeItem(key);
+      }
+    });
+    setShowClearCacheConfirm(false);
+    showToast('Cache vidé avec succès');
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteConfirm(false);
+    showToast('Demande de suppression envoyée. Vous serez contacté par email.', 'info');
   };
 
   const renderContent = () => {
@@ -70,45 +240,45 @@ const SettingsPage: React.FC = () => {
         return (
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Informations personnelles</h3>
+              <h3 className="text-lg font-semibold theme-text-primary mb-4">Informations personnelles</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Prénom</label>
+                  <label className="block text-sm theme-text-secondary mb-2">Prénom</label>
                   <input
                     type="text"
                     defaultValue={user?.prenom || 'John'}
-                    className="w-full px-4 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Nom</label>
+                  <label className="block text-sm theme-text-secondary mb-2">Nom</label>
                   <input
                     type="text"
                     defaultValue={user?.nom || 'Doe'}
-                    className="w-full px-4 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Email</label>
+                  <label className="block text-sm theme-text-secondary mb-2">Email</label>
                   <input
                     type="email"
                     defaultValue={user?.email || 'contact@medicare.com'}
-                    className="w-full px-4 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">Téléphone</label>
+                  <label className="block text-sm theme-text-secondary mb-2">Téléphone</label>
                   <input
                     type="tel"
                     defaultValue="+33 6 12 34 56 78"
-                    className="w-full px-4 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Spécialité</h3>
-              <select className="w-full px-4 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:border-blue-500 focus:outline-none">
+              <h3 className="text-lg font-semibold theme-text-primary mb-4">Spécialité</h3>
+              <select className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-blue-500 focus:outline-none transition-colors">
                 <option>Médecine générale</option>
                 <option>Cardiologie</option>
                 <option>Neurologie</option>
@@ -122,7 +292,7 @@ const SettingsPage: React.FC = () => {
       case 'notifications':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Préférences de notification</h3>
+            <h3 className="text-lg font-semibold theme-text-primary mb-4">Préférences de notification</h3>
             <div className="space-y-4">
               {[
                 { key: 'email', label: 'Notifications par email', desc: 'Recevoir les notifications importantes par email' },
@@ -131,16 +301,16 @@ const SettingsPage: React.FC = () => {
                 { key: 'appointments', label: 'Rappels de rendez-vous', desc: 'Rappels avant chaque consultation' },
                 { key: 'updates', label: 'Mises à jour système', desc: 'Informations sur les nouvelles fonctionnalités' }
               ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between p-4 bg-[#0f172a] rounded-lg border border-[#334155]">
+                <div key={item.key} className="flex items-center justify-between p-4 theme-bg-input rounded-lg border theme-border transition-colors">
                   <div>
-                    <p className="text-white font-medium">{item.label}</p>
-                    <p className="text-sm text-gray-400">{item.desc}</p>
+                    <p className="theme-text-primary font-medium">{item.label}</p>
+                    <p className="text-sm theme-text-secondary">{item.desc}</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setNotifications(prev => ({ ...prev, [item.key]: !prev[item.key as keyof typeof notifications] }))}
+                    onClick={() => setNotifications((prev: typeof notifications) => ({ ...prev, [item.key]: !prev[item.key as keyof typeof notifications] }))}
                     className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                      notifications[item.key as keyof typeof notifications] ? 'bg-blue-500' : 'bg-gray-600'
+                      notifications[item.key as keyof typeof notifications] ? 'bg-blue-500' : 'bg-gray-500'
                     }`}
                     aria-label={`Toggle ${item.label}`}
                   >
@@ -159,31 +329,43 @@ const SettingsPage: React.FC = () => {
       case 'appearance':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Thème de l'interface</h3>
+            <h3 className="text-lg font-semibold theme-text-primary mb-4">Thème de l'interface</h3>
             <div className="grid grid-cols-3 gap-2 sm:gap-4">
               {[
-                { value: 'light', label: 'Clair', icon: <Sun size={24} /> },
-                { value: 'dark', label: 'Sombre', icon: <Moon size={24} /> },
-                { value: 'system', label: 'Système', icon: <Monitor size={24} /> }
+                { value: 'light' as ThemeMode, label: 'Clair', icon: <Sun size={24} />, desc: 'Interface lumineuse' },
+                { value: 'dark' as ThemeMode, label: 'Sombre', icon: <Moon size={24} />, desc: 'Interface sombre' },
+                { value: 'system' as ThemeMode, label: 'Système', icon: <Monitor size={24} />, desc: 'Suit les préférences OS' }
               ].map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setTheme(option.value as ThemeMode)}
+                  onClick={() => handleThemeChange(option.value)}
                   className={`p-3 sm:p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-2 sm:gap-3 ${
                     theme === option.value
-                      ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-[#334155] bg-[#0f172a] hover:border-[#475569]'
+                      ? 'border-blue-500 bg-blue-500/10 shadow-lg shadow-blue-500/20'
+                      : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[var(--border-hover)]'
                   }`}
                 >
-                  <span className={theme === option.value ? 'text-blue-400' : 'text-gray-400'}>
+                  <span className={theme === option.value ? 'text-blue-400' : 'theme-text-muted'}>
                     {option.icon}
                   </span>
-                  <span className={`font-medium ${theme === option.value ? 'text-white' : 'text-gray-400'}`}>
+                  <span className={`font-medium ${theme === option.value ? 'text-blue-400' : 'theme-text-secondary'}`}>
                     {option.label}
                   </span>
                 </button>
               ))}
+            </div>
+
+            {/* Theme preview */}
+            <div className="mt-6 p-4 rounded-xl border theme-border theme-bg-input">
+              <p className="text-sm theme-text-secondary mb-2">Aperçu actuel</p>
+              <div className="flex items-center gap-3">
+                <div className={`w-4 h-4 rounded-full ${resolvedTheme === 'dark' ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                <span className="theme-text-primary font-medium">
+                  {resolvedTheme === 'dark' ? 'Mode sombre' : 'Mode clair'}
+                  {theme === 'system' && ' (détecté automatiquement)'}
+                </span>
+              </div>
             </div>
           </div>
         );
@@ -191,24 +373,24 @@ const SettingsPage: React.FC = () => {
       case 'language':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Langue de l'application</h3>
+            <h3 className="text-lg font-semibold theme-text-primary mb-4">Langue de l'application</h3>
             <div className="space-y-3">
               {[
-                { value: 'fr', label: 'Français', flag: '🇫🇷' },
-                { value: 'en', label: 'English', flag: '🇬🇧' }
+                { value: 'fr' as Language, label: 'Français', flag: 'FR' },
+                { value: 'en' as Language, label: 'English', flag: 'GB' }
               ].map((option) => (
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setLanguage(option.value as Language)}
+                  onClick={() => handleLanguageChange(option.value)}
                   className={`w-full p-4 rounded-lg border-2 transition-all flex items-center gap-4 ${
                     language === option.value
                       ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-[#334155] bg-[#0f172a] hover:border-[#475569]'
+                      : 'border-[var(--border-color)] bg-[var(--bg-input)] hover:border-[var(--border-hover)]'
                   }`}
                 >
-                  <span className="text-2xl">{option.flag}</span>
-                  <span className={`font-medium ${language === option.value ? 'text-white' : 'text-gray-400'}`}>
+                  <span className="text-sm font-bold theme-text-secondary bg-[var(--bg-tertiary)] px-2 py-1 rounded">{option.flag}</span>
+                  <span className={`font-medium ${language === option.value ? 'theme-text-primary' : 'theme-text-secondary'}`}>
                     {option.label}
                   </span>
                   {language === option.value && (
@@ -217,54 +399,86 @@ const SettingsPage: React.FC = () => {
                 </button>
               ))}
             </div>
+            <p className="text-sm theme-text-muted mt-4">
+              {language === 'fr'
+                ? 'Le changement de langue sera appliqué immédiatement.'
+                : 'Language change will be applied immediately.'}
+            </p>
           </div>
         );
 
       case 'security':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Sécurité du compte</h3>
+            <h3 className="text-lg font-semibold theme-text-primary mb-4">Sécurité du compte</h3>
             <div className="space-y-4">
-              <div className="p-4 bg-[#0f172a] rounded-lg border border-[#334155]">
-                <div className="flex items-center justify-between mb-4">
+              <div className="p-4 theme-bg-input rounded-lg border theme-border">
+                <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium">Mot de passe</p>
-                    <p className="text-sm text-gray-400">Dernière modification il y a 30 jours</p>
+                    <p className="theme-text-primary font-medium">Mot de passe</p>
+                    <p className="text-sm theme-text-secondary">Dernière modification il y a 30 jours</p>
                   </div>
                   <button
                     type="button"
+                    onClick={() => setShowPasswordModal(true)}
                     className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
                   >
                     Modifier
                   </button>
                 </div>
               </div>
-              <div className="p-4 bg-[#0f172a] rounded-lg border border-[#334155]">
+              <div className="p-4 theme-bg-input rounded-lg border theme-border">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium">Authentification à deux facteurs</p>
-                    <p className="text-sm text-gray-400">Ajoutez une couche de sécurité supplémentaire</p>
+                    <p className="theme-text-primary font-medium">Authentification à deux facteurs</p>
+                    <p className="text-sm theme-text-secondary">
+                      {twoFactorEnabled ? 'Activée - votre compte est protégé' : 'Ajoutez une couche de sécurité supplémentaire'}
+                    </p>
                   </div>
                   <button
                     type="button"
-                    className="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors"
+                    onClick={handleToggle2FA}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      twoFactorEnabled
+                        ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                        : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                    }`}
                   >
-                    Activer
+                    {twoFactorEnabled ? 'Désactiver' : 'Activer'}
                   </button>
                 </div>
               </div>
-              <div className="p-4 bg-[#0f172a] rounded-lg border border-[#334155]">
-                <div className="flex items-center justify-between">
+              <div className="p-4 theme-bg-input rounded-lg border theme-border">
+                <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-white font-medium">Sessions actives</p>
-                    <p className="text-sm text-gray-400">Gérez vos appareils connectés</p>
+                    <p className="theme-text-primary font-medium">Sessions actives</p>
+                    <p className="text-sm theme-text-secondary">Gérez vos appareils connectés</p>
                   </div>
-                  <button
-                    type="button"
-                    className="px-4 py-2 bg-gray-500/20 text-gray-400 rounded-lg hover:bg-gray-500/30 transition-colors"
-                  >
-                    Voir
-                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-primary)]">
+                    <div className="flex items-center gap-3">
+                      <Laptop size={20} className="theme-text-muted" />
+                      <div>
+                        <p className="text-sm theme-text-primary font-medium">Windows - Chrome</p>
+                        <p className="text-xs theme-text-muted">Session actuelle</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded">Actif</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-primary)]">
+                    <div className="flex items-center gap-3">
+                      <Smartphone size={20} className="theme-text-muted" />
+                      <div>
+                        <p className="text-sm theme-text-primary font-medium">iPhone - Safari</p>
+                        <p className="text-xs theme-text-muted">Il y a 2 heures</p>
+                      </div>
+                    </div>
+                    <button type="button" className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
+                      <LogOut size={14} />
+                      Déconnecter
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -274,32 +488,36 @@ const SettingsPage: React.FC = () => {
       case 'data':
         return (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Gestion des données</h3>
+            <h3 className="text-lg font-semibold theme-text-primary mb-4">Gestion des données</h3>
             <div className="space-y-4">
-              <div className="p-4 bg-[#0f172a] rounded-lg border border-[#334155]">
+              <div className="p-4 theme-bg-input rounded-lg border theme-border">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium">Exporter mes données</p>
-                    <p className="text-sm text-gray-400">Téléchargez une copie de vos données</p>
+                    <p className="theme-text-primary font-medium">Exporter mes données</p>
+                    <p className="text-sm theme-text-secondary">Téléchargez une copie de vos données</p>
                   </div>
                   <button
                     type="button"
-                    className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+                    onClick={handleExportData}
+                    className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors flex items-center gap-2"
                   >
+                    <Download size={16} />
                     Exporter
                   </button>
                 </div>
               </div>
-              <div className="p-4 bg-[#0f172a] rounded-lg border border-[#334155]">
+              <div className="p-4 theme-bg-input rounded-lg border theme-border">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium">Vider le cache</p>
-                    <p className="text-sm text-gray-400">Libérez de l'espace de stockage local</p>
+                    <p className="theme-text-primary font-medium">Vider le cache</p>
+                    <p className="text-sm theme-text-secondary">Libérez de l'espace de stockage local</p>
                   </div>
                   <button
                     type="button"
-                    className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors"
+                    onClick={() => setShowClearCacheConfirm(true)}
+                    className="px-4 py-2 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors flex items-center gap-2"
                   >
+                    <Trash2 size={16} />
                     Vider
                   </button>
                 </div>
@@ -312,8 +530,10 @@ const SettingsPage: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors flex items-center gap-2"
                   >
+                    <AlertTriangle size={16} />
                     Supprimer
                   </button>
                 </div>
@@ -328,18 +548,18 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0f172a]">
+    <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
       <MedicalSidebarRefined activeItem="settings" onCollapsedChange={setSidebarCollapsed} />
 
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
+        <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center gap-2 sm:gap-3 ml-14 lg:ml-0">
             <div className="p-1.5 sm:p-2 bg-blue-500/20 rounded-lg flex-shrink-0">
               <Settings size={20} className="text-blue-400 sm:w-6 sm:h-6" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Paramètres</h1>
-              <p className="text-gray-400 text-xs sm:text-sm truncate">Gérez vos préférences et votre compte</p>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold theme-text-primary">Paramètres</h1>
+              <p className="theme-text-secondary text-xs sm:text-sm truncate">Gérez vos préférences et votre compte</p>
             </div>
           </div>
         </header>
@@ -349,7 +569,7 @@ const SettingsPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Sidebar Navigation */}
               <div className="lg:col-span-1">
-                <div className="bg-[#1e293b] rounded-xl border border-[#334155] p-1.5 sm:p-2">
+                <div className="theme-bg-secondary rounded-xl border theme-border p-1.5 sm:p-2 transition-colors duration-300">
                   <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible gap-1 scrollbar-hide">
                     {settingSections.map((section) => (
                       <button
@@ -359,7 +579,7 @@ const SettingsPage: React.FC = () => {
                         className={`flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg transition-all whitespace-nowrap lg:w-full ${
                           activeSection === section.id
                             ? 'bg-blue-500/20 text-blue-400'
-                            : 'text-gray-400 hover:bg-[#334155] hover:text-white'
+                            : 'theme-text-secondary hover:bg-[var(--bg-tertiary)] hover:theme-text-primary'
                         }`}
                       >
                         {section.icon}
@@ -372,11 +592,11 @@ const SettingsPage: React.FC = () => {
 
               {/* Content Area */}
               <div className="lg:col-span-3">
-                <div className="bg-[#1e293b] rounded-xl border border-[#334155] p-4 sm:p-6">
+                <div className="theme-bg-secondary rounded-xl border theme-border p-4 sm:p-6 transition-colors duration-300">
                   {renderContent()}
 
                   {/* Save Button */}
-                  <div className="mt-8 pt-6 border-t border-[#334155] flex justify-end">
+                  <div className="mt-8 pt-6 border-t theme-border flex justify-end">
                     <button
                       type="button"
                       onClick={handleSave}
@@ -405,6 +625,33 @@ const SettingsPage: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* Modals */}
+      {showPasswordModal && (
+        <PasswordModal onClose={() => setShowPasswordModal(false)} onSave={handlePasswordChange} />
+      )}
+      {showDeleteConfirm && (
+        <ConfirmModal
+          title="Supprimer le compte"
+          message="Êtes-vous sûr de vouloir supprimer votre compte ? Toutes vos données seront perdues définitivement."
+          confirmLabel="Supprimer"
+          onConfirm={handleDeleteAccount}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
+      {showClearCacheConfirm && (
+        <ConfirmModal
+          title="Vider le cache"
+          message="Êtes-vous sûr de vouloir vider le cache ? Certains paramètres locaux seront réinitialisés."
+          confirmLabel="Vider"
+          confirmColor="bg-amber-500 hover:bg-amber-600"
+          onConfirm={handleClearCache}
+          onCancel={() => setShowClearCacheConfirm(false)}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   );
 };

@@ -384,6 +384,66 @@ h1, h2, h3, h4, h5, h6 {
    when html.light is active
    ============================================ */
 
+/* --- SIDEBAR LIGHT MODE --- */
+html.light aside {
+  background: linear-gradient(to bottom, #f1f5f9, #f8fafc, #ffffff) !important;
+  border-color: #e2e8f0 !important;
+}
+html.light aside .border-\[\#334155\]\/50 { border-color: rgba(226, 232, 240, 0.5) !important; }
+html.light aside .border-\[\#334155\]\/30 { border-color: rgba(226, 232, 240, 0.3) !important; }
+
+/* Sidebar section headings */
+html.light aside .text-gray-500 { color: #94a3b8 !important; }
+
+/* Sidebar inactive items */
+html.light aside .text-gray-300 { color: #475569 !important; }
+html.light aside .text-gray-400 { color: #64748b !important; }
+
+/* Sidebar header text */
+html.light aside .text-white { color: #0f172a !important; }
+
+/* Sidebar icon containers */
+html.light aside .bg-\[\#0f172a\]\/40 { background-color: rgba(226, 232, 240, 0.6) !important; }
+html.light aside .bg-\[\#0f172a\]\/60 { background-color: rgba(203, 213, 225, 0.6) !important; }
+
+/* Sidebar hover on inactive items */
+html.light aside .hover\:bg-\[\#334155\]\/80:hover { background-color: rgba(226, 232, 240, 0.8) !important; }
+html.light aside .hover\:text-white:hover { color: #0f172a !important; }
+
+/* Sidebar active items KEEP white text (colored gradient bg) */
+html.light aside [class*="from-cyan-700"] { color: #ffffff !important; }
+html.light aside [class*="from-cyan-700"] .text-white,
+html.light aside [class*="from-cyan-700"] span,
+html.light aside [class*="from-amber-500"] { color: #ffffff !important; }
+html.light aside [class*="from-amber-500"] .text-white,
+html.light aside [class*="from-amber-500"] span,
+html.light aside [class*="from-violet-700"] { color: #ffffff !important; }
+html.light aside [class*="from-violet-700"] .text-white,
+html.light aside [class*="from-violet-700"] span { color: #ffffff !important; }
+html.light aside .bg-white\/20 { background-color: rgba(255, 255, 255, 0.2) !important; }
+
+/* Sidebar collapse button */
+html.light aside .bg-\[\#1e293b\] { background-color: #ffffff !important; }
+
+/* Sidebar tooltips */
+html.light aside .bg-\[\#1e293b\] { background-color: #ffffff !important; color: #0f172a !important; }
+
+/* Sidebar logout button - keep red styling */
+html.light aside .text-red-400 { color: #dc2626 !important; }
+html.light aside .hover\:text-white:hover { color: #0f172a !important; }
+html.light aside .bg-red-500\/15 { background-color: rgba(220, 38, 38, 0.1) !important; }
+
+/* Sidebar mobile button */
+html.light .bg-gradient-to-br.from-\[\#1e293b\] { background: linear-gradient(to bottom right, #f1f5f9, #ffffff) !important; color: #0f172a !important; }
+
+/* User profile green dot border */
+html.light aside .border-\[\#1e293b\] { border-color: #f8fafc !important; }
+
+/* Focus ring offset for light bg */
+html.light aside [class*="ring-offset-\[#1e293b\]"] { --tw-ring-offset-color: #f8fafc; }
+
+/* --- MAIN CONTENT LIGHT MODE --- */
+
 /* Override bg-[#0f172a] backgrounds */
 html.light .bg-\[\#0f172a\] { background-color: #f8fafc !important; }
 html.light .from-\[\#0f172a\] { --tw-gradient-from: #f8fafc !important; }
@@ -403,7 +463,7 @@ html.light .bg-\[\#334155\] { background-color: #e2e8f0 !important; }
 html.light .border-\[\#334155\] { border-color: #e2e8f0 !important; }
 html.light .border-\[\#475569\] { border-color: #cbd5e1 !important; }
 
-/* Override text colors */
+/* Override text colors globally - sidebar active items restored below */
 html.light .text-white { color: #0f172a !important; }
 html.light .text-gray-400 { color: #64748b !important; }
 html.light .text-gray-300 { color: #475569 !important; }
@@ -418,7 +478,13 @@ html.light .text-amber-400 { color: #d97706 !important; }
 html.light .text-cyan-400 { color: #0891b2 !important; }
 html.light .text-purple-400 { color: #7c3aed !important; }
 
-/* Keep white text on colored backgrounds */
+/* Keep white text on colored gradient backgrounds */
+html.light [class*="from-cyan-"] .text-white,
+html.light [class*="from-amber-"] .text-white,
+html.light [class*="from-violet-"] .text-white,
+html.light [class*="from-blue-"] .text-white,
+html.light [class*="from-emerald-"] .text-white,
+html.light [class*="from-rose-"] .text-white,
 html.light .bg-blue-500 .text-white,
 html.light .bg-emerald-500 .text-white,
 html.light .bg-red-500 .text-white,
@@ -427,11 +493,8 @@ html.light .bg-gradient-to-br .text-white,
 html.light [class*="bg-blue-"] > .text-white,
 html.light [class*="bg-gradient"] .text-white,
 html.light button.bg-blue-500,
-html.light button.bg-emerald-500 { color: #ffffff !important; }
-
-/* Sidebar active items keep white text */
-html.light .bg-white\/20 .text-white,
-html.light .bg-white\/10 .text-white { color: #ffffff !important; }
+html.light button.bg-emerald-500,
+html.light .bg-gradient-to-br.from-cyan-600 .text-white { color: #ffffff !important; }
 
 /* Fix hover states */
 html.light .hover\:bg-\[\#334155\]:hover { background-color: #e2e8f0 !important; }
@@ -445,6 +508,7 @@ html.light .shadow-lg { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important; }
 
 /* Input/select backgrounds */
 html.light select { background-color: #f1f5f9 !important; color: #0f172a !important; }
+html.light .input-enhanced { background: #f1f5f9 !important; color: #0f172a !important; border-color: #cbd5e1 !important; }
 
 /* Scrollbar for light mode */
 html.light::-webkit-scrollbar-track { background: #f1f5f9; }
