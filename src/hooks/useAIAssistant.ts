@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from 'react';
-import api from '../services/api';
 import logger from '../utils/logger';
 
 export interface ImageAttachment {
@@ -99,24 +98,39 @@ export function useAIAssistant(): UseAIAssistantReturn {
         };
       }
 
-      const response = await api.callFunction<{
-        success: boolean;
-        response: string;
-        mode: string;
-        timestamp: string;
-      }>('ai-doctor-assistant', body);
+      // Call Edge Function directly to avoid client-side token validation issues
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const token = localStorage.getItem('auth_token');
 
-      if (response.error) {
-        throw new Error(response.error.message);
+      if (!token) {
+        throw new Error('Non authentifié - veuillez vous reconnecter');
       }
 
-      if (response.data?.success) {
+      const res = await fetch(`${supabaseUrl}/functions/v1/ai-doctor-assistant`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Erreur serveur (${res.status})`);
+      }
+
+      const data = await res.json();
+
+      if (data.success) {
         const aiMessage: ChatMessage = {
           id: generateId(),
           role: 'assistant',
-          content: response.data.response,
-          timestamp: new Date(response.data.timestamp),
-          mode: response.data.mode,
+          content: data.response,
+          timestamp: new Date(data.timestamp),
+          mode: data.mode,
         };
 
         setMessages(prev => [...prev, aiMessage]);
