@@ -96,23 +96,46 @@ interface UseAIAssistantReturn {
 // HOOK
 // ============================================
 
+const SESSION_KEY_CONSULTATION = 'ai_assistant_consultation_id';
+const SESSION_KEY_MODE = 'ai_assistant_mode';
+
 export function useAIAssistant(): UseAIAssistantReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<AssistantMode>('general');
+  const [mode, setModeState] = useState<AssistantMode>(
+    () => (sessionStorage.getItem(SESSION_KEY_MODE) as AssistantMode) || 'general'
+  );
   const [patientContext, setPatientContext] = useState<PatientContext | null>(null);
-  const [currentConsultationId, setCurrentConsultationId] = useState<string | null>(null);
+  const [currentConsultationId, setCurrentConsultationId] = useState<string | null>(
+    () => sessionStorage.getItem(SESSION_KEY_CONSULTATION)
+  );
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const messageIdCounter = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const initialLoadDone = useRef(false);
 
   const generateId = () => {
     messageIdCounter.current += 1;
     return `msg-${Date.now()}-${messageIdCounter.current}`;
   };
+
+  // Persist mode to sessionStorage
+  const setMode = useCallback((newMode: AssistantMode) => {
+    setModeState(newMode);
+    sessionStorage.setItem(SESSION_KEY_MODE, newMode);
+  }, []);
+
+  // Persist consultationId to sessionStorage when it changes
+  useEffect(() => {
+    if (currentConsultationId) {
+      sessionStorage.setItem(SESSION_KEY_CONSULTATION, currentConsultationId);
+    } else {
+      sessionStorage.removeItem(SESSION_KEY_CONSULTATION);
+    }
+  }, [currentConsultationId]);
 
   // ============================================
   // CONVERSATION MANAGEMENT (DB)
@@ -237,12 +260,20 @@ export function useAIAssistant(): UseAIAssistantReturn {
   const newConversation = useCallback(() => {
     setMessages([]);
     setCurrentConsultationId(null);
+    sessionStorage.removeItem(SESSION_KEY_CONSULTATION);
     setError(null);
   }, []);
 
+  // Load conversations + auto-restore active conversation on mount
   useEffect(() => {
     loadConversations();
-  }, [loadConversations]);
+    if (!initialLoadDone.current && currentConsultationId) {
+      initialLoadDone.current = true;
+      loadConversation(currentConsultationId);
+    } else {
+      initialLoadDone.current = true;
+    }
+  }, [loadConversations, loadConversation, currentConsultationId]);
 
   // ============================================
   // SSE EVENT HANDLER
