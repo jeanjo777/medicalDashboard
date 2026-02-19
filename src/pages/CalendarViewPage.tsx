@@ -21,7 +21,6 @@ import {
   AlertCircle
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import UserMenu from '../components/Common/UserMenu';
 import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import ErrorState from '../components/ErrorState';
@@ -934,7 +933,6 @@ const CalendarViewPage: React.FC = () => {
               <div className="ml-12 lg:ml-0">
                 <h1 className="text-xl font-bold theme-text-primary">Calendrier</h1>
               </div>
-              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8 bg-[var(--bg-primary)]">
@@ -956,7 +954,6 @@ const CalendarViewPage: React.FC = () => {
               <div className="ml-12 lg:ml-0">
                 <h1 className="text-xl font-bold theme-text-primary">Calendrier</h1>
               </div>
-              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8 bg-[var(--bg-primary)]">
@@ -988,7 +985,6 @@ const CalendarViewPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <UserMenu />
             </div>
           </div>
         </header>

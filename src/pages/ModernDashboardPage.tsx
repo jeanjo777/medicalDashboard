@@ -19,7 +19,6 @@ import AppointmentDistributionChart from '../components/AppointmentDistributionC
 import RecentActivity from '../components/ModernDashboard/RecentActivity';
 import UpcomingAppointments from '../components/ModernDashboard/UpcomingAppointments';
 import PatientAlertsWidget from '../components/ModernDashboard/PatientAlertsWidget';
-import UserMenu from '../components/Common/UserMenu';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
 import logger from '../utils/logger';
@@ -74,8 +73,6 @@ const ModernDashboardPage: React.FC = () => {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-              {/* User Menu with Logout */}
-              <UserMenu />
             </div>
           </div>
         </header>

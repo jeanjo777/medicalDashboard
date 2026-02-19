@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import UserMenu from '../components/Common/UserMenu';
 import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import { useDemoMode } from '../hooks/useDemoMode';
 import {
@@ -206,7 +205,6 @@ const AnalyticsPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <UserMenu />
             </div>
           </div>
         </header>

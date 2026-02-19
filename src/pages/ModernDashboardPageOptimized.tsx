@@ -25,7 +25,6 @@ import PatientGrowthChart from '../components/PatientGrowthChart';
 import AppointmentDistributionChart from '../components/AppointmentDistributionChart';
 import RecentActivity from '../components/ModernDashboard/RecentActivity';
 import UpcomingAppointments from '../components/ModernDashboard/UpcomingAppointments';
-import UserMenu from '../components/Common/UserMenu';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
 import logger from '../utils/logger';
@@ -37,7 +36,6 @@ const MemoizedPatientGrowthChart = memo(PatientGrowthChart);
 const MemoizedAppointmentDistributionChart = memo(AppointmentDistributionChart);
 const MemoizedRecentActivity = memo(RecentActivity);
 const MemoizedUpcomingAppointments = memo(UpcomingAppointments);
-const MemoizedUserMenu = memo(UserMenu);
 
 // Composant de loading optimisé
 const DashboardLoader = memo(() => (
@@ -65,9 +63,7 @@ const DashboardHeader = memo(() => (
         </p>
       </div>
 
-      {/* Right: User Menu */}
       <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-        <MemoizedUserMenu />
       </div>
     </div>
   </header>
