@@ -29,9 +29,9 @@ const WeeklyOverviewWidget: React.FC<WeeklyOverviewWidgetProps> = ({ isDemoMode 
         </div>
       </div>
 
-      <div className="flex items-end justify-between gap-1 sm:gap-1.5 h-20 sm:h-24 mb-2">
+      <div className="flex items-end justify-between gap-1 sm:gap-1.5 mb-2">
         {data.map((val, i) => {
-          const height = (val / maxVal) * 100;
+          const heightPx = Math.max((val / maxVal) * 72, 4);
           const isToday = i === todayIndex;
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -42,7 +42,7 @@ const WeeklyOverviewWidget: React.FC<WeeklyOverviewWidgetProps> = ({ isDemoMode 
                     ? 'bg-gradient-to-t from-cyan-500 to-cyan-400'
                     : 'bg-[var(--bg-tertiary)] hover:opacity-80'
                 }`}
-                style={{ height: `${height}%`, minHeight: '4px' }}
+                style={{ height: `${heightPx}px` }}
               />
             </div>
           );
