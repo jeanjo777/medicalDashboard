@@ -672,55 +672,103 @@ const MessageBubble: React.FC<{
 }> = ({ message, modeConfig, patientContext }) => {
   const isUser = message.role === 'user';
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+
+  // TTS state - sentence-by-sentence playback with slider
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const [currentSentence, setCurrentSentence] = useState(0);
+  const sentencesRef = useRef<string[]>([]);
+  const isCancelledRef = useRef(false);
 
-  // Cleanup speech on unmount
-  useEffect(() => {
-    return () => {
-      if (isSpeaking || isPaused) {
-        window.speechSynthesis.cancel();
+  // Split text into sentences on content change
+  const getSentences = useCallback(() => {
+    if (sentencesRef.current.length > 0) return sentencesRef.current;
+    const plainText = stripMarkdown(message.content);
+    if (!plainText) return [];
+    // Split on sentence-ending punctuation, keeping meaningful chunks
+    const raw = plainText.split(/(?<=[.!?:]\s)|(?<=\n\n)/g);
+    sentencesRef.current = raw
+      .map(s => s.trim())
+      .filter(s => s.length > 2);
+    return sentencesRef.current;
+  }, [message.content]);
+
+  const totalSentences = getSentences().length;
+
+  // Speak from a specific sentence index
+  const speakFrom = useCallback((fromIndex: number) => {
+    const sentences = getSentences();
+    if (sentences.length === 0) return;
+
+    window.speechSynthesis.cancel();
+    isCancelledRef.current = false;
+
+    const speakNext = (idx: number) => {
+      if (isCancelledRef.current || idx >= sentences.length) {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setCurrentSentence(0);
+        return;
       }
+
+      setCurrentSentence(idx);
+      const utterance = new SpeechSynthesisUtterance(sentences[idx]);
+      utterance.lang = 'fr-FR';
+      utterance.rate = 1.0;
+      utterance.onend = () => {
+        if (!isCancelledRef.current) {
+          speakNext(idx + 1);
+        }
+      };
+      utterance.onerror = () => {
+        if (!isCancelledRef.current) {
+          speakNext(idx + 1);
+        }
+      };
+      window.speechSynthesis.speak(utterance);
     };
-  }, [isSpeaking, isPaused]);
+
+    setIsSpeaking(true);
+    setIsPaused(false);
+    speakNext(fromIndex);
+  }, [getSentences]);
 
   const handleSpeak = () => {
     if (isSpeaking && !isPaused) {
-      // Pause
       window.speechSynthesis.pause();
       setIsPaused(true);
       return;
     }
     if (isPaused) {
-      // Resume
       window.speechSynthesis.resume();
       setIsPaused(false);
       return;
     }
-    // Start new speech - cancel any ongoing
-    window.speechSynthesis.cancel();
-
-    const plainText = stripMarkdown(message.content);
-    if (!plainText) return;
-
-    const utterance = new SpeechSynthesisUtterance(plainText);
-    utterance.lang = 'fr-FR';
-    utterance.rate = 1.0;
-    utterance.onend = () => { setIsSpeaking(false); setIsPaused(false); };
-    utterance.onerror = () => { setIsSpeaking(false); setIsPaused(false); };
-
-    utteranceRef.current = utterance;
-    setIsSpeaking(true);
-    setIsPaused(false);
-    window.speechSynthesis.speak(utterance);
+    speakFrom(0);
   };
 
   const handleStopSpeech = () => {
+    isCancelledRef.current = true;
     window.speechSynthesis.cancel();
     setIsSpeaking(false);
     setIsPaused(false);
   };
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const idx = parseInt(e.target.value, 10);
+    setCurrentSentence(idx);
+    if (isSpeaking || isPaused) {
+      speakFrom(idx);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isCancelledRef.current = true;
+      window.speechSynthesis.cancel();
+    };
+  }, []);
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''} animate-in`}>
@@ -784,34 +832,69 @@ const MessageBubble: React.FC<{
           <span className="text-[10px] theme-text-muted">
             {message.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
           </span>
-          {/* TTS buttons */}
+          {/* TTS controls */}
           {!isUser && message.content && !message.isStreaming && (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handleSpeak}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium transition-all ${
-                  isSpeaking && !isPaused
-                    ? 'bg-cyan-500/20 text-cyan-400'
-                    : isPaused
-                      ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-[var(--bg-tertiary)] theme-text-secondary hover:text-cyan-400 hover:bg-cyan-500/10'
-                }`}
-                title={isSpeaking && !isPaused ? 'Pause' : isPaused ? 'Reprendre' : 'Lire le message'}
-              >
-                {isSpeaking && !isPaused ? <Pause size={13} /> : <Volume2 size={13} />}
-                {isSpeaking && !isPaused ? 'Pause' : isPaused ? 'Reprendre' : 'Ecouter'}
-              </button>
-              {(isSpeaking || isPaused) && (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={handleStopSpeech}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-all"
-                  title="Arreter la lecture"
+                  onClick={handleSpeak}
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium transition-all ${
+                    isSpeaking && !isPaused
+                      ? 'bg-cyan-500/20 text-cyan-400'
+                      : isPaused
+                        ? 'bg-yellow-500/20 text-yellow-400'
+                        : 'bg-[var(--bg-tertiary)] theme-text-secondary hover:text-cyan-400 hover:bg-cyan-500/10'
+                  }`}
+                  title={isSpeaking && !isPaused ? 'Pause' : isPaused ? 'Reprendre' : 'Lire le message'}
                 >
-                  <VolumeX size={13} />
-                  Stop
+                  {isSpeaking && !isPaused ? <Pause size={13} /> : <Volume2 size={13} />}
+                  {isSpeaking && !isPaused ? 'Pause' : isPaused ? 'Reprendre' : 'Ecouter'}
                 </button>
+                {(isSpeaking || isPaused) && (
+                  <button
+                    type="button"
+                    onClick={handleStopSpeech}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-all"
+                    title="Arreter la lecture"
+                  >
+                    <VolumeX size={13} />
+                    Stop
+                  </button>
+                )}
+                {(isSpeaking || isPaused) && totalSentences > 1 && (
+                  <span className="text-[10px] theme-text-muted ml-1">
+                    {currentSentence + 1}/{totalSentences}
+                  </span>
+                )}
+              </div>
+              {/* Progress slider - visible during playback or pause */}
+              {(isSpeaking || isPaused) && totalSentences > 1 && (
+                <div className="flex items-center gap-2 px-0.5">
+                  <input
+                    type="range"
+                    min={0}
+                    max={totalSentences - 1}
+                    value={currentSentence}
+                    onChange={handleSliderChange}
+                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer
+                      bg-[var(--bg-tertiary)]
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:w-3
+                      [&::-webkit-slider-thumb]:h-3
+                      [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-cyan-500
+                      [&::-webkit-slider-thumb]:shadow-md
+                      [&::-webkit-slider-thumb]:cursor-pointer
+                      [&::-moz-range-thumb]:w-3
+                      [&::-moz-range-thumb]:h-3
+                      [&::-moz-range-thumb]:rounded-full
+                      [&::-moz-range-thumb]:bg-cyan-500
+                      [&::-moz-range-thumb]:border-0
+                      [&::-moz-range-thumb]:cursor-pointer"
+                    title="Deplacer pour choisir ou reprendre la lecture"
+                  />
+                </div>
               )}
             </div>
           )}
