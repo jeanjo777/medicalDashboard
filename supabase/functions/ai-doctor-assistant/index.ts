@@ -62,12 +62,13 @@ const THINKING_BUDGETS: Record<string, number> = {
 const TOOLS: Anthropic.Tool[] = [
   {
     name: 'search_patient_records',
-    description: 'Rechercher dans le dossier medical complet d\'un patient: demographiques, historique medical, allergies, medicaments, pathologies, score de risque. Utiliser quand le medecin mentionne un patient ou quand plus d\'informations sur le patient sont necessaires.',
+    description: 'Rechercher des patients dans la base de donnees. Peut filtrer par nom, pathologie, statut (active, in_treatment, recovered, discharged, critical), ou terme libre. Utiliser quand le medecin demande la liste de patients, cherche un patient, ou filtre par statut/pathologie. Mapping statut francais: retabli/gueri=recovered, en traitement/en cours=in_treatment, actif=active, critique=critical, sorti=discharged.',
     input_schema: {
       type: 'object' as const,
       properties: {
         patient_id: { type: 'string', description: 'UUID du patient (si connu)' },
         search_query: { type: 'string', description: 'Terme de recherche: nom, pathologie, etc.' },
+        status: { type: 'string', description: 'Filtrer par statut: active, in_treatment, recovered, discharged, critical. Pour "retabli/gueri" utiliser "recovered", pour "en traitement" utiliser "in_treatment".' },
       },
       required: [],
     },
@@ -150,17 +151,35 @@ async function executeTool(toolName: string, toolInput: Record<string, any>, sup
 }
 
 async function searchPatientRecords(input: Record<string, any>, supabase: any): Promise<string> {
-  let query = supabase.from('patients').select('id, name, age, gender, date_of_birth, primary_pathology, riskScore, medical_history, allergies, blood_type, status, phone, email, last_visit');
+  // Status mapping: French terms → DB values
+  const STATUS_MAP: Record<string, string> = {
+    'retabli': 'recovered', 'rétabli': 'recovered', 'gueri': 'recovered', 'guéri': 'recovered', 'recovered': 'recovered',
+    'en traitement': 'in_treatment', 'en_treatment': 'in_treatment', 'in_treatment': 'in_treatment', 'en cours': 'in_treatment',
+    'actif': 'active', 'active': 'active',
+    'critique': 'critical', 'critical': 'critical',
+    'sorti': 'discharged', 'discharged': 'discharged',
+  };
+
+  let query = supabase.from('patients').select('id, name, first_name, last_name, age, gender, date_of_birth, primary_pathology, riskScore, status, phone, email, address, notes, created_at');
 
   if (input.patient_id) {
     query = query.eq('id', input.patient_id);
+  } else if (input.status) {
+    const mappedStatus = STATUS_MAP[input.status.toLowerCase().trim()] || input.status;
+    query = query.eq('status', mappedStatus);
   } else if (input.search_query) {
-    query = query.or(`name.ilike.%${input.search_query}%,primary_pathology.ilike.%${input.search_query}%,email.ilike.%${input.search_query}%`);
+    const sq = input.search_query.toLowerCase().trim();
+    // Check if search_query is actually a status term
+    if (STATUS_MAP[sq]) {
+      query = query.eq('status', STATUS_MAP[sq]);
+    } else {
+      query = query.or(`name.ilike.%${input.search_query}%,first_name.ilike.%${input.search_query}%,last_name.ilike.%${input.search_query}%,primary_pathology.ilike.%${input.search_query}%,email.ilike.%${input.search_query}%`);
+    }
   }
 
-  const { data, error } = await query.limit(5);
+  const { data, error } = await query.limit(20);
   if (error) return JSON.stringify({ error: error.message });
-  if (!data || data.length === 0) return JSON.stringify({ message: 'Aucun patient trouve' });
+  if (!data || data.length === 0) return JSON.stringify({ message: 'Aucun patient trouve avec ces criteres' });
 
   // Fetch recent appointments for each patient
   for (const patient of data) {
@@ -173,7 +192,7 @@ async function searchPatientRecords(input: Record<string, any>, supabase: any): 
     patient.recent_appointments = appts || [];
   }
 
-  return JSON.stringify(data);
+  return JSON.stringify({ patients: data, total: data.length });
 }
 
 function checkDrugInteractions(input: Record<string, any>): string {

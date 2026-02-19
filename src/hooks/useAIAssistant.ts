@@ -98,18 +98,38 @@ interface UseAIAssistantReturn {
 
 const SESSION_KEY_CONSULTATION = 'ai_assistant_consultation_id';
 const SESSION_KEY_MODE = 'ai_assistant_mode';
+const SESSION_KEY_MESSAGES = 'ai_assistant_messages';
+
+// Helpers to persist/restore messages in localStorage
+function saveMessagesToStorage(msgs: ChatMessage[]) {
+  try {
+    const serializable = msgs
+      .filter(m => !m.isStreaming)
+      .map(m => ({ id: m.id, role: m.role, content: m.content, timestamp: m.timestamp, mode: m.mode }));
+    localStorage.setItem(SESSION_KEY_MESSAGES, JSON.stringify(serializable));
+  } catch { /* quota exceeded or other error */ }
+}
+
+function loadMessagesFromStorage(): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY_MESSAGES);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }));
+  } catch { return []; }
+}
 
 export function useAIAssistant(): UseAIAssistantReturn {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => loadMessagesFromStorage());
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setModeState] = useState<AssistantMode>(
-    () => (sessionStorage.getItem(SESSION_KEY_MODE) as AssistantMode) || 'general'
+    () => (localStorage.getItem(SESSION_KEY_MODE) as AssistantMode) || 'general'
   );
   const [patientContext, setPatientContext] = useState<PatientContext | null>(null);
   const [currentConsultationId, setCurrentConsultationId] = useState<string | null>(
-    () => sessionStorage.getItem(SESSION_KEY_CONSULTATION)
+    () => localStorage.getItem(SESSION_KEY_CONSULTATION)
   );
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
@@ -122,20 +142,27 @@ export function useAIAssistant(): UseAIAssistantReturn {
     return `msg-${Date.now()}-${messageIdCounter.current}`;
   };
 
-  // Persist mode to sessionStorage
+  // Persist mode to localStorage
   const setMode = useCallback((newMode: AssistantMode) => {
     setModeState(newMode);
-    sessionStorage.setItem(SESSION_KEY_MODE, newMode);
+    localStorage.setItem(SESSION_KEY_MODE, newMode);
   }, []);
 
-  // Persist consultationId to sessionStorage when it changes
+  // Persist consultationId to localStorage when it changes
   useEffect(() => {
     if (currentConsultationId) {
-      sessionStorage.setItem(SESSION_KEY_CONSULTATION, currentConsultationId);
+      localStorage.setItem(SESSION_KEY_CONSULTATION, currentConsultationId);
     } else {
-      sessionStorage.removeItem(SESSION_KEY_CONSULTATION);
+      localStorage.removeItem(SESSION_KEY_CONSULTATION);
     }
   }, [currentConsultationId]);
+
+  // Persist messages to localStorage whenever they change (skip streaming messages)
+  useEffect(() => {
+    if (messages.length > 0 && !messages.some(m => m.isStreaming)) {
+      saveMessagesToStorage(messages);
+    }
+  }, [messages]);
 
   // ============================================
   // CONVERSATION MANAGEMENT (DB)
@@ -260,7 +287,8 @@ export function useAIAssistant(): UseAIAssistantReturn {
   const newConversation = useCallback(() => {
     setMessages([]);
     setCurrentConsultationId(null);
-    sessionStorage.removeItem(SESSION_KEY_CONSULTATION);
+    localStorage.removeItem(SESSION_KEY_CONSULTATION);
+    localStorage.removeItem(SESSION_KEY_MESSAGES);
     setError(null);
   }, []);
 
@@ -579,6 +607,8 @@ export function useAIAssistant(): UseAIAssistantReturn {
     cancelStream();
     setMessages([]);
     setCurrentConsultationId(null);
+    localStorage.removeItem(SESSION_KEY_MESSAGES);
+    localStorage.removeItem(SESSION_KEY_CONSULTATION);
     setError(null);
   }, [cancelStream]);
 
