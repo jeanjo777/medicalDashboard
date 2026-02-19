@@ -31,6 +31,8 @@ import {
   Volume2,
   Pause,
   VolumeX,
+  Mic,
+  MicOff,
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext, type ConversationSummary, type ThinkingBlock as ThinkingBlockType, type ToolExecution } from '../hooks/useAIAssistant';
@@ -1154,9 +1156,13 @@ const AIAssistantPage: React.FC = () => {
   const [showModeMenu, setShowModeMenu] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [imageAttachments, setImageAttachments] = useState<ImageAttachment[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentModeConfig = MODE_CONFIG[mode];
   const CurrentModeIcon = currentModeConfig.icon;
@@ -1233,6 +1239,87 @@ const AIAssistantPage: React.FC = () => {
   };
 
   const handleQuickPrompt = (prompt: string) => sendMessage(prompt);
+
+  // ============================================
+  // VOICE RECORDING (Web Speech API)
+  // ============================================
+  const startRecording = useCallback(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setInput(prev => prev + (prev ? ' ' : '') + '[Reconnaissance vocale non supportee par ce navigateur]');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let finalTranscript = '';
+
+    recognition.onresult = (event: any) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
+        } else {
+          interim = transcript;
+        }
+      }
+      setInput(prev => {
+        const base = prev.replace(/\s*\[\.{3}\]$/, '').replace(/\s*$/, '');
+        const combined = base + (base ? ' ' : '') + finalTranscript + (interim ? interim + ' [...]' : '');
+        return combined.trim();
+      });
+    };
+
+    recognition.onerror = () => {
+      setIsRecording(false);
+      setRecordingTime(0);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+      setRecordingTime(0);
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      // Clean up trailing [...] marker
+      setInput(prev => prev.replace(/\s*\[\.{3}\]$/, '').trim());
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsRecording(true);
+    setRecordingTime(0);
+    recordingTimerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    setIsRecording(false);
+    setRecordingTime(0);
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+  }, []);
+
+  const toggleRecording = useCallback(() => {
+    if (isRecording) stopRecording();
+    else startRecording();
+  }, [isRecording, startRecording, stopRecording]);
+
+  // Cleanup recording on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) recognitionRef.current.stop();
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+    };
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); }, []);
 
@@ -1531,32 +1618,25 @@ const AIAssistantPage: React.FC = () => {
           )}
         </main>
 
-        {/* Input Area */}
-        <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 md:px-6 py-3">
+        {/* Input Area - Modern Design */}
+        <div className="bg-[var(--bg-secondary)] px-3 md:px-6 py-3 md:py-4">
+          {/* Quick actions bar */}
           {messages.length > 0 && (
-            <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+            <div className="flex gap-1.5 mb-2.5 overflow-x-auto pb-1 scrollbar-hide">
               <button
                 type="button"
                 onClick={() => setShowContext(!showContext)}
-                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-xs theme-text-muted hover:text-[var(--text-primary)] hover:border-cyan-500/50 transition-all flex items-center gap-1.5"
+                className="flex-shrink-0 px-2.5 py-1 rounded-full bg-[var(--bg-primary)] text-[11px] theme-text-muted hover:text-cyan-400 transition-colors flex items-center gap-1"
               >
-                <Plus size={12} />
-                Contexte patient
+                <UserCheck size={11} />
+                Contexte
               </button>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-xs theme-text-muted hover:text-[var(--text-primary)] hover:border-sky-500/50 transition-all flex items-center gap-1.5"
-              >
-                <ImageIcon size={12} />
-                Images ({imageAttachments.length}/{MAX_IMAGES})
-              </button>
-              {QUICK_PROMPTS[mode].slice(0, 2).map((prompt, i) => (
+              {QUICK_PROMPTS[mode].slice(0, 3).map((prompt, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => handleQuickPrompt(prompt)}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-xs theme-text-muted hover:text-[var(--text-primary)] hover:border-cyan-500/50 transition-all truncate max-w-[200px]"
+                  className="flex-shrink-0 px-2.5 py-1 rounded-full bg-[var(--bg-primary)] text-[11px] theme-text-muted hover:text-cyan-400 transition-colors truncate max-w-[180px]"
                 >
                   {prompt}
                 </button>
@@ -1566,23 +1646,22 @@ const AIAssistantPage: React.FC = () => {
 
           {/* Image previews */}
           {imageAttachments.length > 0 && (
-            <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+            <div className="mb-2.5 flex gap-2 overflow-x-auto pb-1">
               {imageAttachments.map((img, idx) => (
                 <div key={idx} className="relative flex-shrink-0 group">
                   <img
                     src={img.preview}
                     alt={img.fileName}
-                    className="w-16 h-16 rounded-lg object-cover border border-sky-500/30"
+                    className="w-14 h-14 rounded-lg object-cover border border-cyan-500/30"
                   />
                   <button
                     type="button"
                     onClick={() => removeImage(idx)}
                     aria-label={`Supprimer ${img.fileName}`}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <X size={10} className="text-white" />
+                    <X size={8} className="text-white" />
                   </button>
-                  <p className="text-[8px] theme-text-muted mt-0.5 w-16 truncate text-center">{img.fileName}</p>
                 </div>
               ))}
               {imageAttachments.length < MAX_IMAGES && (
@@ -1590,25 +1669,27 @@ const AIAssistantPage: React.FC = () => {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   aria-label="Ajouter une image"
-                  className="flex-shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-[var(--border-color)] flex items-center justify-center theme-text-muted hover:text-sky-400 hover:border-sky-500/50 transition-colors"
+                  className="flex-shrink-0 w-14 h-14 rounded-lg border border-dashed border-[var(--border-color)] flex items-center justify-center theme-text-muted hover:text-cyan-400 hover:border-cyan-500/40 transition-colors"
                 >
-                  <Plus size={20} />
+                  <Plus size={18} />
                 </button>
               )}
             </div>
           )}
 
-          <div className="flex items-end gap-2">
+          {/* Main input container */}
+          <div className="relative flex items-end gap-2 bg-[var(--bg-primary)] rounded-2xl border border-[var(--border-color)] focus-within:border-cyan-500/50 focus-within:shadow-[0_0_0_3px_rgba(6,182,212,0.08)] transition-all">
+            {/* Image upload button - inside input */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={imageAttachments.length >= MAX_IMAGES}
-              className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+              className={`flex-shrink-0 self-end mb-2 ml-2 w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                 imageAttachments.length >= MAX_IMAGES
-                  ? 'bg-[var(--bg-tertiary)] theme-text-secondary cursor-not-allowed'
-                  : 'bg-[var(--bg-tertiary)] border border-[var(--border-color)] theme-text-muted hover:text-sky-400 hover:border-sky-500/50'
+                  ? 'theme-text-secondary cursor-not-allowed opacity-40'
+                  : 'theme-text-muted hover:text-cyan-400 hover:bg-cyan-500/10'
               }`}
-              title={`Uploader des images (${imageAttachments.length}/${MAX_IMAGES})`}
+              title={`Images (${imageAttachments.length}/${MAX_IMAGES})`}
             >
               <ImageIcon size={18} />
             </button>
@@ -1622,50 +1703,83 @@ const AIAssistantPage: React.FC = () => {
               className="hidden"
             />
 
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={handleTextareaInput}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  imageAttachments.length > 0
-                    ? 'Decrivez ce que vous souhaitez analyser...'
-                    : `Posez votre question en mode ${currentModeConfig.label.toLowerCase()}...`
-                }
-                rows={1}
-                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 pr-12 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all resize-none"
-                style={{ maxHeight: '120px' }}
-                disabled={isLoading || isStreaming}
-              />
-              <div className="absolute right-2 bottom-2 text-[10px] theme-text-secondary">
-                {isStreaming ? 'Streaming en cours...' : 'Shift+Enter pour retour a la ligne'}
-              </div>
-            </div>
+            {/* Textarea */}
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={handleTextareaInput}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                imageAttachments.length > 0
+                  ? 'Decrivez ce que vous souhaitez analyser...'
+                  : `Posez votre question medicale...`
+              }
+              rows={1}
+              className="flex-1 bg-transparent py-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none resize-none max-h-[120px]"
+              disabled={isLoading || isStreaming}
+            />
 
-            {isStreaming ? (
+            {/* Right side buttons */}
+            <div className="flex items-end gap-1 mb-2 mr-2">
+              {/* Voice recording button */}
               <button
                 type="button"
-                onClick={cancelStream}
-                className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg hover:shadow-xl hover:scale-105"
-                title="Arreter la generation"
-              >
-                <Square size={16} fill="white" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={(!input.trim() && imageAttachments.length === 0) || isLoading}
-                className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
-                  (input.trim() || imageAttachments.length > 0) && !isLoading
-                    ? `bg-gradient-to-r ${currentModeConfig.gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
-                    : 'bg-[var(--bg-tertiary)] theme-text-muted cursor-not-allowed'
+                onClick={toggleRecording}
+                disabled={isLoading || isStreaming}
+                className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                  isRecording
+                    ? 'bg-red-500/15 text-red-400 animate-pulse'
+                    : 'theme-text-muted hover:text-cyan-400 hover:bg-cyan-500/10'
                 }`}
+                title={isRecording ? `Enregistrement... ${recordingTime}s` : 'Dicter un message'}
               >
-                {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
               </button>
-            )}
+
+              {isStreaming ? (
+                <button
+                  type="button"
+                  onClick={cancelStream}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-red-500/15 text-red-400 hover:bg-red-500/25 cursor-pointer"
+                  title="Arreter"
+                >
+                  <Square size={14} fill="currentColor" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={(!input.trim() && imageAttachments.length === 0) || isLoading}
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
+                    (input.trim() || imageAttachments.length > 0) && !isLoading
+                      ? `bg-gradient-to-r ${currentModeConfig.gradient} text-white shadow-md hover:shadow-lg cursor-pointer`
+                      : 'theme-text-muted opacity-40 cursor-not-allowed'
+                  }`}
+                >
+                  {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom hint */}
+          <div className="mt-1.5 flex items-center justify-between px-1">
+            <span className="text-[10px] theme-text-muted">
+              {isRecording ? (
+                <span className="text-red-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse inline-block" />
+                  Enregistrement vocal... {recordingTime}s
+                </span>
+              ) : (
+                <>
+                  <span className={`inline-block mr-1 ${currentModeConfig.color}`}>{String.fromCodePoint(0x2022)}</span>
+                  Mode {currentModeConfig.label.toLowerCase()}
+                </>
+              )}
+            </span>
+            <span className="text-[10px] theme-text-muted">
+              {isStreaming ? 'Generation en cours...' : 'Enter pour envoyer'}
+            </span>
           </div>
         </div>
       </div>
