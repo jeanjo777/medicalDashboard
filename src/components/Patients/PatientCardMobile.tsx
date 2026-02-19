@@ -25,11 +25,11 @@ interface PatientCardMobileProps {
 }
 
 const defaultGetRiskScoreColor = (score: number | undefined | null): string => {
-  if (score == null) return 'bg-gray-100 text-gray-500 border-gray-200';
-  if (score <= 30) return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-  if (score <= 60) return 'bg-amber-100 text-amber-700 border-amber-200';
-  if (score <= 80) return 'bg-orange-100 text-orange-700 border-orange-200';
-  return 'bg-red-100 text-red-700 border-red-200';
+  if (score == null) return 'bg-[var(--bg-tertiary)] theme-text-muted border-[var(--border-color)]';
+  if (score <= 30) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+  if (score <= 60) return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+  if (score <= 80) return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+  return 'bg-red-500/10 text-red-500 border-red-500/20';
 };
 
 const getGenderLabel = (gender: string | undefined): string => {
@@ -53,7 +53,7 @@ const PatientCardMobile: React.FC<PatientCardMobileProps> = ({
 }) => {
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md hover:border-emerald-200 transition-all duration-200 group"
+      className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] p-4 hover:shadow-md hover:border-emerald-500/30 transition-all duration-200 group"
       role="article"
       aria-label={`Patient ${patient.name}`}
     >
@@ -70,10 +70,10 @@ const PatientCardMobile: React.FC<PatientCardMobileProps> = ({
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-gray-800 font-semibold text-base mb-0.5 truncate">
+          <h3 className="theme-text-primary font-semibold text-base mb-0.5 truncate">
             {patient.name}
           </h3>
-          <p className="text-gray-400 text-xs">
+          <p className="theme-text-muted text-xs">
             {formatAge(patient.date_of_birth, patient.age ? `${patient.age} ans` : '—')} · {getGenderLabel(patient.gender)}
           </p>
         </div>
@@ -92,37 +92,37 @@ const PatientCardMobile: React.FC<PatientCardMobileProps> = ({
       <div className="space-y-2 mb-3">
         {patient.primary_pathology && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">Pathologie</span>
-            <span className="text-gray-700 font-medium truncate ml-2 max-w-[200px]">
+            <span className="theme-text-muted">Pathologie</span>
+            <span className="theme-text-secondary font-medium truncate ml-2 max-w-[200px]">
               {patient.primary_pathology}
             </span>
           </div>
         )}
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Score de risque</span>
+          <span className="theme-text-muted">Score de risque</span>
           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${getRiskScoreColor(patient.riskScore)}`}>
             {patient.riskScore != null ? `${patient.riskScore}%` : '—'}
           </span>
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Email</span>
-          <span className="text-gray-700 font-medium truncate ml-2 max-w-[200px]">
+          <span className="theme-text-muted">Email</span>
+          <span className="theme-text-secondary font-medium truncate ml-2 max-w-[200px]">
             {patient.email}
           </span>
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Téléphone</span>
-          <span className="text-gray-700 font-medium">
+          <span className="theme-text-muted">Téléphone</span>
+          <span className="theme-text-secondary font-medium">
             {patient.phone || '—'}
           </span>
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Ajouté le</span>
-          <span className="text-gray-700 font-medium">
+          <span className="theme-text-muted">Ajouté le</span>
+          <span className="theme-text-secondary font-medium">
             {new Date(patient.created_at).toLocaleDateString('fr-FR', {
               day: '2-digit',
               month: 'short',
@@ -134,7 +134,7 @@ const PatientCardMobile: React.FC<PatientCardMobileProps> = ({
 
       <button
         onClick={() => onView(patient.id)}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-emerald-600 hover:text-white hover:bg-emerald-500 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 border border-emerald-200 hover:border-emerald-500"
+        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-emerald-500 hover:text-white hover:bg-emerald-500 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 border border-emerald-500/20 hover:border-emerald-500"
         aria-label={`Voir les détails de ${patient.name}`}
       >
         <Eye size={18} strokeWidth={2} />
