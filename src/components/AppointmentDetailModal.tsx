@@ -167,19 +167,34 @@ export const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     };
   }, [isOpen, onClose]);
 
+  // Check if a string is a valid UUID
+  const isValidUUID = (str: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
   const fetchAppointment = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Check if it's a demo appointment
-      if (appointmentId && appointmentId.startsWith('demo-')) {
+      // Check if it's a demo appointment (demo- prefix or non-UUID like APT-xxxx)
+      if (appointmentId && !isValidUUID(appointmentId)) {
         const demoAppointment = DEMO_APPOINTMENTS_DATA[appointmentId];
         if (demoAppointment) {
           setAppointment(demoAppointment);
           setLoading(false);
           return;
         }
+        // Non-UUID ID with no matching demo data - show as demo
+        setAppointment({
+          id: appointmentId,
+          patient_name: 'Patient (démo)',
+          appointment_date: new Date().toISOString().split('T')[0],
+          appointment_time: '09:00',
+          message: 'Données de démonstration',
+          status: 'confirmed',
+        });
+        setLoading(false);
+        return;
       }
 
       const { data, error: fetchError } = await supabase
@@ -207,8 +222,8 @@ export const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     setError(null);
 
     try {
-      // Handle demo appointments
-      if (appointmentId && appointmentId.startsWith('demo-')) {
+      // Handle demo appointments (non-UUID IDs)
+      if (appointmentId && !isValidUUID(appointmentId)) {
         setShowSuccess('Rendez-vous annulé avec succès (Mode démo)');
         setTimeout(() => {
           onUpdate?.();
@@ -249,8 +264,8 @@ export const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     setError(null);
 
     try {
-      // Handle demo appointments
-      if (appointmentId && appointmentId.startsWith('demo-')) {
+      // Handle demo appointments (non-UUID IDs)
+      if (appointmentId && !isValidUUID(appointmentId)) {
         setShowSuccess('Rendez-vous marqué comme complété (Mode démo)');
         setTimeout(() => {
           onUpdate?.();
