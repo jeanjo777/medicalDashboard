@@ -27,7 +27,8 @@ const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
 }) => {
   const { data: rateData } = useAppointmentPassingRate();
 
-  const rates = isDemoMode ? demoDefaults : (rateData || demoDefaults);
+  const hasRealData = rateData && (rateData.complete > 0 || rateData.cancelled > 0 || rateData.pending > 0);
+  const rates = isDemoMode ? demoDefaults : (hasRealData ? rateData : demoDefaults);
 
   const complete = completeProp ?? rates.complete;
   const cancelled = cancelledProp ?? rates.cancelled;

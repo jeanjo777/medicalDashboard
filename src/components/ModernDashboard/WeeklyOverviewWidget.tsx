@@ -12,7 +12,8 @@ const demoData = [18, 24, 15, 28, 22, 8, 4];
 const WeeklyOverviewWidget: React.FC<WeeklyOverviewWidgetProps> = ({ isDemoMode = true }) => {
   const { data: weeklyData } = useWeeklyAppointments();
 
-  const data = isDemoMode ? demoData : (weeklyData?.counts || demoData);
+  const hasRealData = weeklyData?.counts && weeklyData.counts.some(v => v > 0);
+  const data = isDemoMode ? demoData : (hasRealData ? weeklyData.counts : demoData);
   const maxVal = Math.max(...data, 1);
   const total = data.reduce((a, b) => a + b, 0);
 

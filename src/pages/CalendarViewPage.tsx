@@ -746,12 +746,6 @@ const CalendarViewPage: React.FC = () => {
   const [prefilledDate, setPrefilledDate] = useState<string | undefined>();
   const [prefilledTime, setPrefilledTime] = useState<string | undefined>();
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user ? `Dr. ${user.prenom} ${user.nom}` : 'Professionnel';
-  const userInitials = user
-    ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase()
-    : 'MD';
-
   const timeSlots = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 8), []);
 
   // Filtered appointments
@@ -940,7 +934,7 @@ const CalendarViewPage: React.FC = () => {
               <div className="ml-12 lg:ml-0">
                 <h1 className="text-xl font-bold theme-text-primary">Calendrier</h1>
               </div>
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8 bg-[var(--bg-primary)]">
@@ -962,7 +956,7 @@ const CalendarViewPage: React.FC = () => {
               <div className="ml-12 lg:ml-0">
                 <h1 className="text-xl font-bold theme-text-primary">Calendrier</h1>
               </div>
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8 bg-[var(--bg-primary)]">
@@ -994,7 +988,7 @@ const CalendarViewPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </div>
         </header>

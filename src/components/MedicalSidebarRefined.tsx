@@ -57,11 +57,11 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
 
   // User data from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user?.prenom && user?.nom ? `Dr. ${user.prenom} ${user.nom}` : 'Dr. Anderson';
-  const userEmail = user?.email || 'contact@medicare.com';
+  const userName = user?.prenom && user?.nom ? `Dr. ${user.prenom} ${user.nom}` : 'Dr. Simplice Achi AKE';
+  const userEmail = user?.email || 'simpliceake1975@gmail.com';
   const userInitials = user?.prenom && user?.nom
     ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
-    : 'DA';
+    : 'SA';
 
   // Persist collapsed state
   useEffect(() => {

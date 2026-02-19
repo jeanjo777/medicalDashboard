@@ -226,14 +226,6 @@ const AppointmentsPage: React.FC = () => {
     pagination.goToPage(1);
   }, [searchTerm, statusFilter, typeFilter]);
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user?.prenom && user?.nom
-    ? `Dr. ${user.prenom} ${user.nom}`
-    : user?.username ? `Dr. ${user.username}` : 'Professionnel';
-  const userInitials = user?.prenom && user?.nom
-    ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
-    : user?.username ? user.username.slice(0, 2).toUpperCase() : 'MD';
-
   // TEMP: Auth check disabled for testing
   // useEffect(() => {
   //   const token = localStorage.getItem('auth_token');
@@ -465,7 +457,7 @@ const AppointmentsPage: React.FC = () => {
           <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-bold theme-text-primary">Rendez-vous</h1>
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8">
@@ -484,7 +476,7 @@ const AppointmentsPage: React.FC = () => {
           <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-bold theme-text-primary ml-12 lg:ml-0">Rendez-vous</h1>
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8">
@@ -540,7 +532,7 @@ const AppointmentsPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </div>
         </header>

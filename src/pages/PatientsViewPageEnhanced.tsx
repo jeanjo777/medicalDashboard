@@ -331,7 +331,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
                 <Bell size={16} className="theme-text-muted" />
               </button>
 
-              <UserMenu userName="Dr. Anderson" userInitials="DA" />
+              <UserMenu />
             </div>
           </div>
         </header>

@@ -72,12 +72,12 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
     supabase
       .from('patients')
       .select('id', { count: 'exact', head: true })
-      .eq('status', 'in-treatment'),
+      .eq('status', 'in_treatment'),
 
     supabase
       .from('patients')
       .select('id', { count: 'exact', head: true })
-      .eq('status', 'in-treatment')
+      .eq('status', 'in_treatment')
       .lte('updated_at', lastWeek),
 
     supabase

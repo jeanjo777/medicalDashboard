@@ -52,14 +52,6 @@ const ModernDashboardPage: React.FC = () => {
 
   logger.info('[DASHBOARD] Auth complete, rendering dashboard');
 
-  const userName = user ? `Dr. ${user.prenom} ${user.nom}` : 'Professionnel de santé';
-  const userInitials = user
-    ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase()
-    : 'MD';
-
-  logger.info('[DASHBOARD] User info:', { userName, userInitials });
-  logger.info('[DASHBOARD] Rendering UserMenu with:', { userName, userInitials });
-
   return (
     <div className="flex min-h-screen bg-[#0f172a]">
       {/* Sidebar */}
@@ -83,7 +75,7 @@ const ModernDashboardPage: React.FC = () => {
             {/* Right: Actions */}
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               {/* User Menu with Logout */}
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </div>
         </header>

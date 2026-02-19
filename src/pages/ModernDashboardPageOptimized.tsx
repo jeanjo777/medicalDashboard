@@ -52,12 +52,7 @@ const DashboardLoader = memo(() => (
 DashboardLoader.displayName = 'DashboardLoader';
 
 // Composant header optimisé
-interface DashboardHeaderProps {
-  userName: string;
-  userInitials: string;
-}
-
-const DashboardHeader = memo<DashboardHeaderProps>(({ userName, userInitials }) => (
+const DashboardHeader = memo(() => (
   <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
     <div className="flex items-center justify-between">
       {/* Left: Title */}
@@ -66,13 +61,13 @@ const DashboardHeader = memo<DashboardHeaderProps>(({ userName, userInitials }) 
           Tableau de Bord Médical
         </h1>
         <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
-          Bienvenue, {userName}
+          Bienvenue
         </p>
       </div>
 
       {/* Right: User Menu */}
       <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-        <MemoizedUserMenu userName={userName} userInitials={userInitials} />
+        <MemoizedUserMenu />
       </div>
     </div>
   </header>
@@ -117,7 +112,7 @@ BottomGrid.displayName = 'BottomGrid';
  */
 const ModernDashboardPageOptimized: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
-  const { user, isLoading: authLoading } = useMedicAuth();
+  const { isLoading: authLoading } = useMedicAuth();
 
   // Mémoïser le callback pour éviter les re-renders de la sidebar
   const handleSectionChange = useCallback((section: string) => {
@@ -128,12 +123,6 @@ const ModernDashboardPageOptimized: React.FC = () => {
   if (authLoading) {
     return <DashboardLoader />;
   }
-
-  // Calculer les infos utilisateur une seule fois
-  const userName = user ? `Dr. ${user.prenom} ${user.nom}` : 'Professionnel de santé';
-  const userInitials = user
-    ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase()
-    : 'MD';
 
   return (
     <div className="flex min-h-screen bg-[#0f172a]">
@@ -146,7 +135,7 @@ const ModernDashboardPageOptimized: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:ml-0">
         {/* Header mémoïsé */}
-        <DashboardHeader userName={userName} userInitials={userInitials} />
+        <DashboardHeader />
 
         {/* Dashboard Content */}
         <main className="flex-1 p-3 sm:p-4 lg:p-8 overflow-auto">

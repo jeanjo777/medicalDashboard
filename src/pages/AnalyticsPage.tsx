@@ -62,12 +62,6 @@ const AnalyticsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user ? `Dr. ${user.prenom || ''} ${user.nom || ''}`.trim() : 'Professionnel';
-  const userInitials = user
-    ? `${user.prenom?.[0] || ''}${user.nom?.[0] || ''}`.toUpperCase() || 'MD'
-    : 'MD';
-
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(timer);
@@ -212,7 +206,7 @@ const AnalyticsPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <UserMenu userName={userName} userInitials={userInitials} />
+              <UserMenu />
             </div>
           </div>
         </header>
