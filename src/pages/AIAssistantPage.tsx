@@ -23,9 +23,14 @@ import {
   Search,
   FileText,
   UserCheck,
+  Brain,
+  Square,
+  CheckCircle2,
+  Wrench,
+  ChevronRight,
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext, type ConversationSummary } from '../hooks/useAIAssistant';
+import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext, type ConversationSummary, type ThinkingBlock as ThinkingBlockType, type ToolExecution } from '../hooks/useAIAssistant';
 import { supabase } from '../lib/supabase';
 
 // ============================================
@@ -143,9 +148,9 @@ const formatMessage = (text: string): React.ReactNode[] => {
       <span>
         {parts.map((part, j) => {
           if (part.startsWith('**') && part.endsWith('**'))
-            return <strong key={j} className="text-white font-semibold">{part.replace(/\*\*/g, '')}</strong>;
+            return <strong key={j} className="text-[var(--text-primary)] font-semibold">{part.replace(/\*\*/g, '')}</strong>;
           if (part.startsWith('`') && part.endsWith('`'))
-            return <code key={j} className="bg-[#334155] text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono">{part.slice(1, -1)}</code>;
+            return <code key={j} className="bg-[var(--bg-tertiary)] text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono">{part.slice(1, -1)}</code>;
           return part;
         })}
       </span>
@@ -158,20 +163,20 @@ const formatMessage = (text: string): React.ReactNode[] => {
     const dataRows = tableRows.slice(2); // Skip separator row
 
     elements.push(
-      <div key={`table-${startIdx}`} className="my-3 overflow-x-auto rounded-xl border border-[#334155]">
+      <div key={`table-${startIdx}`} className="my-3 overflow-x-auto rounded-xl border border-[var(--border-color)]">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-[#334155]/50">
+            <tr className="bg-[var(--bg-tertiary)]/50">
               {headers.map((h, hi) => (
-                <th key={hi} className="px-3 py-2 text-left text-xs font-semibold text-gray-300 whitespace-nowrap">{h.trim()}</th>
+                <th key={hi} className="px-3 py-2 text-left text-xs font-semibold theme-text-secondary whitespace-nowrap">{h.trim()}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {dataRows.map((row, ri) => (
-              <tr key={ri} className="border-t border-[#334155]/50">
+              <tr key={ri} className="border-t border-[var(--border-color)]/50">
                 {row.map((cell, ci) => (
-                  <td key={ci} className="px-3 py-2 text-gray-300 whitespace-nowrap">{processInlineFormatting(cell.trim())}</td>
+                  <td key={ci} className="px-3 py-2 theme-text-secondary whitespace-nowrap">{processInlineFormatting(cell.trim())}</td>
                 ))}
               </tr>
             ))}
@@ -187,7 +192,7 @@ const formatMessage = (text: string): React.ReactNode[] => {
     if (line.trim().startsWith('```')) {
       if (inCodeBlock) {
         elements.push(
-          <pre key={`code-${i}`} className="my-2 bg-[#0f172a] border border-[#334155] rounded-xl p-3 overflow-x-auto">
+          <pre key={`code-${i}`} className="my-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl p-3 overflow-x-auto">
             <code className="text-xs font-mono text-cyan-200">{codeContent.join('\n')}</code>
           </pre>
         );
@@ -218,34 +223,34 @@ const formatMessage = (text: string): React.ReactNode[] => {
 
     // Horizontal rule
     if (/^---+$/.test(line.trim()) || /^\*\*\*+$/.test(line.trim())) {
-      elements.push(<hr key={i} className="my-3 border-[#334155]" />);
+      elements.push(<hr key={i} className="my-3 border-[var(--border-color)]" />);
       return;
     }
 
     // H3 headers
     if (line.startsWith('### ')) {
-      elements.push(<h4 key={i} className="text-white font-bold text-sm mt-4 mb-1">{processInlineFormatting(line.slice(4))}</h4>);
+      elements.push(<h4 key={i} className="text-[var(--text-primary)] font-bold text-sm mt-4 mb-1">{processInlineFormatting(line.slice(4))}</h4>);
       return;
     }
     if (line.startsWith('## ')) {
-      elements.push(<h3 key={i} className="text-white font-bold text-base mt-4 mb-1">{processInlineFormatting(line.slice(3))}</h3>);
+      elements.push(<h3 key={i} className="text-[var(--text-primary)] font-bold text-base mt-4 mb-1">{processInlineFormatting(line.slice(3))}</h3>);
       return;
     }
     if (line.startsWith('# ')) {
-      elements.push(<h2 key={i} className="text-white font-bold text-lg mt-4 mb-2">{processInlineFormatting(line.slice(2))}</h2>);
+      elements.push(<h2 key={i} className="text-[var(--text-primary)] font-bold text-lg mt-4 mb-2">{processInlineFormatting(line.slice(2))}</h2>);
       return;
     }
 
     // Bold-only header lines
     if (line.startsWith('**') && line.endsWith('**') && !line.slice(2, -2).includes('**')) {
-      elements.push(<p key={i} className="font-bold text-white mt-3 mb-1 text-sm">{line.replace(/\*\*/g, '')}</p>);
+      elements.push(<p key={i} className="font-bold text-[var(--text-primary)] mt-3 mb-1 text-sm">{line.replace(/\*\*/g, '')}</p>);
       return;
     }
 
     // Bullet points
     if (line.startsWith('- ') || line.startsWith('* ')) {
       elements.push(
-        <li key={i} className="ml-4 text-sm text-gray-300 leading-relaxed list-disc">
+        <li key={i} className="ml-4 text-sm theme-text-secondary leading-relaxed list-disc">
           {processInlineFormatting(line.substring(2))}
         </li>
       );
@@ -255,7 +260,7 @@ const formatMessage = (text: string): React.ReactNode[] => {
     // Numbered lists
     if (/^\d+\.\s/.test(line)) {
       elements.push(
-        <li key={i} className="ml-4 text-sm text-gray-300 leading-relaxed list-decimal">
+        <li key={i} className="ml-4 text-sm theme-text-secondary leading-relaxed list-decimal">
           {processInlineFormatting(line.replace(/^\d+\.\s/, ''))}
         </li>
       );
@@ -270,7 +275,7 @@ const formatMessage = (text: string): React.ReactNode[] => {
 
     // Regular paragraph
     elements.push(
-      <p key={i} className="text-sm text-gray-300 leading-relaxed">
+      <p key={i} className="text-sm theme-text-secondary leading-relaxed">
         {processInlineFormatting(line)}
       </p>
     );
@@ -448,26 +453,26 @@ const PatientSearchSelector: React.FC<{
   }, [query, searchPatients]);
 
   return (
-    <div className="bg-[#1e293b] border border-[#334155] rounded-2xl p-4 shadow-xl">
+    <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 shadow-xl">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <UserCheck size={14} className="text-cyan-400" />
           Selectionner un Patient
         </h3>
-        <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition-colors" aria-label="Fermer la recherche patient">
+        <button type="button" onClick={onClose} className="theme-text-muted hover:text-[var(--text-primary)] transition-colors" aria-label="Fermer la recherche patient">
           <X size={16} />
         </button>
       </div>
 
       <div className="relative mb-3">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted" />
         <input
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="Rechercher par nom, email ou pathologie..."
           aria-label="Rechercher un patient"
-          className="w-full bg-[#0f172a] border border-[#334155] rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none transition-colors"
+          className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl pl-9 pr-3 py-2.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-cyan-500 focus:outline-none transition-colors"
           autoFocus
         />
       </div>
@@ -476,16 +481,16 @@ const PatientSearchSelector: React.FC<{
         {loading && (
           <div className="flex items-center justify-center py-4">
             <Loader2 size={16} className="text-cyan-400 animate-spin" />
-            <span className="text-xs text-gray-400 ml-2">Recherche...</span>
+            <span className="text-xs theme-text-muted ml-2">Recherche...</span>
           </div>
         )}
 
         {!loading && query.length >= 2 && results.length === 0 && (
-          <p className="text-center text-gray-500 text-xs py-4">Aucun patient trouve</p>
+          <p className="text-center theme-text-muted text-xs py-4">Aucun patient trouve</p>
         )}
 
         {!loading && query.length < 2 && (
-          <p className="text-center text-gray-500 text-xs py-4">Tapez au moins 2 caracteres</p>
+          <p className="text-center theme-text-muted text-xs py-4">Tapez au moins 2 caracteres</p>
         )}
 
         {results.map(patient => (
@@ -493,7 +498,7 @@ const PatientSearchSelector: React.FC<{
             key={patient.id}
             type="button"
             onClick={() => onSelect(patient)}
-            className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-[#334155] transition-colors flex items-center gap-3 group"
+            className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-3 group"
           >
             <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-white text-xs font-bold">
@@ -501,8 +506,8 @@ const PatientSearchSelector: React.FC<{
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm text-white font-medium truncate">{patient.name}</div>
-              <div className="text-[10px] text-gray-500 flex items-center gap-2">
+              <div className="text-sm text-[var(--text-primary)] font-medium truncate">{patient.name}</div>
+              <div className="text-[10px] theme-text-muted flex items-center gap-2">
                 {patient.primary_pathology && <span>{patient.primary_pathology}</span>}
                 {patient.age && <span>{patient.age} ans</span>}
                 {patient.riskScore != null && (
@@ -519,6 +524,99 @@ const PatientSearchSelector: React.FC<{
           </button>
         ))}
       </div>
+    </div>
+  );
+};
+
+// ============================================
+// TOOL LABELS (French)
+// ============================================
+
+const TOOL_LABELS: Record<string, { label: string; icon: React.ElementType }> = {
+  search_patient_records: { label: 'Recherche du dossier patient', icon: UserCheck },
+  check_drug_interactions: { label: 'Verification des interactions medicamenteuses', icon: Tablets },
+  calculate_medical_score: { label: 'Calcul du score medical', icon: Stethoscope },
+  search_recent_labs: { label: 'Recherche des resultats de laboratoire', icon: Search },
+  get_appointment_history: { label: 'Consultation de l\'historique des RDV', icon: Clock },
+};
+
+// ============================================
+// THINKING BLOCK COMPONENT
+// ============================================
+
+const ThinkingBlockComponent: React.FC<{ thinking: ThinkingBlockType }> = ({ thinking }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!thinking.text) return null;
+
+  return (
+    <div className="mb-3">
+      <button
+        type="button"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/15 transition-all w-full text-left group"
+      >
+        <Brain size={14} className="text-violet-400 flex-shrink-0" />
+        <span className="text-xs font-medium text-violet-300">Raisonnement clinique</span>
+        {!thinking.isComplete && (
+          <Loader2 size={12} className="text-violet-400 animate-spin ml-1" />
+        )}
+        {thinking.isComplete && (
+          <CheckCircle2 size={12} className="text-violet-400 ml-1" />
+        )}
+        <ChevronRight
+          size={12}
+          className={`text-violet-400 ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+        />
+      </button>
+
+      {isExpanded && (
+        <div className="mt-2 px-3 py-2.5 rounded-xl bg-violet-500/5 border border-violet-500/10 max-h-64 overflow-y-auto">
+          <p className="text-xs text-violet-300/80 leading-relaxed whitespace-pre-wrap font-mono">
+            {thinking.text}
+            {!thinking.isComplete && <span className="inline-block w-1.5 h-3.5 bg-violet-400 ml-0.5 animate-pulse" />}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================
+// TOOL EXECUTION INDICATOR
+// ============================================
+
+const ToolExecutionIndicator: React.FC<{ executions: ToolExecution[] }> = ({ executions }) => {
+  if (!executions || executions.length === 0) return null;
+
+  return (
+    <div className="mb-3 space-y-1.5">
+      {executions.map((exec, idx) => {
+        const toolInfo = TOOL_LABELS[exec.tool] || { label: exec.tool, icon: Wrench };
+        const ToolIcon = toolInfo.icon;
+        const isCalling = exec.status === 'calling';
+
+        return (
+          <div
+            key={`${exec.tool}-${idx}`}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition-all ${
+              isCalling
+                ? 'bg-cyan-500/10 border border-cyan-500/20'
+                : 'bg-emerald-500/10 border border-emerald-500/20'
+            }`}
+          >
+            {isCalling ? (
+              <Loader2 size={13} className="text-cyan-400 animate-spin flex-shrink-0" />
+            ) : (
+              <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0" />
+            )}
+            <ToolIcon size={13} className={isCalling ? 'text-cyan-400' : 'text-emerald-400'} />
+            <span className={isCalling ? 'text-cyan-300' : 'text-emerald-300'}>
+              {toolInfo.label}{isCalling ? '...' : ''}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -549,7 +647,7 @@ const MessageBubble: React.FC<{
         <div className={`rounded-2xl px-4 py-3 ${
           isUser
             ? 'bg-gradient-to-br from-cyan-600 to-teal-600 text-white shadow-lg shadow-cyan-600/15'
-            : 'bg-[#1e293b] border border-[#334155] text-gray-300 shadow-lg shadow-black/10'
+            : 'bg-[var(--bg-secondary)] border border-[var(--border-color)] theme-text-secondary shadow-lg shadow-black/10'
         }`}>
           {/* Images */}
           {message.images && message.images.length > 0 && (
@@ -571,15 +669,30 @@ const MessageBubble: React.FC<{
             </div>
           )}
 
+          {/* Thinking block (assistant only) */}
+          {!isUser && message.thinking && (
+            <ThinkingBlockComponent thinking={message.thinking} />
+          )}
+
+          {/* Tool execution indicators (assistant only) */}
+          {!isUser && message.toolExecutions && message.toolExecutions.length > 0 && (
+            <ToolExecutionIndicator executions={message.toolExecutions} />
+          )}
+
           {isUser ? (
             <p className="text-sm leading-relaxed">{message.content}</p>
           ) : (
-            <div className="space-y-0.5">{formatMessage(message.content)}</div>
+            <div className="space-y-0.5">
+              {formatMessage(message.content)}
+              {message.isStreaming && (
+                <span className="inline-block w-1.5 h-4 bg-cyan-400 ml-0.5 animate-pulse rounded-sm" />
+              )}
+            </div>
           )}
         </div>
 
         <div className="flex items-center gap-2 mt-1 px-1">
-          <span className="text-[10px] text-gray-500">
+          <span className="text-[10px] theme-text-muted">
             {message.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
           </span>
           {!isUser && message.content && (
@@ -587,7 +700,7 @@ const MessageBubble: React.FC<{
               <button
                 type="button"
                 onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-                className="text-gray-600 hover:text-cyan-400 transition-colors"
+                className="theme-text-secondary hover:text-cyan-400 transition-colors"
                 title="Telecharger"
               >
                 <Download size={12} />
@@ -595,11 +708,11 @@ const MessageBubble: React.FC<{
               {showDownloadMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowDownloadMenu(false)} />
-                  <div className="absolute left-0 bottom-full mb-1 w-44 bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl z-50 overflow-hidden">
+                  <div className="absolute left-0 bottom-full mb-1 w-44 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl z-50 overflow-hidden">
                     <button
                       type="button"
                       onClick={() => { downloadAsText(message.content, message.mode || 'general'); setShowDownloadMenu(false); }}
-                      className="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-[#334155] transition-colors flex items-center gap-2"
+                      className="w-full px-3 py-2 text-left text-xs theme-text-secondary hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2"
                     >
                       <Download size={12} />
                       Exporter en .txt
@@ -607,7 +720,7 @@ const MessageBubble: React.FC<{
                     <button
                       type="button"
                       onClick={() => { generatePDFReport(message, patientContext, message.mode || 'general'); setShowDownloadMenu(false); }}
-                      className="w-full px-3 py-2 text-left text-xs text-gray-300 hover:bg-[#334155] transition-colors flex items-center gap-2"
+                      className="w-full px-3 py-2 text-left text-xs theme-text-secondary hover:bg-[var(--bg-tertiary)] transition-colors flex items-center gap-2"
                     >
                       <FileText size={12} />
                       Rapport PDF Medical
@@ -697,13 +810,13 @@ const PatientContextPanel: React.FC<{
   };
 
   return (
-    <div className="bg-[#1e293b] border border-[#334155] rounded-2xl p-4 space-y-3 shadow-xl">
+    <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl p-4 space-y-3 shadow-xl">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
           <Heart size={14} className="text-rose-400" />
           Contexte Patient
         </h3>
-        <button type="button" onClick={onClose} className="text-gray-400 hover:text-white transition-colors" aria-label="Fermer le contexte patient">
+        <button type="button" onClick={onClose} className="theme-text-muted hover:text-[var(--text-primary)] transition-colors" aria-label="Fermer le contexte patient">
           <X size={16} />
         </button>
       </div>
@@ -712,7 +825,7 @@ const PatientContextPanel: React.FC<{
       <button
         type="button"
         onClick={() => setShowPatientSearch(!showPatientSearch)}
-        className="w-full py-2.5 bg-[#0f172a] border border-[#334155] rounded-xl text-sm text-gray-300 hover:border-cyan-500 transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-sm theme-text-secondary hover:border-cyan-500 transition-colors flex items-center justify-center gap-2"
       >
         <UserCheck size={14} className="text-cyan-400" />
         {selectedPatientName || 'Selectionner un patient de la base'}
@@ -727,22 +840,22 @@ const PatientContextPanel: React.FC<{
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-gray-400 mb-1 block">Age</label>
+          <label className="text-xs theme-text-muted mb-1 block">Age</label>
           <input
             type="number"
             value={age}
             onChange={e => setAge(e.target.value)}
             placeholder="Ex: 45"
-            className="w-full bg-[#0f172a] border border-[#334155] rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none transition-colors"
+            className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-cyan-500 focus:outline-none transition-colors"
           />
         </div>
         <div>
-          <label className="text-xs text-gray-400 mb-1 block">Sexe</label>
+          <label className="text-xs theme-text-muted mb-1 block">Sexe</label>
           <select
             value={sex}
             onChange={e => setSex(e.target.value)}
             aria-label="Sexe du patient"
-            className="w-full bg-[#0f172a] border border-[#334155] rounded-xl px-3 py-2 text-sm text-white focus:border-cyan-500 focus:outline-none transition-colors"
+            className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none transition-colors"
           >
             <option value="">--</option>
             <option value="M">Masculin</option>
@@ -752,35 +865,35 @@ const PatientContextPanel: React.FC<{
       </div>
 
       <div>
-        <label className="text-xs text-gray-400 mb-1 block">Pathologie principale</label>
+        <label className="text-xs theme-text-muted mb-1 block">Pathologie principale</label>
         <input
           type="text"
           value={pathology}
           onChange={e => setPathology(e.target.value)}
           placeholder="Ex: Hypertension arterielle"
-          className="w-full bg-[#0f172a] border border-[#334155] rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none transition-colors"
+          className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-cyan-500 focus:outline-none transition-colors"
         />
       </div>
 
       <div>
-        <label className="text-xs text-gray-400 mb-1 block">Antecedents (separes par virgule)</label>
+        <label className="text-xs theme-text-muted mb-1 block">Antecedents (separes par virgule)</label>
         <input
           type="text"
           value={antecedents}
           onChange={e => setAntecedents(e.target.value)}
           placeholder="HTA, Diabete, BPCO..."
-          className="w-full bg-[#0f172a] border border-[#334155] rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none transition-colors"
+          className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-cyan-500 focus:outline-none transition-colors"
         />
       </div>
 
       <div>
-        <label className="text-xs text-gray-400 mb-1 block">Traitements en cours (separes par virgule)</label>
+        <label className="text-xs theme-text-muted mb-1 block">Traitements en cours (separes par virgule)</label>
         <input
           type="text"
           value={medications}
           onChange={e => setMedications(e.target.value)}
           placeholder="Metformine, Ramipril..."
-          className="w-full bg-[#0f172a] border border-[#334155] rounded-xl px-3 py-2 text-sm text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none transition-colors"
+          className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-cyan-500 focus:outline-none transition-colors"
         />
       </div>
 
@@ -803,6 +916,7 @@ const AIAssistantPage: React.FC = () => {
   const {
     messages,
     isLoading,
+    isStreaming,
     mode,
     patientContext,
     currentConsultationId,
@@ -814,6 +928,7 @@ const AIAssistantPage: React.FC = () => {
     clearChat,
     loadConversation,
     newConversation,
+    cancelStream,
   } = useAIAssistant();
 
   const [input, setInput] = useState('');
@@ -829,9 +944,19 @@ const AIAssistantPage: React.FC = () => {
   const currentModeConfig = MODE_CONFIG[mode];
   const CurrentModeIcon = currentModeConfig.icon;
 
+  // Auto-scroll on new messages and during streaming
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Continuous auto-scroll during streaming
+  useEffect(() => {
+    if (!isStreaming) return;
+    const interval = setInterval(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+    return () => clearInterval(interval);
+  }, [isStreaming]);
 
   const processFiles = useCallback((files: FileList | File[]) => {
     const fileArray = Array.from(files);
@@ -872,7 +997,7 @@ const AIAssistantPage: React.FC = () => {
   };
 
   const handleSend = () => {
-    if ((!input.trim() && imageAttachments.length === 0) || isLoading) return;
+    if ((!input.trim() && imageAttachments.length === 0) || isLoading || isStreaming) return;
     const message = input.trim() || (imageAttachments.length > 0 ? 'Analysez cette image medicale.' : '');
     sendMessage(message, imageAttachments.length > 0 ? imageAttachments : undefined);
     setInput('');
@@ -901,7 +1026,7 @@ const AIAssistantPage: React.FC = () => {
   }, [processFiles]);
 
   return (
-    <div className="flex h-screen bg-[#0f172a] overflow-hidden">
+    <div className="flex h-screen bg-[var(--bg-primary)] overflow-hidden">
       <MedicalSidebarRefined activeItem="ai-assistant" onCollapsedChange={setSidebarCollapsed} />
 
       <div
@@ -910,15 +1035,15 @@ const AIAssistantPage: React.FC = () => {
         onDrop={handleDrop}
       >
         {/* Header */}
-        <header className="bg-[#1e293b] border-b border-[#334155] px-4 md:px-6 py-3">
+        <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-4 md:px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 ml-12 lg:ml-0">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br ${currentModeConfig.gradient} shadow-lg`}>
                 <Sparkles size={18} className="text-white" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">Assistant IA Medical</h1>
-                <p className="text-xs text-gray-400">{currentModeConfig.description}</p>
+                <h1 className="text-lg font-bold text-[var(--text-primary)]">Assistant IA Medical</h1>
+                <p className="text-xs theme-text-muted">{currentModeConfig.description}</p>
               </div>
             </div>
 
@@ -939,7 +1064,7 @@ const AIAssistantPage: React.FC = () => {
                 className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all flex items-center gap-1.5 ${
                   showContext || patientContext
                     ? 'bg-rose-600/20 border-rose-500/40 text-rose-300'
-                    : 'bg-[#334155] border-[#475569] text-gray-300 hover:border-cyan-500'
+                    : 'bg-[var(--bg-tertiary)] border-[var(--border-color)] theme-text-secondary hover:border-cyan-500'
                 }`}
               >
                 <Heart size={14} />
@@ -960,7 +1085,7 @@ const AIAssistantPage: React.FC = () => {
                 {showModeMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowModeMenu(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl z-50 overflow-hidden">
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl z-50 overflow-hidden">
                       {(Object.entries(MODE_CONFIG) as [AssistantMode, typeof MODE_CONFIG[AssistantMode]][]).map(([key, config]) => {
                         const Icon = config.icon;
                         return (
@@ -968,12 +1093,12 @@ const AIAssistantPage: React.FC = () => {
                             key={key}
                             type="button"
                             onClick={() => { setMode(key); setShowModeMenu(false); }}
-                            className={`w-full px-4 py-3 text-left transition-colors flex items-center gap-3 ${mode === key ? 'bg-[#334155]' : 'hover:bg-[#334155]/50'}`}
+                            className={`w-full px-4 py-3 text-left transition-colors flex items-center gap-3 ${mode === key ? 'bg-[var(--bg-tertiary)]' : 'hover:bg-[var(--bg-tertiary)]/50'}`}
                           >
                             <Icon size={16} className={config.color} />
                             <div>
-                              <div className="text-sm text-white font-medium">{config.label}</div>
-                              <div className="text-[10px] text-gray-500">{config.description}</div>
+                              <div className="text-sm text-[var(--text-primary)] font-medium">{config.label}</div>
+                              <div className="text-[10px] theme-text-muted">{config.description}</div>
                             </div>
                           </button>
                         );
@@ -990,7 +1115,7 @@ const AIAssistantPage: React.FC = () => {
                   className={`p-2 rounded-xl border transition-all ${
                     showHistory
                       ? 'bg-cyan-600/20 border-cyan-500/40 text-cyan-400'
-                      : 'bg-[#334155] border-[#475569] text-gray-400 hover:text-cyan-400 hover:border-cyan-500/50'
+                      : 'bg-[var(--bg-tertiary)] border-[var(--border-color)] theme-text-muted hover:text-cyan-400 hover:border-cyan-500/50'
                   }`}
                   title="Historique des conversations"
                 >
@@ -1000,9 +1125,9 @@ const AIAssistantPage: React.FC = () => {
                 {showHistory && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-80 max-h-[28rem] bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden">
-                      <div className="p-3 border-b border-[#334155] flex items-center justify-between flex-shrink-0">
-                        <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <div className="absolute right-0 top-full mt-2 w-80 max-h-[28rem] bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden">
+                      <div className="p-3 border-b border-[var(--border-color)] flex items-center justify-between flex-shrink-0">
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
                           <Clock size={14} className="text-cyan-400" />
                           Conversations
                         </h3>
@@ -1019,26 +1144,26 @@ const AIAssistantPage: React.FC = () => {
                         {conversationsLoading ? (
                           <div className="flex items-center justify-center py-6">
                             <Loader2 size={16} className="text-cyan-400 animate-spin" />
-                            <span className="text-xs text-gray-400 ml-2">Chargement...</span>
+                            <span className="text-xs theme-text-muted ml-2">Chargement...</span>
                           </div>
                         ) : conversations.length === 0 ? (
-                          <p className="text-center text-gray-500 text-xs py-6">Aucune conversation enregistree</p>
+                          <p className="text-center theme-text-muted text-xs py-6">Aucune conversation enregistree</p>
                         ) : (
                           conversations.map(conv => (
                             <button
                               key={conv.id}
                               type="button"
                               onClick={() => { loadConversation(conv.id); setShowHistory(false); }}
-                              className={`w-full text-left px-3 py-2.5 transition-colors hover:bg-[#334155]/50 border-b border-[#334155]/30 cursor-pointer ${
+                              className={`w-full text-left px-3 py-2.5 transition-colors hover:bg-[var(--bg-tertiary)]/50 border-b border-[var(--border-color)]/30 cursor-pointer ${
                                 currentConsultationId === conv.id ? 'bg-cyan-600/10 border-l-2 border-l-cyan-500' : ''
                               }`}
                             >
-                              <div className="text-sm text-white font-medium truncate">{conv.title}</div>
+                              <div className="text-sm text-[var(--text-primary)] font-medium truncate">{conv.title}</div>
                               <div className="flex items-center gap-2 mt-0.5">
                                 {conv.patientName && (
                                   <span className="text-[10px] text-cyan-400 truncate max-w-[120px]">{conv.patientName}</span>
                                 )}
-                                <span className="text-[10px] text-gray-500">
+                                <span className="text-[10px] theme-text-muted">
                                   {conv.updatedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                                 </span>
                               </div>
@@ -1054,7 +1179,7 @@ const AIAssistantPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { clearChat(); }}
-                className="p-2 rounded-xl bg-[#334155] border border-[#475569] text-gray-400 hover:text-red-400 hover:border-red-500/50 transition-all"
+                className="p-2 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] theme-text-muted hover:text-red-400 hover:border-red-500/50 transition-all"
                 title="Nouvelle conversation"
               >
                 <Trash2 size={16} />
@@ -1080,8 +1205,8 @@ const AIAssistantPage: React.FC = () => {
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br ${currentModeConfig.gradient} shadow-2xl mb-6`}>
                 <Sparkles size={28} className="text-white" />
               </div>
-              <h2 className="text-xl font-bold text-white mb-2">Assistant IA Medical</h2>
-              <p className="text-sm text-gray-400 text-center max-w-md mb-8">
+              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Assistant IA Medical</h2>
+              <p className="text-sm theme-text-muted text-center max-w-md mb-8">
                 Posez vos questions medicales, envoyez des images a analyser (radiographies, IRM, scanners),
                 et obtenez des recommandations basees sur l'IA. Selectionnez un patient pour personnaliser l'analyse.
               </p>
@@ -1097,7 +1222,7 @@ const AIAssistantPage: React.FC = () => {
                       className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${
                         mode === key
                           ? `bg-gradient-to-r ${config.gradient} border-transparent text-white shadow-lg`
-                          : 'bg-[#1e293b] border-[#334155] text-gray-300 hover:border-gray-500'
+                          : 'bg-[var(--bg-secondary)] border-[var(--border-color)] theme-text-secondary hover:border-[var(--border-color)]'
                       }`}
                     >
                       <Icon size={14} />
@@ -1108,14 +1233,14 @@ const AIAssistantPage: React.FC = () => {
               </div>
 
               <div className="w-full max-w-2xl">
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 text-center">Suggestions rapides</p>
+                <p className="text-xs theme-text-muted uppercase tracking-wider mb-3 text-center">Suggestions rapides</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {QUICK_PROMPTS[mode].map((prompt, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => handleQuickPrompt(prompt)}
-                      className="text-left px-4 py-3 bg-[#1e293b] border border-[#334155] rounded-xl text-sm text-gray-300 hover:border-cyan-500/50 hover:bg-[#1e293b]/80 transition-all group"
+                      className="text-left px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm theme-text-secondary hover:border-cyan-500/50 hover:bg-[var(--bg-secondary)]/80 transition-all group"
                     >
                       <span className="group-hover:text-cyan-300 transition-colors">{prompt}</span>
                     </button>
@@ -1125,19 +1250,19 @@ const AIAssistantPage: React.FC = () => {
 
               {conversations.length > 0 && (
                 <div className="w-full max-w-2xl mt-6">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 text-center">Conversations recentes</p>
+                  <p className="text-xs theme-text-muted uppercase tracking-wider mb-3 text-center">Conversations recentes</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {conversations.slice(0, 4).map(conv => (
                       <button
                         key={conv.id}
                         type="button"
                         onClick={() => loadConversation(conv.id)}
-                        className="text-left px-4 py-3 bg-[#1e293b] border border-[#334155] rounded-xl text-sm hover:border-cyan-500/50 transition-all group cursor-pointer"
+                        className="text-left px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm hover:border-cyan-500/50 transition-all group cursor-pointer"
                       >
-                        <div className="text-gray-300 group-hover:text-cyan-300 transition-colors truncate">{conv.title}</div>
+                        <div className="theme-text-secondary group-hover:text-cyan-300 transition-colors truncate">{conv.title}</div>
                         <div className="flex items-center gap-2 mt-1">
                           {conv.patientName && <span className="text-[10px] text-cyan-400">{conv.patientName}</span>}
-                          <span className="text-[10px] text-gray-500">
+                          <span className="text-[10px] theme-text-muted">
                             {conv.updatedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                           </span>
                         </div>
@@ -1169,16 +1294,16 @@ const AIAssistantPage: React.FC = () => {
                 <MessageBubble key={message.id} message={message} modeConfig={currentModeConfig} patientContext={patientContext} />
               ))}
 
-              {isLoading && (
+              {isLoading && !isStreaming && (
                 <div className="flex gap-3 animate-in">
                   <div className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-gradient-to-br ${currentModeConfig.gradient} shadow-lg`}>
                     <Bot size={15} className="text-white" />
                   </div>
-                  <div className="bg-[#1e293b] border border-[#334155] rounded-2xl px-4 py-3 shadow-lg">
+                  <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-2xl px-4 py-3 shadow-lg">
                     <div className="flex items-center gap-2">
                       <Loader2 size={14} className="text-violet-400 animate-spin" />
-                      <span className="text-sm text-gray-400">
-                        {imageAttachments.length > 0 ? 'Analyse des images en cours...' : 'Analyse en cours...'}
+                      <span className="text-sm theme-text-muted">
+                        {imageAttachments.length > 0 ? 'Analyse des images en cours...' : 'Connexion a l\'IA...'}
                       </span>
                     </div>
                   </div>
@@ -1190,13 +1315,13 @@ const AIAssistantPage: React.FC = () => {
         </main>
 
         {/* Input Area */}
-        <div className="border-t border-[#334155] bg-[#1e293b] px-4 md:px-6 py-3">
+        <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)] px-4 md:px-6 py-3">
           {messages.length > 0 && (
             <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
               <button
                 type="button"
                 onClick={() => setShowContext(!showContext)}
-                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#334155] border border-[#475569] text-xs text-gray-400 hover:text-white hover:border-cyan-500/50 transition-all flex items-center gap-1.5"
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-xs theme-text-muted hover:text-[var(--text-primary)] hover:border-cyan-500/50 transition-all flex items-center gap-1.5"
               >
                 <Plus size={12} />
                 Contexte patient
@@ -1204,7 +1329,7 @@ const AIAssistantPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#334155] border border-[#475569] text-xs text-gray-400 hover:text-white hover:border-sky-500/50 transition-all flex items-center gap-1.5"
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-xs theme-text-muted hover:text-[var(--text-primary)] hover:border-sky-500/50 transition-all flex items-center gap-1.5"
               >
                 <ImageIcon size={12} />
                 Images ({imageAttachments.length}/{MAX_IMAGES})
@@ -1214,7 +1339,7 @@ const AIAssistantPage: React.FC = () => {
                   key={i}
                   type="button"
                   onClick={() => handleQuickPrompt(prompt)}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[#334155] border border-[#475569] text-xs text-gray-400 hover:text-white hover:border-cyan-500/50 transition-all truncate max-w-[200px]"
+                  className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-xs theme-text-muted hover:text-[var(--text-primary)] hover:border-cyan-500/50 transition-all truncate max-w-[200px]"
                 >
                   {prompt}
                 </button>
@@ -1240,7 +1365,7 @@ const AIAssistantPage: React.FC = () => {
                   >
                     <X size={10} className="text-white" />
                   </button>
-                  <p className="text-[8px] text-gray-500 mt-0.5 w-16 truncate text-center">{img.fileName}</p>
+                  <p className="text-[8px] theme-text-muted mt-0.5 w-16 truncate text-center">{img.fileName}</p>
                 </div>
               ))}
               {imageAttachments.length < MAX_IMAGES && (
@@ -1248,7 +1373,7 @@ const AIAssistantPage: React.FC = () => {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   aria-label="Ajouter une image"
-                  className="flex-shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-[#334155] flex items-center justify-center text-gray-500 hover:text-sky-400 hover:border-sky-500/50 transition-colors"
+                  className="flex-shrink-0 w-16 h-16 rounded-lg border-2 border-dashed border-[var(--border-color)] flex items-center justify-center theme-text-muted hover:text-sky-400 hover:border-sky-500/50 transition-colors"
                 >
                   <Plus size={20} />
                 </button>
@@ -1263,8 +1388,8 @@ const AIAssistantPage: React.FC = () => {
               disabled={imageAttachments.length >= MAX_IMAGES}
               className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
                 imageAttachments.length >= MAX_IMAGES
-                  ? 'bg-[#334155] text-gray-600 cursor-not-allowed'
-                  : 'bg-[#334155] border border-[#475569] text-gray-400 hover:text-sky-400 hover:border-sky-500/50'
+                  ? 'bg-[var(--bg-tertiary)] theme-text-secondary cursor-not-allowed'
+                  : 'bg-[var(--bg-tertiary)] border border-[var(--border-color)] theme-text-muted hover:text-sky-400 hover:border-sky-500/50'
               }`}
               title={`Uploader des images (${imageAttachments.length}/${MAX_IMAGES})`}
             >
@@ -1292,27 +1417,38 @@ const AIAssistantPage: React.FC = () => {
                     : `Posez votre question en mode ${currentModeConfig.label.toLowerCase()}...`
                 }
                 rows={1}
-                className="w-full bg-[#0f172a] border border-[#334155] rounded-xl px-4 py-3 pr-12 text-sm text-white placeholder-gray-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all resize-none"
+                className="w-full bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl px-4 py-3 pr-12 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 transition-all resize-none"
                 style={{ maxHeight: '120px' }}
-                disabled={isLoading}
+                disabled={isLoading || isStreaming}
               />
-              <div className="absolute right-2 bottom-2 text-[10px] text-gray-600">
-                Shift+Enter pour retour a la ligne
+              <div className="absolute right-2 bottom-2 text-[10px] theme-text-secondary">
+                {isStreaming ? 'Streaming en cours...' : 'Shift+Enter pour retour a la ligne'}
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={(!input.trim() && imageAttachments.length === 0) || isLoading}
-              className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
-                (input.trim() || imageAttachments.length > 0) && !isLoading
-                  ? `bg-gradient-to-r ${currentModeConfig.gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
-                  : 'bg-[#334155] text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-            </button>
+            {isStreaming ? (
+              <button
+                type="button"
+                onClick={cancelStream}
+                className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-lg hover:shadow-xl hover:scale-105"
+                title="Arreter la generation"
+              >
+                <Square size={16} fill="white" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={(!input.trim() && imageAttachments.length === 0) || isLoading}
+                className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+                  (input.trim() || imageAttachments.length > 0) && !isLoading
+                    ? `bg-gradient-to-r ${currentModeConfig.gradient} text-white shadow-lg hover:shadow-xl hover:scale-105`
+                    : 'bg-[var(--bg-tertiary)] theme-text-muted cursor-not-allowed'
+                }`}
+              >
+                {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              </button>
+            )}
           </div>
         </div>
       </div>

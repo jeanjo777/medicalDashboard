@@ -2,11 +2,27 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
 
+// ============================================
+// TYPES
+// ============================================
+
 export interface ImageAttachment {
   base64: string;
   mediaType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
   preview: string;
   fileName: string;
+}
+
+export interface ThinkingBlock {
+  text: string;
+  isComplete: boolean;
+}
+
+export interface ToolExecution {
+  tool: string;
+  input?: Record<string, unknown>;
+  result?: string;
+  status: 'calling' | 'complete' | 'error';
 }
 
 export interface ChatMessage {
@@ -16,6 +32,9 @@ export interface ChatMessage {
   timestamp: Date;
   mode?: string;
   images?: ImageAttachment[];
+  thinking?: ThinkingBlock;
+  toolExecutions?: ToolExecution[];
+  isStreaming?: boolean;
 }
 
 export type AssistantMode = 'diagnostic' | 'treatment' | 'literature' | 'general' | 'radiology' | 'pharmacology';
@@ -55,6 +74,7 @@ export interface ConversationSummary {
 interface UseAIAssistantReturn {
   messages: ChatMessage[];
   isLoading: boolean;
+  isStreaming: boolean;
   error: string | null;
   mode: AssistantMode;
   patientContext: PatientContext | null;
@@ -69,11 +89,17 @@ interface UseAIAssistantReturn {
   loadConversations: () => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
   newConversation: () => void;
+  cancelStream: () => void;
 }
+
+// ============================================
+// HOOK
+// ============================================
 
 export function useAIAssistant(): UseAIAssistantReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<AssistantMode>('general');
   const [patientContext, setPatientContext] = useState<PatientContext | null>(null);
@@ -81,13 +107,17 @@ export function useAIAssistant(): UseAIAssistantReturn {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [conversationsLoading, setConversationsLoading] = useState(false);
   const messageIdCounter = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const generateId = () => {
     messageIdCounter.current += 1;
     return `msg-${Date.now()}-${messageIdCounter.current}`;
   };
 
-  // Load conversation list from DB
+  // ============================================
+  // CONVERSATION MANAGEMENT (DB)
+  // ============================================
+
   const loadConversations = useCallback(async () => {
     setConversationsLoading(true);
     try {
@@ -102,7 +132,6 @@ export function useAIAssistant(): UseAIAssistantReturn {
         return;
       }
 
-      // Get patient names for conversations with patient_id
       const patientIds = [...new Set(data.filter(c => c.patient_id).map(c => c.patient_id))];
       let patientMap: Record<string, string> = {};
 
@@ -131,17 +160,14 @@ export function useAIAssistant(): UseAIAssistantReturn {
     }
   }, []);
 
-  // Load a specific conversation from DB
   const loadConversation = useCallback(async (consultationId: string) => {
     try {
-      // Load consultation details
       const { data: consultation } = await supabase
         .from('consultations')
         .select('id, patient_id, symptoms, status')
         .eq('id', consultationId)
         .single();
 
-      // Load messages
       const { data: msgData, error: msgErr } = await supabase
         .from('consultation_messages')
         .select('id, sender, message, metadata, created_at')
@@ -160,14 +186,12 @@ export function useAIAssistant(): UseAIAssistantReturn {
         setMessages(loadedMessages);
         setCurrentConsultationId(consultationId);
 
-        // Restore mode from last message metadata
         const lastMeta = msgData[msgData.length - 1]?.metadata;
         if (lastMeta?.mode) {
           setMode(lastMeta.mode as AssistantMode);
         }
       }
 
-      // Restore patient context if available
       if (consultation?.patient_id) {
         const { data: patient } = await supabase
           .from('patients')
@@ -176,7 +200,6 @@ export function useAIAssistant(): UseAIAssistantReturn {
           .single();
 
         if (patient) {
-          // Also fetch patient appointments
           const { data: appointments } = await supabase
             .from('appointments')
             .select('appointment_date, appointment_time, type_consultation, motif, status')
@@ -211,17 +234,82 @@ export function useAIAssistant(): UseAIAssistantReturn {
     }
   }, []);
 
-  // Start new conversation
   const newConversation = useCallback(() => {
     setMessages([]);
     setCurrentConsultationId(null);
     setError(null);
   }, []);
 
-  // Load conversations on mount
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
+
+  // ============================================
+  // SSE EVENT HANDLER
+  // ============================================
+
+  const handleSSEEvent = useCallback((messageId: string, event: string, data: any) => {
+    setMessages(prev => prev.map(m => {
+      if (m.id !== messageId) return m;
+
+      switch (event) {
+        case 'thinking_start':
+          return { ...m, thinking: { text: '', isComplete: false } };
+        case 'thinking':
+          return { ...m, thinking: { text: (m.thinking?.text || '') + data.text, isComplete: false } };
+        case 'text':
+          return { ...m, content: m.content + data.text };
+        case 'tool_use':
+          return {
+            ...m,
+            toolExecutions: [
+              ...(m.toolExecutions || []),
+              { tool: data.tool, status: 'calling' as const },
+            ],
+          };
+        case 'tool_result':
+          return {
+            ...m,
+            toolExecutions: (m.toolExecutions || []).map(t =>
+              t.tool === data.tool && t.status === 'calling'
+                ? { ...t, result: data.result, status: 'complete' as const }
+                : t
+            ),
+          };
+        case 'done':
+          return {
+            ...m,
+            isStreaming: false,
+            thinking: m.thinking ? { ...m.thinking, isComplete: true } : undefined,
+          };
+        case 'error':
+          return {
+            ...m,
+            content: m.content || `Erreur: ${data.error}`,
+            isStreaming: false,
+          };
+        default:
+          return m;
+      }
+    }));
+  }, []);
+
+  // ============================================
+  // CANCEL STREAM
+  // ============================================
+
+  const cancelStream = useCallback(() => {
+    abortControllerRef.current?.abort();
+    setIsStreaming(false);
+    setIsLoading(false);
+    setMessages(prev => prev.map(m =>
+      m.isStreaming ? { ...m, isStreaming: false } : m
+    ));
+  }, []);
+
+  // ============================================
+  // SEND MESSAGE (STREAMING)
+  // ============================================
 
   const sendMessage = useCallback(async (message: string, images?: ImageAttachment[]) => {
     if ((!message.trim() && (!images || images.length === 0)) || isLoading) return;
@@ -244,14 +332,16 @@ export function useAIAssistant(): UseAIAssistantReturn {
     try {
       // Create consultation on first message
       if (!consultationId) {
+        const insertData: Record<string, unknown> = {
+          symptoms: message.trim().substring(0, 500),
+          status: 'pending',
+        };
+        if (patientContext?.patientId) {
+          insertData.patient_id = patientContext.patientId;
+        }
         const { data: newConsultation, error: createErr } = await supabase
           .from('consultations')
-          .insert({
-            patient_id: patientContext?.patientId || null,
-            symptoms: message.trim().substring(0, 500),
-            status: 'pending',
-            urgency_level: 'medium',
-          })
+          .insert(insertData)
           .select('id')
           .single();
 
@@ -272,6 +362,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
         history,
         context: patientContext || undefined,
         mode,
+        stream: true,
       };
 
       if (images && images.length > 0) {
@@ -287,17 +378,35 @@ export function useAIAssistant(): UseAIAssistantReturn {
 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const userToken = localStorage.getItem('auth_token');
-      const bearerToken = userToken || anonKey;
+
+      // Create abort controller for cancellation
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      // Create placeholder assistant message for streaming
+      const assistantMessageId = generateId();
+      const assistantMessage: ChatMessage = {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+        mode,
+        isStreaming: true,
+        thinking: undefined,
+        toolExecutions: [],
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      setIsStreaming(true);
 
       const res = await fetch(`${supabaseUrl}/functions/v1/ai-doctor-assistant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': anonKey,
-          'Authorization': `Bearer ${bearerToken}`,
+          'Authorization': `Bearer ${anonKey}`,
         },
         body: JSON.stringify(body),
+        signal: abortController.signal,
       });
 
       if (!res.ok) {
@@ -305,69 +414,142 @@ export function useAIAssistant(): UseAIAssistantReturn {
         throw new Error(errData.error || `Erreur serveur (${res.status})`);
       }
 
-      const data = await res.json();
+      const contentType = res.headers.get('content-type') || '';
 
-      if (data.success) {
-        const aiMessage: ChatMessage = {
-          id: generateId(),
-          role: 'assistant',
-          content: data.response,
-          timestamp: new Date(data.timestamp),
-          mode: data.mode,
-        };
+      if (contentType.includes('text/event-stream')) {
+        // ===== STREAMING SSE RESPONSE =====
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let fullResponse = '';
 
-        setMessages(prev => [...prev, aiMessage]);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        // Persist messages to DB
-        if (consultationId) {
-          // Save user message
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          let currentEvent = '';
+          for (const line of lines) {
+            if (line.startsWith('event: ')) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith('data: ') && currentEvent) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                handleSSEEvent(assistantMessageId, currentEvent, data);
+
+                if (currentEvent === 'text') {
+                  fullResponse += data.text;
+                }
+                if (currentEvent === 'done' && data.full_response) {
+                  fullResponse = data.full_response;
+                }
+              } catch {
+                // Skip invalid JSON lines
+              }
+              currentEvent = '';
+            }
+          }
+        }
+
+        // Persist to DB
+        if (consultationId && fullResponse) {
           await supabase.from('consultation_messages').insert({
             consultation_id: consultationId,
             sender: 'user',
             message: message.trim(),
             metadata: { mode, hasImages: !!(images && images.length > 0) },
           });
-          // Save AI response
           await supabase.from('consultation_messages').insert({
             consultation_id: consultationId,
             sender: 'ai',
-            message: data.response,
-            metadata: { mode: data.mode },
+            message: fullResponse,
+            metadata: { mode, model: 'claude-opus-4-6', streaming: true },
           });
-          // Update consultation status
           await supabase.from('consultations').update({
             status: 'ai_analyzed',
-            ai_response: data.response.substring(0, 1000),
+            ai_response: fullResponse.substring(0, 1000),
           }).eq('id', consultationId);
 
-          // Refresh conversation list
           loadConversations();
         }
       } else {
-        throw new Error('Reponse invalide du serveur');
+        // ===== NON-STREAMING JSON FALLBACK =====
+        const data = await res.json();
+
+        if (data.success) {
+          setMessages(prev => prev.map(m =>
+            m.id === assistantMessageId
+              ? { ...m, content: data.response, isStreaming: false }
+              : m
+          ));
+
+          if (consultationId) {
+            await supabase.from('consultation_messages').insert({
+              consultation_id: consultationId,
+              sender: 'user',
+              message: message.trim(),
+              metadata: { mode, hasImages: !!(images && images.length > 0) },
+            });
+            await supabase.from('consultation_messages').insert({
+              consultation_id: consultationId,
+              sender: 'ai',
+              message: data.response,
+              metadata: { mode: data.mode },
+            });
+            await supabase.from('consultations').update({
+              status: 'ai_analyzed',
+              ai_response: data.response.substring(0, 1000),
+            }).eq('id', consultationId);
+
+            loadConversations();
+          }
+        } else {
+          throw new Error('Reponse invalide du serveur');
+        }
       }
     } catch (err) {
+      if ((err as Error).name === 'AbortError') {
+        // User cancelled - don't show error
+        return;
+      }
+
       const errorMessage = err instanceof Error ? err.message : 'Erreur de communication avec l\'assistant IA';
       logger.error('AI Assistant error', err as Error);
       setError(errorMessage);
 
-      const errorChatMessage: ChatMessage = {
-        id: generateId(),
-        role: 'assistant',
-        content: `Desole, une erreur est survenue: ${errorMessage}. Veuillez reessayer.`,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorChatMessage]);
+      // Update the streaming message with error or add error message
+      setMessages(prev => {
+        const lastMsg = prev[prev.length - 1];
+        if (lastMsg?.isStreaming) {
+          return prev.map(m =>
+            m.isStreaming
+              ? { ...m, content: m.content || `Desole, une erreur est survenue: ${errorMessage}. Veuillez reessayer.`, isStreaming: false }
+              : m
+          );
+        }
+        return [...prev, {
+          id: generateId(),
+          role: 'assistant' as const,
+          content: `Desole, une erreur est survenue: ${errorMessage}. Veuillez reessayer.`,
+          timestamp: new Date(),
+        }];
+      });
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
+      abortControllerRef.current = null;
     }
-  }, [messages, isLoading, mode, patientContext, currentConsultationId, loadConversations]);
+  }, [messages, isLoading, mode, patientContext, currentConsultationId, loadConversations, handleSSEEvent]);
 
   const clearChat = useCallback(() => {
+    cancelStream();
     setMessages([]);
     setCurrentConsultationId(null);
     setError(null);
-  }, []);
+  }, [cancelStream]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -376,6 +558,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
   return {
     messages,
     isLoading,
+    isStreaming,
     error,
     mode,
     patientContext,
@@ -390,5 +573,6 @@ export function useAIAssistant(): UseAIAssistantReturn {
     loadConversations,
     loadConversation,
     newConversation,
+    cancelStream,
   };
 }
