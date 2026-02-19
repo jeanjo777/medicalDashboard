@@ -41,7 +41,7 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters }) => {
     positiveCount: correlationPairs.filter(c => c.type === 'positive').length,
     negativeCount: correlationPairs.filter(c => c.type === 'negative').length,
     strongCount: correlationPairs.filter(c => Math.abs(c.coefficient) >= 0.7).length,
-    avgCoefficient: (correlationPairs.reduce((acc, c) => acc + Math.abs(c.coefficient), 0) / correlationPairs.length).toFixed(2)
+    avgCoefficient: correlationPairs.length > 0 ? (correlationPairs.reduce((acc, c) => acc + Math.abs(c.coefficient), 0) / correlationPairs.length).toFixed(2) : '0.00'
   }), [correlationPairs]);
 
   const getCorrelationStrength = (coefficient: number) => {

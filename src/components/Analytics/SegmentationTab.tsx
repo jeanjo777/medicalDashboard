@@ -108,6 +108,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters }) => {
 
   // Segment principal
   const mainSegment = useMemo(() => {
+    if (ageSegments.length === 0) return { range: '—', percentage: 0, patients: 0, growth: '0%', fill: '#3b82f6' };
     return ageSegments.reduce((prev, current) =>
       (prev.percentage > current.percentage) ? prev : current
     );
