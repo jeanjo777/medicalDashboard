@@ -28,6 +28,9 @@ import {
   CheckCircle2,
   Wrench,
   ChevronRight,
+  Volume2,
+  Pause,
+  VolumeX,
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext, type ConversationSummary, type ThinkingBlock as ThinkingBlockType, type ToolExecution } from '../hooks/useAIAssistant';
@@ -126,6 +129,43 @@ const QUICK_PROMPTS: Record<AssistantMode, string[]> = {
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_IMAGES = 4;
+
+// ============================================
+// STRIP MARKDOWN FOR TTS
+// ============================================
+
+const stripMarkdown = (text: string): string => {
+  return text
+    // Remove code blocks
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
+    // Remove headings markers
+    .replace(/^#{1,6}\s+/gm, '')
+    // Remove bold/italic markers
+    .replace(/\*\*\*(.+?)\*\*\*/g, '$1')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/_(.+?)_/g, '$1')
+    // Remove links, keep text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Remove images
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
+    // Remove table formatting
+    .replace(/\|/g, ' ')
+    .replace(/^[-:]+$/gm, '')
+    // Remove list markers
+    .replace(/^[\s]*[-*+]\s+/gm, '')
+    .replace(/^[\s]*\d+\.\s+/gm, '')
+    // Remove horizontal rules
+    .replace(/^---+$/gm, '')
+    // Remove HTML tags
+    .replace(/<[^>]+>/g, '')
+    // Collapse whitespace
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/  +/g, ' ')
+    .trim();
+};
 
 // ============================================
 // ENHANCED MARKDOWN RENDERER
@@ -632,6 +672,55 @@ const MessageBubble: React.FC<{
 }> = ({ message, modeConfig, patientContext }) => {
   const isUser = message.role === 'user';
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      if (isSpeaking || isPaused) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [isSpeaking, isPaused]);
+
+  const handleSpeak = () => {
+    if (isSpeaking && !isPaused) {
+      // Pause
+      window.speechSynthesis.pause();
+      setIsPaused(true);
+      return;
+    }
+    if (isPaused) {
+      // Resume
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      return;
+    }
+    // Start new speech - cancel any ongoing
+    window.speechSynthesis.cancel();
+
+    const plainText = stripMarkdown(message.content);
+    if (!plainText) return;
+
+    const utterance = new SpeechSynthesisUtterance(plainText);
+    utterance.lang = 'fr-FR';
+    utterance.rate = 1.0;
+    utterance.onend = () => { setIsSpeaking(false); setIsPaused(false); };
+    utterance.onerror = () => { setIsSpeaking(false); setIsPaused(false); };
+
+    utteranceRef.current = utterance;
+    setIsSpeaking(true);
+    setIsPaused(false);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleStopSpeech = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    setIsPaused(false);
+  };
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : ''} animate-in`}>
@@ -695,6 +784,29 @@ const MessageBubble: React.FC<{
           <span className="text-[10px] theme-text-muted">
             {message.timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
           </span>
+          {/* TTS buttons */}
+          {!isUser && message.content && !message.isStreaming && (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleSpeak}
+                className={`transition-colors ${isSpeaking ? 'text-cyan-400' : 'theme-text-secondary hover:text-cyan-400'}`}
+                title={isSpeaking && !isPaused ? 'Pause' : isPaused ? 'Reprendre' : 'Lire le message'}
+              >
+                {isSpeaking && !isPaused ? <Pause size={12} /> : <Volume2 size={12} />}
+              </button>
+              {isSpeaking && (
+                <button
+                  type="button"
+                  onClick={handleStopSpeech}
+                  className="text-red-400 hover:text-red-300 transition-colors"
+                  title="Arreter la lecture"
+                >
+                  <VolumeX size={12} />
+                </button>
+              )}
+            </div>
+          )}
           {!isUser && message.content && (
             <div className="relative">
               <button

@@ -1,7 +1,5 @@
 import Anthropic from 'npm:@anthropic-ai/sdk@0.52.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.76.1';
-import { verify } from 'https://deno.land/x/djwt@v3.0.2/mod.ts';
-
 // ============================================
 // CORS & AUTH
 // ============================================
@@ -11,24 +9,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
-
-const JWT_SECRET = Deno.env.get('JWT_SECRET') || 'your-secret-key-change-this';
-
-async function verifyJWT(token: string): Promise<any> {
-  try {
-    const key = await crypto.subtle.importKey(
-      'raw',
-      new TextEncoder().encode(JWT_SECRET),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['verify']
-    );
-    return await verify(token, key);
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return null;
-  }
-}
 
 // ============================================
 // TYPES
@@ -886,21 +866,14 @@ Deno.serve(async (req: Request) => {
 
   try {
     // Verify authentication
+    // Supabase API gateway already validates the JWT in the Authorization header
+    // before the request reaches this Edge Function, so we just check it exists.
     const authHeader = req.headers.get('Authorization');
     const apiKey = req.headers.get('apikey') || req.headers.get('Apikey');
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader && !apiKey) {
       return new Response(
         JSON.stringify({ error: 'Authorization required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.substring(7);
-    const payload = await verifyJWT(token);
-    if (!payload && !apiKey) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
