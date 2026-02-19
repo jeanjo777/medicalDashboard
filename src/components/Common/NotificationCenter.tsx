@@ -1,14 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Bell, Check, X, AlertCircle, Info, CheckCircle, AlertTriangle, Trash2 } from 'lucide-react';
-import { useNotifications } from '../../hooks/useNotifications';
+import { useNotifications, Notification } from '../../hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import logger from '../../utils/logger';
 
-export const NotificationCenter: React.FC = () => {
+interface NotificationCenterProps {
+  isDemoMode?: boolean;
+}
+
+const demoNotifications: Notification[] = [
+  {
+    id: 'demo-1',
+    user_id: 'demo',
+    title: 'Résultats de laboratoire',
+    message: 'Résultats labo de M. Dupont disponibles',
+    type: 'warning',
+    priority: 'high',
+    is_read: false,
+    created_at: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'demo-2',
+    user_id: 'demo',
+    title: 'RDV confirmé',
+    message: 'RDV confirmé avec Mme Martin à 14h',
+    type: 'info',
+    priority: 'medium',
+    is_read: false,
+    created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'demo-3',
+    user_id: 'demo',
+    title: 'Nouveau patient',
+    message: 'Nouveau patient enregistré : P. Leroy',
+    type: 'success',
+    priority: 'low',
+    is_read: true,
+    created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'demo-4',
+    user_id: 'demo',
+    title: 'Rappel',
+    message: 'Rappel : Réunion équipe à 16h30',
+    type: 'info',
+    priority: 'medium',
+    is_read: true,
+    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isDemoMode = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const [demoReadIds, setDemoReadIds] = useState<Set<string>>(new Set());
+  const { notifications: realNotifications, unreadCount: realUnreadCount, isLoading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+
+  const notifications = useMemo(() => {
+    if (isDemoMode) {
+      return demoNotifications.map(n => ({
+        ...n,
+        is_read: n.is_read || demoReadIds.has(n.id),
+      }));
+    }
+    return realNotifications;
+  }, [isDemoMode, realNotifications, demoReadIds]);
+
+  const unreadCount = isDemoMode
+    ? notifications.filter(n => !n.is_read).length
+    : realUnreadCount;
 
   const filteredNotifications = filter === 'unread'
     ? notifications.filter((n) => !n.is_read)
@@ -65,6 +127,10 @@ export const NotificationCenter: React.FC = () => {
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     if (!isRead) {
+      if (isDemoMode) {
+        setDemoReadIds(prev => new Set(prev).add(notificationId));
+        return;
+      }
       try {
         await markAsRead(notificationId);
       } catch (err) {
@@ -73,8 +139,17 @@ export const NotificationCenter: React.FC = () => {
     }
   };
 
+  const handleMarkAllAsRead = async () => {
+    if (isDemoMode) {
+      setDemoReadIds(new Set(demoNotifications.map(n => n.id)));
+      return;
+    }
+    await markAllAsRead();
+  };
+
   const handleDelete = async (e: React.MouseEvent, notificationId: string) => {
     e.stopPropagation();
+    if (isDemoMode) return;
     try {
       await deleteNotification(notificationId);
     } catch (err) {
@@ -86,9 +161,9 @@ export const NotificationCenter: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 hover:bg-[#334155] rounded-lg transition-colors"
+        className="relative p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors"
       >
-        <Bell size={20} className="text-gray-300" />
+        <Bell size={20} className="theme-text-muted" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -102,26 +177,26 @@ export const NotificationCenter: React.FC = () => {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-96 bg-[#1e293b] border border-[#334155] rounded-xl shadow-2xl z-50 max-h-[600px] flex flex-col">
-            <div className="p-4 border-b border-[#334155]">
+          <div className="absolute right-0 mt-2 w-96 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl shadow-2xl z-50 max-h-[600px] flex flex-col">
+            <div className="p-4 border-b border-[var(--border-color)]">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-white">Notifications</h3>
+                <h3 className="text-lg font-semibold theme-text-primary">Notifications</h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-[#334155] rounded transition-colors"
+                  className="p-1 hover:bg-[var(--bg-tertiary)] rounded transition-colors"
                 >
-                  <X size={18} className="text-gray-400" />
+                  <X size={18} className="theme-text-muted" />
                 </button>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex bg-[#0f172a] rounded-lg p-1">
+                <div className="flex bg-[var(--bg-input)] rounded-lg p-1">
                   <button
                     onClick={() => setFilter('all')}
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                       filter === 'all'
                         ? 'bg-blue-600 text-white'
-                        : 'text-gray-400 hover:text-white'
+                        : 'theme-text-muted hover:text-[var(--text-primary)]'
                     }`}
                   >
                     Toutes ({notifications.length})
@@ -131,7 +206,7 @@ export const NotificationCenter: React.FC = () => {
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                       filter === 'unread'
                         ? 'bg-blue-600 text-white'
-                        : 'text-gray-400 hover:text-white'
+                        : 'theme-text-muted hover:text-[var(--text-primary)]'
                     }`}
                   >
                     Non lues ({unreadCount})
@@ -140,7 +215,7 @@ export const NotificationCenter: React.FC = () => {
 
                 {unreadCount > 0 && (
                   <button
-                    onClick={markAllAsRead}
+                    onClick={handleMarkAllAsRead}
                     className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                   >
                     Tout marquer lu
@@ -153,12 +228,12 @@ export const NotificationCenter: React.FC = () => {
               {isLoading ? (
                 <div className="p-8 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto" />
-                  <p className="text-gray-400 text-sm mt-3">Chargement...</p>
+                  <p className="theme-text-muted text-sm mt-3">Chargement...</p>
                 </div>
               ) : filteredNotifications.length === 0 ? (
                 <div className="p-8 text-center">
-                  <Bell size={48} className="text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-400 text-sm">
+                  <Bell size={48} className="theme-text-muted mx-auto mb-3 opacity-40" />
+                  <p className="theme-text-muted text-sm">
                     {filter === 'unread' ? 'Aucune notification non lue' : 'Aucune notification'}
                   </p>
                 </div>
@@ -168,7 +243,7 @@ export const NotificationCenter: React.FC = () => {
                     <div
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification.id, notification.is_read)}
-                      className={`p-4 hover:bg-[#0f172a] transition-colors cursor-pointer ${
+                      className={`p-4 hover:bg-[var(--bg-input)] transition-colors cursor-pointer ${
                         !notification.is_read ? 'bg-blue-500/5' : ''
                       }`}
                     >
@@ -179,7 +254,7 @@ export const NotificationCenter: React.FC = () => {
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <h4 className="text-white font-medium text-sm">{notification.title}</h4>
+                            <h4 className="theme-text-primary font-medium text-sm">{notification.title}</h4>
                             <div className="flex items-center gap-2">
                               {getPriorityBadge(notification.priority)}
                               {!notification.is_read && (
@@ -188,10 +263,10 @@ export const NotificationCenter: React.FC = () => {
                             </div>
                           </div>
 
-                          <p className="text-gray-400 text-sm mb-2">{notification.message}</p>
+                          <p className="theme-text-muted text-sm mb-2">{notification.message}</p>
 
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs theme-text-muted">
                               {formatDistanceToNow(new Date(notification.created_at), {
                                 addSuffix: true,
                                 locale: fr
@@ -203,9 +278,9 @@ export const NotificationCenter: React.FC = () => {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    markAsRead(notification.id);
+                                    handleNotificationClick(notification.id, false);
                                   }}
-                                  className="p-1.5 hover:bg-[#334155] rounded transition-colors text-emerald-400"
+                                  className="p-1.5 hover:bg-[var(--bg-tertiary)] rounded transition-colors text-emerald-400"
                                   title="Marquer comme lu"
                                 >
                                   <Check size={14} />
@@ -213,7 +288,7 @@ export const NotificationCenter: React.FC = () => {
                               )}
                               <button
                                 onClick={(e) => handleDelete(e, notification.id)}
-                                className="p-1.5 hover:bg-[#334155] rounded transition-colors text-red-400"
+                                className="p-1.5 hover:bg-[var(--bg-tertiary)] rounded transition-colors text-red-400"
                                 title="Supprimer"
                               >
                                 <Trash2 size={14} />
@@ -229,7 +304,7 @@ export const NotificationCenter: React.FC = () => {
             </div>
 
             {filteredNotifications.length > 0 && (
-              <div className="p-3 border-t border-[#334155] text-center">
+              <div className="p-3 border-t border-[var(--border-color)] text-center">
                 <button
                   onClick={() => setIsOpen(false)}
                   className="text-sm text-blue-400 hover:text-blue-300 transition-colors"

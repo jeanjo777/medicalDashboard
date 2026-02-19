@@ -88,7 +88,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   <Search className="h-4 w-4 theme-text-secondary" />
                 </button>
               )}
-              <NotificationCenter />
+              <NotificationCenter isDemoMode={isDemoMode} />
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
               <button type="button" onClick={() => showToast({ type: 'info', title: 'Aide', message: 'Pour toute assistance, contactez support@medicalai.fr ou consultez la documentation.' })} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Aide">
                 <HelpCircle className="h-4 w-4 theme-text-secondary" />
@@ -208,7 +208,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
 
                   {/* Notifications */}
                   <ErrorBoundary>
-                    <NotificationsWidget />
+                    <NotificationsWidget isDemoMode={isDemoMode} />
                   </ErrorBoundary>
                 </div>
               </div>

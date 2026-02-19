@@ -151,7 +151,7 @@ const AnalyticsPageAdvanced: React.FC = () => {
 
             <div className="flex items-center gap-2 md:gap-3">
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <NotificationCenter />
+              <NotificationCenter isDemoMode={isDemoMode} />
 
               <button
                 type="button"
