@@ -1,11 +1,8 @@
-[phases.setup]
-nixPkgs = ['nodejs_20', 'npm-9_x']
-
-[phases.install]
-cmds = ['npm ci']
+# Force Node.js provider (not static site) so 'npm start' is used
+providers = ['node']
 
 [phases.build]
 cmds = ['npm run build']
 
 [start]
-cmd = 'npx serve dist -s -l tcp://0.0.0.0:${PORT:-8080}'
+cmd = 'npm start'

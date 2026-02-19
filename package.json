@@ -14,7 +14,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "replace-logs": "node scripts/replace-console-logs.cjs",
-    "replace-logs:dry": "node scripts/replace-console-logs.cjs --dry-run"
+    "replace-logs:dry": "node scripts/replace-console-logs.cjs --dry-run",
+    "start": "serve dist -s -p ${PORT:-8080}"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.76.1",
