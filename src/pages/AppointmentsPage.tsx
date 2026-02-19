@@ -128,19 +128,19 @@ const StatCard: React.FC<{
     <button
       type="button"
       onClick={onClick}
-      className={`w-full theme-bg-secondary rounded-xl border p-4 transition-all duration-200 group hover:shadow-lg cursor-pointer text-left ${
+      className={`w-full theme-bg-secondary rounded-xl border p-3 sm:p-4 transition-all duration-200 group hover:shadow-lg cursor-pointer text-left ${
         active
           ? `${classes.activeBorder} ring-2 ${classes.ring} ${classes.activeBg}`
           : 'theme-border hover:border-[var(--border-hover)]'
       }`}
     >
-      <div className="flex items-center gap-3">
-        <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${classes.gradient} flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
-          <Icon size={22} className="text-white" />
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br ${classes.gradient} flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform flex-shrink-0`}>
+          <Icon className="text-white w-4 h-4 sm:w-[22px] sm:h-[22px]" />
         </div>
-        <div>
-          <p className="text-xs theme-text-muted uppercase tracking-wide font-medium">{label}</p>
-          <p className="text-2xl font-bold theme-text-primary mt-0.5">{value}</p>
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-xs theme-text-muted uppercase tracking-wide font-medium truncate">{label}</p>
+          <p className="text-lg sm:text-2xl font-bold theme-text-primary mt-0.5">{value}</p>
         </div>
       </div>
     </button>
@@ -548,10 +548,10 @@ const AppointmentsPage: React.FC = () => {
         {/* Demo Mode Banner */}
         <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
 
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
+        <main className="flex-1 p-3 sm:p-4 lg:p-8 overflow-auto">
 
           {/* Stats Cards - Cliquables pour filtrer */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
             <StatCard
               icon={CalendarDays}
               label="Aujourd'hui"

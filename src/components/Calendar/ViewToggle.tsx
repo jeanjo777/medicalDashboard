@@ -16,16 +16,16 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ currentView, onViewChange }) =>
   ];
 
   return (
-    <div className="inline-flex rounded-xl bg-gray-100 p-1">
+    <div className="inline-flex rounded-xl bg-[var(--bg-tertiary)] p-1">
       {views.map((view) => (
         <button
           key={view.id}
           type="button"
           onClick={() => onViewChange(view.id)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
             currentView === view.id
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              ? 'bg-[var(--bg-secondary)] text-primary shadow-sm'
+              : 'theme-text-secondary hover:theme-text-primary hover:bg-[var(--bg-secondary)]/50'
           }`}
         >
           {view.icon}

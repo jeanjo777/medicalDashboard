@@ -208,21 +208,21 @@ const ModernDashboardPageHybrid: React.FC = () => {
               </div>
 
               {/* Bottom Row - Activity */}
-              <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <div className="mt-3 lg:mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <ErrorBoundary>
-                  <div className="rounded-2xl theme-bg-secondary p-4 shadow-sm border theme-border transition-colors duration-300">
+                  <div className="rounded-2xl theme-bg-secondary p-3 sm:p-4 shadow-sm border theme-border transition-colors duration-300">
                     <RecentActivity />
                   </div>
                 </ErrorBoundary>
 
                 <ErrorBoundary>
-                  <div className="rounded-2xl theme-bg-secondary p-4 shadow-sm border theme-border transition-colors duration-300">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h2 className="text-base font-semibold theme-text-primary">
+                  <div className="rounded-2xl theme-bg-secondary p-3 sm:p-4 shadow-sm border theme-border transition-colors duration-300">
+                    <div className="mb-3 sm:mb-4 flex items-center justify-between">
+                      <h2 className="text-sm sm:text-base font-semibold theme-text-primary">
                         Statistiques rapides
                       </h2>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       <QuickStat label="Nouveaux patients" value="12" change="+18%" positive />
                       <QuickStat label="Consultations" value="156" change="+5%" positive />
                       <QuickStat label="Annulations" value="8" change="-23%" positive />
@@ -248,13 +248,13 @@ interface QuickStatProps {
 }
 
 const QuickStat: React.FC<QuickStatProps> = ({ label, value, change, positive, suffix }) => (
-  <div className="rounded-xl bg-[var(--bg-primary)] p-3 transition-colors duration-300">
-    <div className="text-xs theme-text-muted mb-1">{label}</div>
+  <div className="rounded-xl bg-[var(--bg-primary)] p-2 sm:p-3 transition-colors duration-300">
+    <div className="text-[10px] sm:text-xs theme-text-muted mb-1">{label}</div>
     <div className="flex items-end gap-1">
-      <span className="text-xl font-bold theme-text-primary">{value}</span>
-      {suffix && <span className="text-sm theme-text-secondary mb-0.5">{suffix}</span>}
+      <span className="text-lg sm:text-xl font-bold theme-text-primary">{value}</span>
+      {suffix && <span className="text-xs sm:text-sm theme-text-secondary mb-0.5">{suffix}</span>}
     </div>
-    <div className={`text-xs font-medium ${positive ? 'text-emerald-500' : 'text-red-500'}`}>
+    <div className={`text-[10px] sm:text-xs font-medium ${positive ? 'text-emerald-500' : 'text-red-500'}`}>
       {change}
     </div>
   </div>

@@ -19,7 +19,7 @@ const WeeklyOverviewWidget: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-end justify-between gap-1.5 h-24 mb-2">
+      <div className="flex items-end justify-between gap-1 sm:gap-1.5 h-20 sm:h-24 mb-2">
         {data.map((val, i) => {
           const height = (val / maxVal) * 100;
           const isToday = i === todayIndex;
@@ -54,7 +54,7 @@ const WeeklyOverviewWidget: React.FC = () => {
 
       <div className="mt-3 pt-3 border-t border-[var(--border-color)] flex items-center justify-between">
         <span className="text-[10px] theme-text-muted">Total semaine</span>
-        <span className="text-sm font-bold theme-text-primary">{data.reduce((a, b) => a + b, 0)} consultations</span>
+        <span className="text-xs sm:text-sm font-bold theme-text-primary">{data.reduce((a, b) => a + b, 0)} consultations</span>
       </div>
     </div>
   );

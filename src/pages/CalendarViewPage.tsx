@@ -357,7 +357,7 @@ const MiniCalendar: React.FC<{
                 relative w-8 h-8 text-xs rounded-lg transition-all duration-150 font-medium
                 ${!isCurrentMonth ? 'theme-text-muted' : 'theme-text-primary hover:bg-[var(--bg-tertiary)]'}
                 ${isSelected ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30 hover:bg-cyan-700' : ''}
-                ${isToday && !isSelected ? 'bg-cyan-50 text-cyan-700 font-bold ring-1 ring-cyan-300' : ''}
+                ${isToday && !isSelected ? 'bg-cyan-500/10 text-cyan-600 font-bold ring-1 ring-cyan-500/30' : ''}
               `}
             >
               {format(day, 'd')}
@@ -416,7 +416,7 @@ const FilterDropdown: React.FC<{
         className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-sm font-medium ${
           hasActiveFilters
             ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
-            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] text-gray-600 hover:border-[var(--border-color)]'
+            : 'bg-[var(--bg-secondary)] border-[var(--border-color)] theme-text-secondary hover:border-[var(--border-color)]'
         }`}
       >
         <Filter size={14} />
@@ -525,9 +525,9 @@ const MonthlyView: React.FC<{
               key={index}
               onClick={() => onDateClick(day)}
               className={`
-                min-h-[110px] p-2 border-r border-b border-[var(--border-color)]/50 last:border-r-0 cursor-pointer transition-all duration-150
-                ${!isCurrentMonth ? 'bg-[var(--bg-input)]/30' : 'bg-[var(--bg-secondary)] hover:bg-cyan-50/30'}
-                ${isToday ? 'bg-cyan-50/50' : ''}
+                min-h-[80px] sm:min-h-[110px] p-1.5 sm:p-2 border-r border-b border-[var(--border-color)]/50 last:border-r-0 cursor-pointer transition-all duration-150
+                ${!isCurrentMonth ? 'bg-[var(--bg-input)]/30' : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)]/50'}
+                ${isToday ? 'bg-cyan-500/5' : ''}
               `}
             >
               <div className={`
@@ -586,7 +586,7 @@ const DayView: React.FC<{
   return (
     <div className="theme-bg-secondary rounded-2xl border theme-border overflow-hidden shadow-sm">
       {/* Day Header */}
-      <div className="bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 border-b border-[var(--border-color)] p-5">
+      <div className="bg-gradient-to-r from-cyan-500/10 via-teal-500/10 to-emerald-500/10 border-b border-[var(--border-color)] p-3 sm:p-5">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold theme-text-primary capitalize">
@@ -982,7 +982,7 @@ const CalendarViewPage: React.FC = () => {
         <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1 ml-12 lg:ml-0">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-2.5">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold theme-text-primary flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
                   <CalendarDays size={18} className="text-white" strokeWidth={2.5} />
                 </div>
@@ -1105,12 +1105,12 @@ const CalendarViewPage: React.FC = () => {
                         className="p-1.5 hover:bg-[var(--bg-input)] rounded-md transition-colors"
                         aria-label="Période précédente"
                       >
-                        <ChevronLeft size={16} className="text-gray-600" />
+                        <ChevronLeft size={16} className="theme-text-secondary" />
                       </button>
                       <button
                         type="button"
                         onClick={goToToday}
-                        className="px-3 py-1.5 text-xs font-semibold theme-text-primary hover:bg-[var(--bg-input)] rounded-md transition-colors"
+                        className="px-2 sm:px-3 py-1.5 text-xs font-semibold theme-text-primary hover:bg-[var(--bg-input)] rounded-md transition-colors"
                       >
                         Aujourd'hui
                       </button>
@@ -1120,7 +1120,7 @@ const CalendarViewPage: React.FC = () => {
                         className="p-1.5 hover:bg-[var(--bg-input)] rounded-md transition-colors"
                         aria-label="Période suivante"
                       >
-                        <ChevronRight size={16} className="text-gray-600" />
+                        <ChevronRight size={16} className="theme-text-secondary" />
                       </button>
                     </div>
                   </div>
@@ -1131,7 +1131,7 @@ const CalendarViewPage: React.FC = () => {
                       type="button"
                       onClick={() => fetchAppointments(true)}
                       disabled={refreshing}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] text-gray-600 hover:theme-text-primary rounded-lg transition-all text-xs font-semibold disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-2 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-input)] theme-text-secondary hover:theme-text-primary rounded-lg transition-all text-xs font-semibold disabled:opacity-50"
                     >
                       <RefreshCw size={13} className={refreshing ? 'animate-spin' : ''} />
                       <span className="hidden sm:inline">Actualiser</span>
@@ -1186,8 +1186,8 @@ const CalendarViewPage: React.FC = () => {
                                 setSelectedDay(day.date);
                                 setViewMode('day');
                               }}
-                              className={`p-3 text-center border-r border-[var(--border-color)] transition-all duration-150 ${
-                                isToday ? 'bg-cyan-50' : isSelected ? 'bg-gray-50' : 'bg-[var(--bg-input)]/50 hover:bg-[var(--bg-input)]'
+                              className={`p-2 sm:p-3 text-center border-r border-[var(--border-color)] transition-all duration-150 ${
+                                isToday ? 'bg-cyan-500/10' : isSelected ? 'bg-[var(--bg-tertiary)]' : 'bg-[var(--bg-input)]/50 hover:bg-[var(--bg-input)]'
                               }`}
                             >
                               <div className="text-[10px] font-bold theme-text-muted uppercase tracking-wider">{day.dayName}</div>
@@ -1229,7 +1229,7 @@ const CalendarViewPage: React.FC = () => {
                                 <div
                                   key={dayIndex}
                                   className={`relative border-r border-[var(--border-color)]/50 h-20 transition-colors group cursor-pointer ${
-                                    isToday ? 'bg-cyan-50/30' : isSelected ? 'bg-[var(--bg-input)]/50' : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-input)]/50'
+                                    isToday ? 'bg-cyan-500/5' : isSelected ? 'bg-[var(--bg-input)]/50' : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-input)]/50'
                                   }`}
                                   onMouseEnter={() => setHoveredSlot({ day: dayIndex, hour })}
                                   onMouseLeave={() => setHoveredSlot(null)}

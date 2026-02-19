@@ -29,18 +29,18 @@ const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-3 gap-1 sm:gap-2 text-center">
         <div>
-          <div className="mb-1 text-[10px] theme-text-muted">Effectuées</div>
-          <div className="text-2xl font-bold theme-text-primary">{complete}%</div>
+          <div className="mb-1 text-[10px] sm:text-xs theme-text-muted">Effectuées</div>
+          <div className="text-lg sm:text-2xl font-bold theme-text-primary">{complete}%</div>
         </div>
         <div>
-          <div className="mb-1 text-[10px] theme-text-muted">Annulées</div>
-          <div className="text-2xl font-bold theme-text-primary">{cancelled}%</div>
+          <div className="mb-1 text-[10px] sm:text-xs theme-text-muted">Annulées</div>
+          <div className="text-lg sm:text-2xl font-bold theme-text-primary">{cancelled}%</div>
         </div>
         <div>
-          <div className="mb-1 text-[10px] theme-text-muted">En attente</div>
-          <div className="text-2xl font-bold theme-text-primary">{pending}%</div>
+          <div className="mb-1 text-[10px] sm:text-xs theme-text-muted">En attente</div>
+          <div className="text-lg sm:text-2xl font-bold theme-text-primary">{pending}%</div>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
         />
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-4 text-[10px]">
+      <div className="mt-3 flex items-center justify-center gap-2 sm:gap-4 text-[10px] sm:text-xs flex-wrap">
         <div className="flex items-center gap-1">
           <div className="h-2 w-2 rounded-full bg-emerald-500" />
           <span className="theme-text-secondary">Effectuées</span>

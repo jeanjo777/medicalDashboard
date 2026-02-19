@@ -794,7 +794,7 @@ const MessageBubble: React.FC<{
         {isUser ? <User size={15} className="text-white" /> : <Bot size={15} className="text-white" />}
       </div>
 
-      <div className={`max-w-[80%] ${isUser ? 'text-right' : ''}`}>
+      <div className={`max-w-[85%] sm:max-w-[80%] ${isUser ? 'text-right' : ''}`}>
         <div className={`rounded-2xl px-4 py-3 ${
           isUser
             ? 'bg-gradient-to-br from-cyan-600 to-teal-600 text-white shadow-lg shadow-cyan-600/15'
@@ -1422,13 +1422,13 @@ const AIAssistantPage: React.FC = () => {
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br ${currentModeConfig.gradient} shadow-2xl mb-6`}>
                 <Sparkles size={28} className="text-white" />
               </div>
-              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Assistant IA Medical</h2>
-              <p className="text-sm theme-text-muted text-center max-w-md mb-8">
+              <h2 className="text-lg sm:text-xl font-bold text-[var(--text-primary)] mb-2">Assistant IA Medical</h2>
+              <p className="text-xs sm:text-sm theme-text-muted text-center max-w-md mb-6 sm:mb-8 px-2">
                 Posez vos questions medicales, envoyez des images a analyser (radiographies, IRM, scanners),
                 et obtenez des recommandations basees sur l'IA. Selectionnez un patient pour personnaliser l'analyse.
               </p>
 
-              <div className="flex flex-wrap justify-center gap-2 mb-8">
+              <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-6 sm:mb-8 px-2">
                 {(Object.entries(MODE_CONFIG) as [AssistantMode, typeof MODE_CONFIG[AssistantMode]][]).map(([key, config]) => {
                   const Icon = config.icon;
                   return (
@@ -1436,7 +1436,7 @@ const AIAssistantPage: React.FC = () => {
                       key={key}
                       type="button"
                       onClick={() => setMode(key)}
-                      className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border text-xs sm:text-sm font-medium transition-all flex items-center gap-1.5 sm:gap-2 ${
                         mode === key
                           ? `bg-gradient-to-r ${config.gradient} border-transparent text-white shadow-lg`
                           : 'bg-[var(--bg-secondary)] border-[var(--border-color)] theme-text-secondary hover:border-[var(--border-color)]'

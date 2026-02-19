@@ -107,7 +107,7 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
       </div>
 
       {/* Radar Chart */}
-      <div className="relative mb-4 flex h-48 sm:h-56 items-center justify-center">
+      <div className="relative mb-4 flex h-40 sm:h-48 md:h-56 items-center justify-center">
         <svg viewBox="0 0 300 300" className="h-full w-full">
           {/* Grid circles */}
           {gridCircles.map((r) => (
