@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Brain, TrendingUp, TrendingDown, Minus, Sparkles, Target, Zap, Calendar } from 'lucide-react';
+import { Brain, TrendingUp, TrendingDown, Minus, Sparkles, Target, Zap, Calendar, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, RadialBarChart, RadialBar, Legend } from 'recharts';
 import { usePredictions } from '../../hooks/useAnalyticsData';
 import { demoPredictions } from '../../data/demoData';
