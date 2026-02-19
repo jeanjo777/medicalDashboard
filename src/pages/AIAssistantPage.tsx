@@ -1146,6 +1146,7 @@ const AIAssistantPage: React.FC = () => {
     setPatientContext,
     clearChat,
     loadConversation,
+    deleteConversation,
     newConversation,
     cancelStream,
   } = useAIAssistant();
@@ -1454,24 +1455,36 @@ const AIAssistantPage: React.FC = () => {
                           <p className="text-center theme-text-muted text-xs py-6">Aucune conversation enregistree</p>
                         ) : (
                           conversations.map(conv => (
-                            <button
+                            <div
                               key={conv.id}
-                              type="button"
-                              onClick={() => { loadConversation(conv.id); setShowHistory(false); }}
-                              className={`w-full text-left px-3 py-2.5 transition-colors hover:bg-[var(--bg-tertiary)]/50 border-b border-[var(--border-color)]/30 cursor-pointer ${
+                              className={`group/conv flex items-center gap-1 px-3 py-2.5 transition-colors hover:bg-[var(--bg-tertiary)]/50 border-b border-[var(--border-color)]/30 ${
                                 currentConsultationId === conv.id ? 'bg-cyan-600/10 border-l-2 border-l-cyan-500' : ''
                               }`}
                             >
-                              <div className="text-sm text-[var(--text-primary)] font-medium truncate">{conv.title}</div>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                {conv.patientName && (
-                                  <span className="text-[10px] text-cyan-400 truncate max-w-[120px]">{conv.patientName}</span>
-                                )}
-                                <span className="text-[10px] theme-text-muted">
-                                  {conv.updatedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
-                                </span>
-                              </div>
-                            </button>
+                              <button
+                                type="button"
+                                onClick={() => { loadConversation(conv.id); setShowHistory(false); }}
+                                className="flex-1 text-left min-w-0 cursor-pointer"
+                              >
+                                <div className="text-sm text-[var(--text-primary)] font-medium truncate">{conv.title}</div>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  {conv.patientName && (
+                                    <span className="text-[10px] text-cyan-400 truncate max-w-[120px]">{conv.patientName}</span>
+                                  )}
+                                  <span className="text-[10px] theme-text-muted">
+                                    {conv.updatedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                                  </span>
+                                </div>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
+                                className="p-1.5 rounded-lg opacity-0 group-hover/conv:opacity-100 text-[var(--text-muted)] hover:text-red-400 hover:bg-red-500/10 transition-all shrink-0 cursor-pointer"
+                                title="Supprimer"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           ))
                         )}
                       </div>

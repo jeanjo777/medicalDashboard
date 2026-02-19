@@ -88,6 +88,7 @@ interface UseAIAssistantReturn {
   clearError: () => void;
   loadConversations: () => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
+  deleteConversation: (id: string) => Promise<void>;
   newConversation: () => void;
   cancelStream: () => void;
 }
@@ -283,6 +284,30 @@ export function useAIAssistant(): UseAIAssistantReturn {
       logger.error('Failed to load conversation', err as Error);
     }
   }, []);
+
+  const deleteConversation = useCallback(async (id: string) => {
+    try {
+      const { error: err } = await supabase
+        .from('consultations')
+        .delete()
+        .eq('id', id);
+
+      if (err) throw err;
+
+      setConversations(prev => prev.filter(c => c.id !== id));
+
+      // If deleting the active conversation, reset to new
+      if (currentConsultationId === id) {
+        setMessages([]);
+        setCurrentConsultationId(null);
+        localStorage.removeItem(SESSION_KEY_CONSULTATION);
+        localStorage.removeItem(SESSION_KEY_MESSAGES);
+        setError(null);
+      }
+    } catch (err) {
+      logger.error('Failed to delete conversation', err as Error);
+    }
+  }, [currentConsultationId]);
 
   const newConversation = useCallback(() => {
     setMessages([]);
@@ -633,6 +658,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
     clearError,
     loadConversations,
     loadConversation,
+    deleteConversation,
     newConversation,
     cancelStream,
   };
