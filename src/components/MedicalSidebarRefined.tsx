@@ -57,7 +57,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
 
   // User data from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userName = user?.prenom && user?.nom ? `Dr. ${user.prenom} ${user.nom}` : 'Dr. Simplice Achi AKE';
+  const userName = user?.prenom && user?.nom ? `${user.prenom} ${user.nom}` : 'Simplice Achi AKE';
   const userEmail = user?.email || 'simpliceake1975@gmail.com';
   const userInitials = user?.prenom && user?.nom
     ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase()
@@ -594,8 +594,8 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
                 <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#1e293b]" aria-label="En ligne" />
               </div>
               <div className={`flex-1 min-w-0 transition-all duration-300 ${isCollapsed ? 'lg:hidden' : ''}`}>
-                <p className="text-white text-sm font-semibold leading-tight truncate">{userName}</p>
-                <p className="text-gray-400 text-xs leading-tight mt-0.5 truncate">{userEmail}</p>
+                <p className="text-white text-sm font-semibold leading-tight">{userName}</p>
+                <p className="text-gray-400 text-xs leading-tight mt-0.5">{userEmail}</p>
               </div>
               <ChevronRight
                 size={14}

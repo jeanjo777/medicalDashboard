@@ -19,9 +19,9 @@ const UserMenu: React.FC<UserMenuProps> = ({
   const { userName, userInitials, userEmail } = useMemo(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const name = propUserName
-      || (user?.prenom && user?.nom ? `Dr. ${user.prenom} ${user.nom}` : null)
-      || (user?.username ? `Dr. ${user.username}` : null)
-      || 'Dr. Simplice Achi AKE';
+      || (user?.prenom && user?.nom ? `${user.prenom} ${user.nom}` : null)
+      || (user?.username ? user.username : null)
+      || 'Simplice Achi AKE';
     const initials = propUserInitials
       || (user?.prenom && user?.nom ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase() : null)
       || (user?.username ? user.username.slice(0, 2).toUpperCase() : null)
