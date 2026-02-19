@@ -106,7 +106,7 @@ const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void; onError
 
     // TODO: Call Supabase Edge Function for password change when available.
     // For now, validation passes but no backend call is made.
-    console.warn('Password change API is not yet implemented. Validation passed with provided credentials.');
+    // TODO: Call Supabase Edge Function for password change when available.
     onError('Changement de mot de passe non disponible pour le moment.');
   };
 
@@ -195,7 +195,7 @@ const SettingsPage: React.FC = () => {
     return {
       prenom: user?.prenom || 'John',
       nom: user?.nom || 'Doe',
-      email: user?.email || 'contact@medicare.com',
+      email: user?.email || 'simpliceake1975@gmail.com',
       telephone: '+33 6 12 34 56 78',
       specialite: 'Médecine générale'
     };

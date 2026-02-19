@@ -19,9 +19,9 @@ import AppointmentDistributionChart from '../components/AppointmentDistributionC
 import RecentActivity from '../components/ModernDashboard/RecentActivity';
 import UpcomingAppointments from '../components/ModernDashboard/UpcomingAppointments';
 import PatientAlertsWidget from '../components/ModernDashboard/PatientAlertsWidget';
+import UserMenu from '../components/Common/UserMenu';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
-import logger from '../utils/logger';
 
 const ModernDashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -29,16 +29,9 @@ const ModernDashboardPage: React.FC = () => {
     const saved = localStorage.getItem('sidebar-collapsed');
     return saved ? JSON.parse(saved) : false;
   });
-  const { user, isLoading: authLoading } = useMedicAuth();
-
-  React.useEffect(() => {
-    logger.info('[DASHBOARD] Component mounted');
-    logger.info('[DASHBOARD] Auth loading:', authLoading);
-    logger.info('[DASHBOARD] User:', user);
-  }, [authLoading, user]);
+  const { isLoading: authLoading } = useMedicAuth();
 
   if (authLoading) {
-    logger.info('[DASHBOARD] Rendering auth loading state');
     return (
       <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -48,8 +41,6 @@ const ModernDashboardPage: React.FC = () => {
       </div>
     );
   }
-
-  logger.info('[DASHBOARD] Auth complete, rendering dashboard');
 
   return (
     <div className="flex min-h-screen bg-[#0f172a]">
@@ -68,11 +59,12 @@ const ModernDashboardPage: React.FC = () => {
             {/* Left: Title - with left padding for hamburger menu on mobile */}
             <div className="min-w-0 flex-1 lg:ml-0 ml-14">
               <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Tableau de Bord Médical</h1>
-              <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">Bienvenue, {userName}</p>
+              <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">Bienvenue</p>
             </div>
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <UserMenu />
             </div>
           </div>
         </header>

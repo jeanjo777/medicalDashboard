@@ -34,8 +34,7 @@ const MedicRegisterPage = lazy(() => import('./pages/MedicRegisterPage.tsx'));
 const PatientTreatmentPage = lazy(() => import('./pages/PatientTreatmentPage.tsx'));
 const PatientsViewPage = lazy(() => import('./pages/PatientsViewPage.tsx'));
 const AppointmentsViewPage = lazy(() => import('./pages/AppointmentsViewPage.tsx'));
-const EnhancedPatientsPage = lazy(() => import('./pages/EnhancedPatientsPage.tsx'));
-const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage.tsx'));
+// EnhancedPatientsPage and AnalyticsPage removed - unused (routes point to AnalyticsPageAdvanced)
 const SettingsPage = lazy(() => import('./pages/SettingsPage.tsx'));
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage.tsx'));
 
