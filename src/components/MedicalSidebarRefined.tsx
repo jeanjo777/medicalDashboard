@@ -1,6 +1,7 @@
 import React, { useState, useEffect, startTransition } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logger from '../utils/logger';
+import { useSidebarBadges } from '../hooks/useSidebarBadges';
 import {
   LayoutDashboard,
   Users,
@@ -92,7 +93,6 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
       label: 'Rendez-vous',
       icon: <Stethoscope size={22} strokeWidth={2} />,
       path: '/appointments',
-      badge: 3,
       section: 'management'
     },
     {
@@ -176,6 +176,15 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
   };
 
   const currentActive = getActiveItem();
+
+  // Dynamic badge counts from Supabase
+  const badgeCounts = useSidebarBadges();
+
+  // Apply dynamic badges to menu items
+  const menuItemsWithBadges = menuItems.map(item => ({
+    ...item,
+    badge: badgeCounts[item.id] || 0,
+  }));
 
   const handleItemClick = (item: MenuItem) => {
     // Use startTransition for smoother navigation
@@ -266,7 +275,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
             <p className="px-3 mb-2 text-[10px] uppercase tracking-wider text-gray-500 font-semibold">Principal</p>
           )}
           <ul className="space-y-1.5 mb-4" role="list">
-            {menuItems.filter(item => item.section === 'main').map((item) => {
+            {menuItemsWithBadges.filter(item => item.section === 'main').map((item) => {
               const isActive = currentActive === item.id;
               return (
                 <li key={item.id} className="relative group/item">
@@ -321,7 +330,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
           )}
           {isCollapsed && <div className="border-t border-[#334155]/50 my-2" />}
           <ul className="space-y-1.5 mb-4" role="list">
-            {menuItems.filter(item => item.section === 'management').map((item) => {
+            {menuItemsWithBadges.filter(item => item.section === 'management').map((item) => {
               const isActive = currentActive === item.id;
               return (
                 <li key={item.id} className="relative group/item">
@@ -376,7 +385,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
           )}
           {isCollapsed && <div className="border-t border-[#334155]/50 my-2" />}
           <ul className="space-y-1.5 mb-4" role="list">
-            {menuItems.filter(item => item.section === 'ai').map((item) => {
+            {menuItemsWithBadges.filter(item => item.section === 'ai').map((item) => {
               const isActive = currentActive === item.id;
               return (
                 <li key={item.id} className="relative group/item">
@@ -404,6 +413,11 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
                     )}
                     <div className={`relative flex items-center justify-center w-9 h-9 rounded-lg shrink-0 transition-all duration-200 ${isActive ? 'bg-white/20' : 'bg-gradient-to-br from-amber-500/20 to-orange-500/20 group-hover:from-amber-500/30 group-hover:to-orange-500/30'}`}>
                       {item.icon}
+                      {item.badge != null && item.badge > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg">
+                          {item.badge > 9 ? '9+' : item.badge}
+                        </span>
+                      )}
                     </div>
                     <span className={`flex-1 text-left font-medium text-sm leading-tight transition-all duration-300 ${isCollapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
                     <ChevronRight size={16} className={`shrink-0 transition-all duration-200 ${isCollapsed ? 'lg:hidden' : ''} ${isActive ? 'text-white/90 opacity-100' : 'text-gray-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1'}`} strokeWidth={2.5} />
@@ -411,6 +425,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
                   {isCollapsed && (
                     <div className="hidden lg:block absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white text-sm font-medium whitespace-nowrap opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 z-50 shadow-xl">
                       {item.label}
+                      {item.badge != null && item.badge > 0 && <span className="ml-2 px-1.5 py-0.5 bg-orange-500 text-white text-[10px] font-bold rounded-full">{item.badge}</span>}
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1e293b] border-l border-b border-[#334155] rotate-45" />
                     </div>
                   )}
@@ -425,7 +440,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
           )}
           {isCollapsed && <div className="border-t border-[#334155]/50 my-2" />}
           <ul className="space-y-1.5 mb-4" role="list">
-            {menuItems.filter(item => item.section === 'analytics').map((item) => {
+            {menuItemsWithBadges.filter(item => item.section === 'analytics').map((item) => {
               const isActive = currentActive === item.id;
               return (
                 <li key={item.id} className="relative group/item">
@@ -453,6 +468,11 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
                     )}
                     <div className={`relative flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-all duration-200 ${isActive ? 'bg-white/20' : 'bg-[#0f172a]/40 group-hover:bg-[#0f172a]/60'}`}>
                       {item.icon}
+                      {item.badge != null && item.badge > 0 && (
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg">
+                          {item.badge > 9 ? '9+' : item.badge}
+                        </span>
+                      )}
                     </div>
                     <span className={`flex-1 text-left font-medium text-[13px] leading-tight transition-all duration-300 ${isCollapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
                     <ChevronRight size={14} className={`shrink-0 transition-all duration-200 ${isCollapsed ? 'lg:hidden' : ''} ${isActive ? 'text-white/90 opacity-100' : 'text-gray-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1'}`} strokeWidth={2.5} />
@@ -460,6 +480,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
                   {isCollapsed && (
                     <div className="hidden lg:block absolute left-full top-1/2 -translate-y-1/2 ml-2 px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white text-sm font-medium whitespace-nowrap opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 z-50 shadow-xl">
                       {item.label}
+                      {item.badge != null && item.badge > 0 && <span className="ml-2 px-1.5 py-0.5 bg-purple-500 text-white text-[10px] font-bold rounded-full">{item.badge}</span>}
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-[#1e293b] border-l border-b border-[#334155] rotate-45" />
                     </div>
                   )}
@@ -474,7 +495,7 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
           )}
           {isCollapsed && <div className="border-t border-[#334155]/50 my-2" />}
           <ul className="space-y-1.5" role="list">
-            {menuItems.filter(item => item.section === 'settings').map((item) => {
+            {menuItemsWithBadges.filter(item => item.section === 'settings').map((item) => {
               const isActive = currentActive === item.id;
               return (
                 <li key={item.id} className="relative group/item">
