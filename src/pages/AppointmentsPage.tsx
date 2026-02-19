@@ -64,6 +64,19 @@ interface Appointment {
   medic_id?: string;
 }
 
+// Normaliser les statuts DB (anglais) vers les statuts UI (français)
+const normalizeStatus = (status: string): string => {
+  const map: Record<string, string> = {
+    'scheduled': 'a_venir',
+    'confirmed': 'a_venir',
+    'completed': 'termine',
+    'cancelled': 'annule',
+    'no-show': 'annule',
+    'no_show': 'annule',
+  };
+  return map[status] || status;
+};
+
 // Convertir les données démo centralisées au format local
 const convertCentralDemoAppointments = (demoApts: DemoAppointmentType[]): Appointment[] => {
   const statusMap: Record<string, string> = {
@@ -172,12 +185,15 @@ const AppointmentsPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilterActive, setDateFilterActive] = useState(false);
 
-  // Données à afficher (démo ou réelles)
-  const displayedAppointments = isDemoMode ? demoAppointments : appointments;
+  // Données à afficher (démo ou réelles) - normaliser les statuts DB
+  const displayedAppointments = useMemo(() => {
+    if (isDemoMode) return demoAppointments;
+    return appointments.map(apt => ({ ...apt, status: normalizeStatus(apt.status) }));
+  }, [appointments, isDemoMode]);
 
   // Stats calculation
   const stats = useMemo(() => {
-    const data = isDemoMode ? demoAppointments : appointments;
+    const data = displayedAppointments;
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
 
@@ -194,7 +210,7 @@ const AppointmentsPage: React.FC = () => {
       cancelled: cancelledAppointments.length,
       inProgress: inProgressAppointments.length,
     };
-  }, [appointments, isDemoMode]);
+  }, [displayedAppointments]);
 
   // Gestion du clic sur les stats pour filtrer
   const handleStatClick = (filter: string) => {
@@ -345,7 +361,8 @@ const AppointmentsPage: React.FC = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (rawStatus: string) => {
+    const status = normalizeStatus(rawStatus);
     const badges: Record<string, { label: string; classes: string; icon: React.ElementType }> = {
       a_venir: {
         label: 'À venir',

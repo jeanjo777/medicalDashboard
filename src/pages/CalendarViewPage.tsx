@@ -87,6 +87,19 @@ interface FilterState {
   type: string[];
 }
 
+// Normaliser les statuts DB (anglais) vers les statuts UI (français)
+const normalizeStatus = (status: string): string => {
+  const map: Record<string, string> = {
+    'scheduled': 'a_venir',
+    'confirmed': 'a_venir',
+    'completed': 'termine',
+    'cancelled': 'annule',
+    'no-show': 'annule',
+    'no_show': 'annule',
+  };
+  return map[status] || status;
+};
+
 // Convertir les données démo centralisées au format local
 const convertDemoAppointments = (demoApts: DemoAppointment[]): Appointment[] => {
   const statusMap: Record<string, string> = {
@@ -812,7 +825,7 @@ const CalendarViewPage: React.FC = () => {
 
       if (fetchError) throw fetchError;
 
-      setAppointments(data || []);
+      setAppointments((data || []).map(apt => ({ ...apt, status: normalizeStatus(apt.status) })));
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement';
       setError(errorMessage);
