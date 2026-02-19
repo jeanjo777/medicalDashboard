@@ -150,7 +150,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
             <h3 className="theme-text-secondary text-sm font-medium">Total Patients</h3>
           </div>
           <p className="text-3xl font-bold theme-text-primary">{segmentData.totalPatients.toLocaleString()}</p>
-          <p className="text-sm text-emerald-600 mt-1 flex items-center gap-1">
+          <p className="text-sm text-emerald-500 mt-1 flex items-center gap-1">
             <TrendingUp size={14} />
             +{segmentData.monthlyGrowth}% vs mois dernier
           </p>
@@ -175,7 +175,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
             <h3 className="theme-text-secondary text-sm font-medium">Segment Principal</h3>
           </div>
           <p className="text-3xl font-bold theme-text-primary">{mainSegment.range}</p>
-          <p className="text-sm text-purple-600 mt-1">{mainSegment.percentage}% des patients</p>
+          <p className="text-sm text-purple-500 mt-1">{mainSegment.percentage}% des patients</p>
         </div>
 
         <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm">
@@ -186,7 +186,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
             <h3 className="theme-text-secondary text-sm font-medium">Risque Élevé</h3>
           </div>
           <p className="text-3xl font-bold theme-text-primary">{riskSegments.find(r => r.level === 'Élevé')?.patients || 0}</p>
-          <p className="text-sm text-red-600 mt-1">Surveillance requise</p>
+          <p className="text-sm text-red-500 mt-1">Surveillance requise</p>
         </div>
       </div>
 
@@ -236,7 +236,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
                 <div key={index} className="text-center p-3 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors">
                   <p className="text-xs theme-text-muted mb-1">{segment.range}</p>
                   <p className="text-sm font-bold theme-text-primary">{segment.percentage}%</p>
-                  <p className="text-xs text-emerald-600 mt-1">{segment.growth}</p>
+                  <p className="text-xs text-emerald-500 mt-1">{segment.growth}</p>
                 </div>
               ))}
             </div>
@@ -319,16 +319,16 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
               <div
                 key={index}
                 className={`p-5 rounded-xl border-2 transition-all hover:shadow-lg ${
-                  segment.level === 'Faible' ? 'bg-emerald-50 border-emerald-200' :
-                  segment.level === 'Modéré' ? 'bg-amber-50 border-amber-200' :
-                  'bg-red-50 border-red-200'
+                  segment.level === 'Faible' ? 'bg-emerald-500/10 border-emerald-500/20' :
+                  segment.level === 'Modéré' ? 'bg-amber-500/10 border-amber-500/20' :
+                  'bg-red-500/10 border-red-500/20'
                 }`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <h4 className={`font-semibold ${
-                    segment.level === 'Faible' ? 'text-emerald-700' :
-                    segment.level === 'Modéré' ? 'text-amber-700' :
-                    'text-red-700'
+                    segment.level === 'Faible' ? 'text-emerald-500' :
+                    segment.level === 'Modéré' ? 'text-amber-500' :
+                    'text-red-500'
                   }`}>{segment.level}</h4>
                   <div className="w-4 h-4 rounded-full" style={{ backgroundColor: segment.fill }} />
                 </div>
@@ -365,7 +365,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
             return (
               <div
                 key={index}
-                className="p-4 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)] hover:border-indigo-200 hover:shadow-md transition-all"
+                className="p-4 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)] hover:border-indigo-500/30 hover:shadow-md transition-all"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex-1">
@@ -374,16 +374,16 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                      segment.priority === 'Haute' ? 'bg-red-100 text-red-700 border border-red-200' :
-                      segment.priority === 'Moyenne' ? 'bg-amber-100 text-amber-700 border border-amber-200' :
-                      'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                      segment.priority === 'Haute' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                      segment.priority === 'Moyenne' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                      'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                     }`}>
                       Priorité {segment.priority}
                     </span>
                     <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                      segment.trend === 'up' ? 'bg-emerald-100 text-emerald-700' :
-                      segment.trend === 'down' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 theme-text-secondary'
+                      segment.trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' :
+                      segment.trend === 'down' ? 'bg-red-500/10 text-red-500' :
+                      'bg-[var(--bg-tertiary)] theme-text-secondary'
                     }`}>
                       {getTrendIcon(segment.trend)}
                       {segment.trend === 'up' ? 'En hausse' : segment.trend === 'down' ? 'En baisse' : 'Stable'}

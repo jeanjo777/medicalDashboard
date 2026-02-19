@@ -179,10 +179,10 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
 
   const getColorClasses = (color: string) => {
     const colors: Record<string, { bg: string; border: string; icon: string; iconBg: string }> = {
-      emerald: { bg: 'bg-[var(--bg-secondary)]', border: 'border-emerald-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
-      blue: { bg: 'bg-[var(--bg-secondary)]', border: 'border-blue-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
-      purple: { bg: 'bg-[var(--bg-secondary)]', border: 'border-purple-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600' },
-      orange: { bg: 'bg-[var(--bg-secondary)]', border: 'border-orange-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-orange-500 to-red-600' }
+      emerald: { bg: 'bg-[var(--bg-secondary)]', border: 'border-emerald-500/20', icon: 'text-white', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+      blue: { bg: 'bg-[var(--bg-secondary)]', border: 'border-blue-500/20', icon: 'text-white', iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+      purple: { bg: 'bg-[var(--bg-secondary)]', border: 'border-purple-500/20', icon: 'text-white', iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600' },
+      orange: { bg: 'bg-[var(--bg-secondary)]', border: 'border-orange-500/20', icon: 'text-white', iconBg: 'bg-gradient-to-br from-orange-500 to-red-600' }
     };
     return colors[color] || colors.blue;
   };
@@ -310,9 +310,9 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
             </div>
           </div>
 
-          <div className="flex items-center gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center gap-2 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
             <CheckCircle size={18} className="text-blue-500" />
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-blue-500">
               Le rapport sera généré avec les données actuelles et téléchargé automatiquement
             </p>
           </div>
@@ -337,8 +337,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
                 className="flex items-center justify-between p-4 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors group"
               >
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="p-3 bg-blue-100 rounded-lg">
-                    <FileText size={20} className="text-blue-600" />
+                  <div className="p-3 bg-blue-500/10 rounded-lg">
+                    <FileText size={20} className="text-blue-500" />
                   </div>
                   <div className="flex-1">
                     <p className="theme-text-primary font-medium mb-1">{report.name}</p>
@@ -370,7 +370,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
                   <button
                     type="button"
                     onClick={() => handleDownloadReport(report)}
-                    className="p-2 hover:bg-blue-100 rounded-lg transition-colors text-blue-600"
+                    className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors text-blue-500"
                     aria-label="Télécharger"
                   >
                     <Download size={18} />
@@ -408,7 +408,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
               <div key={index} className="p-4 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors">
                 <div className="flex items-center justify-between mb-3">
                   <p className="theme-text-primary font-medium text-sm">{schedule.name}</p>
-                  <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
+                  <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-xs rounded-full font-medium">
                     Actif
                   </span>
                 </div>
@@ -434,7 +434,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
               onClick={() => {
                 scrollToGenerateForm();
               }}
-              className="w-full px-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-blue-300 hover:bg-blue-50 theme-text-secondary hover:text-blue-600 rounded-lg transition-all text-sm font-medium cursor-pointer"
+              className="w-full px-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-blue-500/30 hover:bg-blue-500/10 theme-text-secondary hover:text-blue-500 rounded-lg transition-all text-sm font-medium cursor-pointer"
             >
               + Planifier un nouveau rapport
             </button>

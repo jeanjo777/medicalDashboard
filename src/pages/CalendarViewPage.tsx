@@ -117,10 +117,10 @@ const convertDemoAppointments = (demoApts: DemoAppointment[]): Appointment[] => 
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; border: string; gradient: string }> = {
-  a_venir: { label: 'À venir', color: 'text-blue-700', bg: 'bg-blue-50', dot: 'bg-blue-500', border: 'border-blue-200', gradient: 'from-blue-500 to-blue-600' },
-  en_cours: { label: 'En cours', color: 'text-amber-700', bg: 'bg-amber-50', dot: 'bg-amber-500', border: 'border-amber-200', gradient: 'from-amber-500 to-orange-500' },
-  termine: { label: 'Terminé', color: 'text-emerald-700', bg: 'bg-emerald-50', dot: 'bg-emerald-500', border: 'border-emerald-200', gradient: 'from-emerald-500 to-green-600' },
-  annule: { label: 'Annulé', color: 'text-red-700', bg: 'bg-red-50', dot: 'bg-red-500', border: 'border-red-200', gradient: 'from-red-500 to-rose-600' },
+  a_venir: { label: 'À venir', color: 'text-blue-500', bg: 'bg-blue-500/10', dot: 'bg-blue-500', border: 'border-blue-500/20', gradient: 'from-blue-500 to-blue-600' },
+  en_cours: { label: 'En cours', color: 'text-amber-500', bg: 'bg-amber-500/10', dot: 'bg-amber-500', border: 'border-amber-500/20', gradient: 'from-amber-500 to-orange-500' },
+  termine: { label: 'Terminé', color: 'text-emerald-500', bg: 'bg-emerald-500/10', dot: 'bg-emerald-500', border: 'border-emerald-500/20', gradient: 'from-emerald-500 to-green-600' },
+  annule: { label: 'Annulé', color: 'text-red-500', bg: 'bg-red-500/10', dot: 'bg-red-500', border: 'border-red-500/20', gradient: 'from-red-500 to-rose-600' },
 };
 
 const getPatientInitials = (name: string) => {
@@ -415,7 +415,7 @@ const FilterDropdown: React.FC<{
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-sm font-medium ${
           hasActiveFilters
-            ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
+            ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-500'
             : 'bg-[var(--bg-secondary)] border-[var(--border-color)] theme-text-secondary hover:border-[var(--border-color)]'
         }`}
       >
@@ -627,7 +627,7 @@ const DayView: React.FC<{
               </div>
 
               <div
-                className="flex-1 p-2 relative cursor-pointer hover:bg-cyan-50/30 transition-colors"
+                className="flex-1 p-2 relative cursor-pointer hover:bg-[var(--bg-tertiary)]/50 transition-colors"
                 onClick={() => onSlotClick(hour)}
               >
                 {hourAppointments.map((appointment) => {

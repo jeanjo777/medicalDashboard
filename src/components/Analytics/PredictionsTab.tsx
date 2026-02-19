@@ -266,9 +266,9 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {futurePredictions.slice(0, 3).map((pred: any, idx: number) => {
           const colors = [
-            { border: 'border-emerald-200', bg: 'from-emerald-50 to-teal-50', text: 'text-emerald-600', icon: 'bg-emerald-500' },
-            { border: 'border-blue-200', bg: 'from-blue-50 to-indigo-50', text: 'text-blue-600', icon: 'bg-blue-500' },
-            { border: 'border-purple-200', bg: 'from-purple-50 to-pink-50', text: 'text-purple-600', icon: 'bg-purple-500' }
+            { border: 'border-emerald-500/20', bg: 'from-emerald-500/10 to-teal-500/10', text: 'text-emerald-500', icon: 'bg-emerald-500' },
+            { border: 'border-blue-500/20', bg: 'from-blue-500/10 to-indigo-500/10', text: 'text-blue-500', icon: 'bg-blue-500' },
+            { border: 'border-purple-500/20', bg: 'from-purple-500/10 to-pink-500/10', text: 'text-purple-500', icon: 'bg-purple-500' }
           ];
           const color = colors[idx % colors.length];
 
@@ -326,11 +326,11 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
             )}
 
             {/* Trend description */}
-            <div className="flex items-start gap-3 p-4 bg-[var(--bg-primary)] rounded-xl border border-indigo-100">
+            <div className="flex items-start gap-3 p-4 bg-[var(--bg-primary)] rounded-xl border border-indigo-500/20">
               <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2" />
               <div>
-                <p className="text-sm font-medium text-indigo-800">Tendance globale</p>
-                <p className="text-xs text-indigo-600 mt-1 leading-relaxed">{trends.description}</p>
+                <p className="text-sm font-medium text-indigo-500">Tendance globale</p>
+                <p className="text-xs text-indigo-500/70 mt-1 leading-relaxed">{trends.description}</p>
               </div>
             </div>
           </div>
@@ -348,9 +348,9 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
             {alerts.length > 0 ? (
               alerts.map((alert: any, idx: number) => {
                 const styles = {
-                  warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', icon: '⚠️' },
-                  success: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', icon: '✓' },
-                  info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: 'ℹ️' }
+                  warning: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-500', icon: '⚠️' },
+                  success: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-500', icon: '✓' },
+                  info: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-500', icon: 'ℹ️' }
                 };
                 const style = styles[alert.type as keyof typeof styles] || styles.info;
 
@@ -368,11 +368,11 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
                 );
               })
             ) : (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <p className="text-emerald-700 font-medium mb-2 flex items-center gap-2">
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                <p className="text-emerald-500 font-medium mb-2 flex items-center gap-2">
                   <span>✓</span> Aucune alerte
                 </p>
-                <p className="text-sm text-emerald-600">
+                <p className="text-sm text-emerald-500/80">
                   Les prédictions sont stables et conformes aux attentes.
                 </p>
               </div>

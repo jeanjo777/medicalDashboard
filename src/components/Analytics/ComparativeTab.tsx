@@ -68,15 +68,15 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
   };
 
   const getTrendColor = (change: number) => {
-    if (change > 0) return 'text-emerald-600';
-    if (change < 0) return 'text-red-600';
+    if (change > 0) return 'text-emerald-500';
+    if (change < 0) return 'text-red-500';
     return 'theme-text-muted';
   };
 
   const getTrendBg = (change: number) => {
-    if (change > 0) return 'bg-emerald-100';
-    if (change < 0) return 'bg-red-100';
-    return 'bg-gray-100';
+    if (change > 0) return 'bg-emerald-500/10';
+    if (change < 0) return 'bg-red-500/10';
+    return 'bg-[var(--bg-tertiary)]';
   };
 
   return (
@@ -192,20 +192,20 @@ const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = f
           </ResponsiveContainer>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-6 border-t border-[var(--border-color)]">
-            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-              <p className="text-xs text-emerald-600 font-medium mb-1">Croissance moyenne</p>
-              <p className="text-2xl font-bold text-emerald-700">{summaryStats.avgGrowth > 0 ? '+' : ''}{summaryStats.avgGrowth.toFixed(1)}%</p>
-              <p className="text-xs text-emerald-600 mt-1">vs période précédente</p>
+            <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+              <p className="text-xs text-emerald-500 font-medium mb-1">Croissance moyenne</p>
+              <p className="text-2xl font-bold text-emerald-500">{summaryStats.avgGrowth > 0 ? '+' : ''}{summaryStats.avgGrowth.toFixed(1)}%</p>
+              <p className="text-xs text-emerald-500/70 mt-1">vs période précédente</p>
             </div>
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-              <p className="text-xs text-blue-600 font-medium mb-1">Écart à l'objectif</p>
-              <p className="text-2xl font-bold text-blue-700">{summaryStats.targetGap > 0 ? '+' : ''}{summaryStats.targetGap.toFixed(1)}%</p>
-              <p className="text-xs text-blue-600 mt-1">{summaryStats.targetGap >= 0 ? 'Au-dessus de la cible' : 'En-dessous de la cible'}</p>
+            <div className="p-4 bg-blue-500/10 rounded-xl border border-blue-500/20">
+              <p className="text-xs text-blue-500 font-medium mb-1">Écart à l'objectif</p>
+              <p className="text-2xl font-bold text-blue-500">{summaryStats.targetGap > 0 ? '+' : ''}{summaryStats.targetGap.toFixed(1)}%</p>
+              <p className="text-xs text-blue-500/70 mt-1">{summaryStats.targetGap >= 0 ? 'Au-dessus de la cible' : 'En-dessous de la cible'}</p>
             </div>
-            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
-              <p className="text-xs text-purple-600 font-medium mb-1">Tendance</p>
-              <p className="text-2xl font-bold text-purple-700">{summaryStats.avgGrowth > 0 ? 'Positive' : summaryStats.avgGrowth < 0 ? 'Négative' : 'Stable'}</p>
-              <p className="text-xs text-purple-600 mt-1">{summaryStats.consecutivePositive} semaines consécutives</p>
+            <div className="p-4 bg-purple-500/10 rounded-xl border border-purple-500/20">
+              <p className="text-xs text-purple-500 font-medium mb-1">Tendance</p>
+              <p className="text-2xl font-bold text-purple-500">{summaryStats.avgGrowth > 0 ? 'Positive' : summaryStats.avgGrowth < 0 ? 'Négative' : 'Stable'}</p>
+              <p className="text-xs text-purple-500/70 mt-1">{summaryStats.consecutivePositive} semaines consécutives</p>
             </div>
           </div>
         </div>

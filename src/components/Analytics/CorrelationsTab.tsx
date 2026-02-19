@@ -44,10 +44,10 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
 
   const getCorrelationStrength = (coefficient: number) => {
     const abs = Math.abs(coefficient);
-    if (abs >= 0.8) return { label: 'Très forte', color: 'text-purple-600', bg: 'bg-purple-100' };
-    if (abs >= 0.6) return { label: 'Forte', color: 'text-blue-600', bg: 'bg-blue-100' };
-    if (abs >= 0.4) return { label: 'Modérée', color: 'text-amber-600', bg: 'bg-amber-100' };
-    return { label: 'Faible', color: 'theme-text-secondary', bg: 'bg-gray-100' };
+    if (abs >= 0.8) return { label: 'Très forte', color: 'text-purple-500', bg: 'bg-purple-500/10' };
+    if (abs >= 0.6) return { label: 'Forte', color: 'text-blue-500', bg: 'bg-blue-500/10' };
+    if (abs >= 0.4) return { label: 'Modérée', color: 'text-amber-500', bg: 'bg-amber-500/10' };
+    return { label: 'Faible', color: 'theme-text-secondary', bg: 'bg-[var(--bg-tertiary)]' };
   };
 
   return (
@@ -204,19 +204,19 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
               key={index}
               className={`bg-[var(--bg-secondary)] rounded-xl border-2 p-5 transition-all hover:shadow-lg cursor-pointer ${
                 selectedCorrelation === index
-                  ? corr.type === 'positive' ? 'border-emerald-300' : 'border-red-300'
-                  : 'border-gray-200 hover:border-indigo-200'
+                  ? corr.type === 'positive' ? 'border-emerald-500/30' : 'border-red-500/30'
+                  : 'border-[var(--border-color)] hover:border-indigo-500/30'
               }`}
               onClick={() => setSelectedCorrelation(index)}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className={`p-2 rounded-lg ${corr.type === 'positive' ? 'bg-emerald-100' : 'bg-red-100'}`}>
+                    <div className={`p-2 rounded-lg ${corr.type === 'positive' ? 'bg-emerald-500/10' : 'bg-red-500/10'}`}>
                       {corr.type === 'positive' ? (
-                        <ArrowUpRight size={18} className="text-emerald-600" />
+                        <ArrowUpRight size={18} className="text-emerald-500" />
                       ) : (
-                        <ArrowDownRight size={18} className="text-red-600" />
+                        <ArrowDownRight size={18} className="text-red-500" />
                       )}
                     </div>
                     <h3 className="theme-text-primary font-semibold">{corr.metric1} ↔ {corr.metric2}</h3>
@@ -225,7 +225,7 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
                 </div>
                 <div className={`
                   px-3 py-1.5 rounded-full text-sm font-bold
-                  ${corr.type === 'positive' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}
+                  ${corr.type === 'positive' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}
                 `}>
                   {corr.coefficient > 0 ? '+' : ''}{corr.coefficient}
                 </div>
@@ -236,7 +236,7 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
                 <div className="flex items-start gap-2">
                   <Lightbulb size={16} className="text-indigo-500 mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-xs text-indigo-600 font-semibold mb-1">Recommandation IA</p>
+                    <p className="text-xs text-indigo-500 font-semibold mb-1">Recommandation IA</p>
                     <p className="text-sm theme-text-secondary">{corr.insight}</p>
                   </div>
                 </div>
@@ -359,12 +359,12 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
                           key={j}
                           className={`h-10 rounded-lg flex items-center justify-center text-xs font-medium mb-1 ${
                             i === j
-                              ? 'bg-gray-800 text-white'
+                              ? 'bg-[var(--bg-tertiary)] theme-text-primary'
                               : val === 0
-                              ? 'bg-[var(--bg-primary)] text-gray-400'
+                              ? 'bg-[var(--bg-primary)] theme-text-muted'
                               : isPositive
-                              ? intensity > 0.6 ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-50 text-emerald-600'
-                              : intensity > 0.4 ? 'bg-red-100 text-red-700' : 'bg-red-50 text-red-600'
+                              ? intensity > 0.6 ? 'bg-emerald-500/15 text-emerald-500' : 'bg-emerald-500/10 text-emerald-500'
+                              : intensity > 0.4 ? 'bg-red-500/15 text-red-500' : 'bg-red-500/10 text-red-500'
                           }`}
                           title={`${metric} ↔ ${metric2}`}
                         >
