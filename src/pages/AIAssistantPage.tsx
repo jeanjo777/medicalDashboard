@@ -1221,9 +1221,16 @@ const AIAssistantPage: React.FC = () => {
   };
 
   const handleSend = () => {
-    if ((!input.trim() && imageAttachments.length === 0) || isLoading || isStreaming) return;
+    if ((!input.trim() && imageAttachments.length === 0) || isLoading) return;
+    // If streaming, cancel current stream before sending new message
+    if (isStreaming) cancelStream();
     const message = input.trim() || (imageAttachments.length > 0 ? 'Analysez cette image medicale.' : '');
-    sendMessage(message, imageAttachments.length > 0 ? imageAttachments : undefined);
+    // Small delay after cancel to let state settle
+    const doSend = () => {
+      sendMessage(message, imageAttachments.length > 0 ? imageAttachments : undefined);
+    };
+    if (isStreaming) setTimeout(doSend, 100);
+    else doSend();
     setInput('');
     setImageAttachments([]);
     if (inputRef.current) inputRef.current.style.height = 'auto';
@@ -1359,7 +1366,7 @@ const AIAssistantPage: React.FC = () => {
                   <span className="text-xs text-rose-300 font-medium truncate max-w-[120px]">
                     {patientContext.patientName || `${patientContext.patientAge || '?'}ans ${patientContext.patientSex || ''}`}
                   </span>
-                  <button type="button" onClick={() => setPatientContext(null)} className="text-rose-400 hover:text-rose-300 ml-1"><X size={12} /></button>
+                  <button type="button" onClick={() => setPatientContext(null)} className="text-rose-400 hover:text-rose-300 ml-1" title="Retirer le contexte patient" aria-label="Retirer le contexte patient"><X size={12} /></button>
                 </div>
               )}
 
@@ -1716,20 +1723,21 @@ const AIAssistantPage: React.FC = () => {
               className="hidden"
             />
 
-            {/* Textarea */}
+            {/* Textarea - always enabled so user can type during streaming */}
             <textarea
               ref={inputRef}
               value={input}
               onChange={handleTextareaInput}
               onKeyDown={handleKeyDown}
               placeholder={
-                imageAttachments.length > 0
-                  ? 'Decrivez ce que vous souhaitez analyser...'
-                  : `Posez votre question medicale...`
+                isStreaming
+                  ? 'Ecrivez votre prochaine question...'
+                  : imageAttachments.length > 0
+                    ? 'Decrivez ce que vous souhaitez analyser...'
+                    : 'Posez votre question medicale...'
               }
               rows={1}
               className="flex-1 bg-transparent py-3 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none resize-none max-h-[120px]"
-              disabled={isLoading || isStreaming}
             />
 
             {/* Right side buttons */}
@@ -1738,7 +1746,7 @@ const AIAssistantPage: React.FC = () => {
               <button
                 type="button"
                 onClick={toggleRecording}
-                disabled={isLoading || isStreaming}
+                disabled={isLoading && !isStreaming}
                 className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                   isRecording
                     ? 'bg-red-500/15 text-red-400 animate-pulse'
@@ -1749,27 +1757,28 @@ const AIAssistantPage: React.FC = () => {
                 {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
               </button>
 
-              {isStreaming ? (
+              {isStreaming && (
                 <button
                   type="button"
                   onClick={cancelStream}
                   className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-red-500/15 text-red-400 hover:bg-red-500/25 cursor-pointer"
-                  title="Arreter"
+                  title="Arreter la generation"
                 >
                   <Square size={14} fill="currentColor" />
                 </button>
-              ) : (
+              )}
+              {(!isStreaming || input.trim()) && (
                 <button
                   type="button"
                   onClick={handleSend}
-                  disabled={(!input.trim() && imageAttachments.length === 0) || isLoading}
+                  disabled={(!input.trim() && imageAttachments.length === 0) || (isLoading && !isStreaming)}
                   className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-                    (input.trim() || imageAttachments.length > 0) && !isLoading
+                    (input.trim() || imageAttachments.length > 0) && !(isLoading && !isStreaming)
                       ? `bg-gradient-to-r ${currentModeConfig.gradient} text-white shadow-md hover:shadow-lg cursor-pointer`
                       : 'theme-text-muted opacity-40 cursor-not-allowed'
                   }`}
                 >
-                  {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  {isLoading && !isStreaming ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>
               )}
             </div>

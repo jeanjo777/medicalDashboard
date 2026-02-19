@@ -441,12 +441,19 @@ export function useAIAssistant(): UseAIAssistantReturn {
         content: m.content,
       }));
 
+      // Get doctor name from localStorage
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const doctorName = userData?.prenom && userData?.nom
+        ? `Dr. ${userData.prenom} ${userData.nom}`
+        : userData?.username ? `Dr. ${userData.username}` : 'Dr. Simplice Achi AKE';
+
       const body: Record<string, unknown> = {
         message: message.trim(),
         history,
         context: patientContext || undefined,
         mode,
         stream: true,
+        doctorName,
       };
 
       if (images && images.length > 0) {

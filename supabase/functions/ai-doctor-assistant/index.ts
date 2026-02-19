@@ -40,6 +40,7 @@ interface AssistantRequest {
   image?: ImageData;
   images?: ImageData[];
   stream?: boolean;
+  doctorName?: string;
 }
 
 // ============================================
@@ -897,7 +898,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { message, history = [], context, mode = 'general', image, images, stream = true }: AssistantRequest = await req.json();
+    const { message, history = [], context, mode = 'general', image, images, stream = true, doctorName }: AssistantRequest = await req.json();
 
     if (!message?.trim()) {
       return new Response(
@@ -922,7 +923,11 @@ Deno.serve(async (req: Request) => {
 
     const allImages = images && images.length > 0 ? images : (image ? [image] : []);
     const claudeMessages = buildClaudeMessages(message.trim(), history, context, allImages);
-    const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.general;
+    const basePrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.general;
+    const doctorGreeting = doctorName
+      ? `\n\nIMPORTANT: Le medecin qui te parle s'appelle ${doctorName}. Adresse-toi a lui par son nom (ex: "Bonjour ${doctorName}", "${doctorName}, voici mon analyse..."). Sois professionnel et collegial.`
+      : '';
+    const systemPrompt = basePrompt + doctorGreeting;
 
     // Streaming response
     if (stream) {
