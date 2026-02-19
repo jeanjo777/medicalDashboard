@@ -786,23 +786,31 @@ const MessageBubble: React.FC<{
           </span>
           {/* TTS buttons */}
           {!isUser && message.content && !message.isStreaming && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={handleSpeak}
-                className={`transition-colors ${isSpeaking ? 'text-cyan-400' : 'theme-text-secondary hover:text-cyan-400'}`}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium transition-all ${
+                  isSpeaking && !isPaused
+                    ? 'bg-cyan-500/20 text-cyan-400'
+                    : isPaused
+                      ? 'bg-yellow-500/20 text-yellow-400'
+                      : 'bg-[var(--bg-tertiary)] theme-text-secondary hover:text-cyan-400 hover:bg-cyan-500/10'
+                }`}
                 title={isSpeaking && !isPaused ? 'Pause' : isPaused ? 'Reprendre' : 'Lire le message'}
               >
-                {isSpeaking && !isPaused ? <Pause size={12} /> : <Volume2 size={12} />}
+                {isSpeaking && !isPaused ? <Pause size={13} /> : <Volume2 size={13} />}
+                {isSpeaking && !isPaused ? 'Pause' : isPaused ? 'Reprendre' : 'Ecouter'}
               </button>
-              {isSpeaking && (
+              {(isSpeaking || isPaused) && (
                 <button
                   type="button"
                   onClick={handleStopSpeech}
-                  className="text-red-400 hover:text-red-300 transition-colors"
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-medium bg-red-500/15 text-red-400 hover:bg-red-500/25 transition-all"
                   title="Arreter la lecture"
                 >
-                  <VolumeX size={12} />
+                  <VolumeX size={13} />
+                  Stop
                 </button>
               )}
             </div>
