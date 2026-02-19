@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import SearchFilters from '../components/Common/SearchFilters';
 import Pagination from '../components/Common/Pagination';
-import UserMenu from '../components/Common/UserMenu';
 import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import PatientDetailModal from '../components/Patients/PatientDetailModal';
 import PatientCardMobile from '../components/Patients/PatientCardMobile';
@@ -331,7 +330,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
                 <Bell size={16} className="theme-text-muted" />
               </button>
 
-              <UserMenu />
             </div>
           </div>
         </header>

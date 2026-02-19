@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import UserMenu from '../components/Common/UserMenu';
 import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import ErrorState from '../components/ErrorState';
@@ -457,7 +456,6 @@ const AppointmentsPage: React.FC = () => {
           <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-bold theme-text-primary">Rendez-vous</h1>
-              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8">
@@ -476,7 +474,6 @@ const AppointmentsPage: React.FC = () => {
           <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 z-30 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <h1 className="text-xl font-bold theme-text-primary ml-12 lg:ml-0">Rendez-vous</h1>
-              <UserMenu />
             </div>
           </header>
           <main className="flex-1 p-4 lg:p-8">
@@ -532,7 +529,6 @@ const AppointmentsPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-3">
               <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <UserMenu />
             </div>
           </div>
         </header>

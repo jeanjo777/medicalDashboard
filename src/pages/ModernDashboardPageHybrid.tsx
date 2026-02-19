@@ -24,7 +24,6 @@ import WeeklyOverviewWidget from '../components/ModernDashboard/WeeklyOverviewWi
 import TodayPatientsWidget from '../components/ModernDashboard/TodayPatientsWidget';
 import QuickActionsWidget from '../components/ModernDashboard/QuickActionsWidget';
 import NotificationsWidget from '../components/ModernDashboard/NotificationsWidget';
-import UserMenu from '../components/Common/UserMenu';
 import { GlobalSearch } from '../components/Common/GlobalSearch';
 import { NotificationCenter } from '../components/Common/NotificationCenter';
 import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
@@ -99,7 +98,6 @@ const ModernDashboardPageHybrid: React.FC = () => {
               <button type="button" onClick={() => showToast({ type: 'info', title: 'Aide', message: 'Pour toute assistance, contactez support@medicalai.fr ou consultez la documentation.' })} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Aide">
                 <HelpCircle className="h-4 w-4 theme-text-secondary" />
               </button>
-              <UserMenu />
             </div>
           </div>
         </header>
