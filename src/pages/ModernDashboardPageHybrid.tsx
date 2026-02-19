@@ -27,9 +27,13 @@ import NotificationsWidget from '../components/ModernDashboard/NotificationsWidg
 import UserMenu from '../components/Common/UserMenu';
 import { GlobalSearch } from '../components/Common/GlobalSearch';
 import { NotificationCenter } from '../components/Common/NotificationCenter';
+import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
 import { useToast } from '../components/Common/Toast';
+import { useDemoMode } from '../hooks/useDemoMode';
+import { useMedicalDataRealtime } from '../hooks/useAppointmentsRealtime';
+import { useDashboardStatsQuery } from '../hooks/useDashboardStatsQuery';
 
 const ModernDashboardPageHybrid: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +46,9 @@ const ModernDashboardPageHybrid: React.FC = () => {
   });
   const { user } = useMedicAuth();
   const { showToast } = useToast();
+  const { isDemoMode, toggleDemoMode, disableDemoMode } = useDemoMode();
+  const { stats: dashStats } = useDashboardStatsQuery();
+  useMedicalDataRealtime(!isDemoMode);
 
   const userName = user
     ? `Dr. ${user.prenom || ''} ${user.nom || ''}`.trim() || 'Professionnel de santé'
@@ -82,6 +89,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                 </button>
               )}
               <NotificationCenter />
+              <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
               <button type="button" onClick={() => showToast({ type: 'info', title: 'Aide', message: 'Pour toute assistance, contactez support@medicalai.fr ou consultez la documentation.' })} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Aide">
                 <HelpCircle className="h-4 w-4 theme-text-secondary" />
               </button>
@@ -89,6 +97,9 @@ const ModernDashboardPageHybrid: React.FC = () => {
             </div>
           </div>
         </header>
+
+        {/* Demo Mode Banner */}
+        <DemoModeBanner isDemoMode={isDemoMode} onDisable={disableDemoMode} />
 
         {/* Content Area */}
         <main className="flex-1 bg-[var(--bg-primary)] p-2 sm:p-3 lg:p-4 overflow-auto transition-colors duration-300">
@@ -102,7 +113,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                 {/* Left Column - Overview (4 cols) */}
                 <div className="lg:col-span-4 space-y-3">
                   <ErrorBoundary>
-                    <MedicalRadarChart />
+                    <MedicalRadarChart isDemoMode={isDemoMode} />
                   </ErrorBoundary>
 
                   <ErrorBoundary>
@@ -110,7 +121,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   </ErrorBoundary>
 
                   <ErrorBoundary>
-                    <TodayPatientsWidget />
+                    <TodayPatientsWidget isDemoMode={isDemoMode} />
                   </ErrorBoundary>
 
                   <ErrorBoundary>
@@ -136,12 +147,12 @@ const ModernDashboardPageHybrid: React.FC = () => {
 
                   {/* AI Reports */}
                   <ErrorBoundary>
-                    <MedicalAIReports />
+                    <MedicalAIReports isDemoMode={isDemoMode} />
                   </ErrorBoundary>
 
                   {/* KPI Performance */}
                   <ErrorBoundary>
-                    <KPIPerformanceWidget />
+                    <KPIPerformanceWidget isDemoMode={isDemoMode} />
                   </ErrorBoundary>
                 </div>
 
@@ -151,21 +162,20 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   <ErrorBoundary>
                     <MedicalFlowCard
                       title="Taux de présence"
-                      value="92%"
+                      value={isDemoMode ? '92%' : `${Math.round(dashStats.patientsInTreatment)}%`}
                       status="good"
                       trend="up"
-                      trendValue="+3%"
+                      trendValue={isDemoMode ? '+3%' : `${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`}
                     />
                   </ErrorBoundary>
 
                   <ErrorBoundary>
                     <MedicalFlowCard
-                      title="Temps d'attente moyen"
-                      value="18min"
-                      status="warning"
-                      trend="down"
-                      trendValue="-5min"
-                      alert="Pic d'activité prévu entre 10h et 12h aujourd'hui."
+                      title="Nouveaux patients"
+                      value={isDemoMode ? '12' : String(dashStats.newPatientsThisMonth)}
+                      status={dashStats.newPatientsThisMonthChange >= 0 ? 'good' : 'warning'}
+                      trend={dashStats.newPatientsThisMonthChange >= 0 ? 'up' : 'down'}
+                      trendValue={isDemoMode ? '+18%' : `${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`}
                     />
                   </ErrorBoundary>
 
@@ -182,22 +192,18 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   <div className="rounded-2xl theme-bg-secondary p-3 shadow-sm transition-colors duration-300">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-medium theme-text-primary">Patients aujourd'hui</span>
-                      <span className="theme-text-secondary">24 consultations</span>
+                      <span className="theme-text-secondary">{isDemoMode ? '24' : dashStats.appointmentsToday} consultations</span>
                     </div>
                   </div>
 
                   {/* Passing Rate */}
                   <ErrorBoundary>
-                    <MedicalPassingRate
-                      complete={72}
-                      cancelled={12}
-                      pending={16}
-                    />
+                    <MedicalPassingRate isDemoMode={isDemoMode} />
                   </ErrorBoundary>
 
                   {/* Weekly Overview */}
                   <ErrorBoundary>
-                    <WeeklyOverviewWidget />
+                    <WeeklyOverviewWidget isDemoMode={isDemoMode} />
                   </ErrorBoundary>
 
                   {/* Notifications */}
@@ -223,10 +229,10 @@ const ModernDashboardPageHybrid: React.FC = () => {
                       </h2>
                     </div>
                     <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                      <QuickStat label="Nouveaux patients" value="12" change="+18%" positive />
-                      <QuickStat label="Consultations" value="156" change="+5%" positive />
-                      <QuickStat label="Annulations" value="8" change="-23%" positive />
-                      <QuickStat label="Satisfaction" value="4.8" change="+0.2" positive suffix="/5" />
+                      <QuickStat label="Nouveaux patients" value={isDemoMode ? '12' : String(dashStats.newPatientsThisMonth)} change={isDemoMode ? '+18%' : `${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`} positive={isDemoMode ? true : dashStats.newPatientsThisMonthChange >= 0} />
+                      <QuickStat label="RDV aujourd'hui" value={isDemoMode ? '24' : String(dashStats.appointmentsToday)} change={isDemoMode ? '+5%' : `${dashStats.appointmentsTodayChange > 0 ? '+' : ''}${dashStats.appointmentsTodayChange}%`} positive={isDemoMode ? true : dashStats.appointmentsTodayChange >= 0} />
+                      <QuickStat label="Revenus" value={isDemoMode ? '45 000' : dashStats.totalRevenue.toLocaleString('fr-FR')} change={isDemoMode ? '+12%' : `${dashStats.totalRevenueChange > 0 ? '+' : ''}${dashStats.totalRevenueChange}%`} positive={isDemoMode ? true : dashStats.totalRevenueChange >= 0} suffix=" FCFA" />
+                      <QuickStat label="En traitement" value={isDemoMode ? '15%' : `${dashStats.patientsInTreatment}%`} change={isDemoMode ? '+2%' : `${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`} positive={isDemoMode ? true : dashStats.patientsInTreatmentChange >= 0} />
                     </div>
                   </div>
                 </ErrorBoundary>

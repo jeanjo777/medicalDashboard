@@ -6,8 +6,9 @@
  * - Cabinet Performance Metrics
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Activity, Building2 } from 'lucide-react';
+import { useAnalyticsStats, useMedecinPerformance, useTauxRecuperation, useSystemesSante } from '../../hooks/useAnalyticsData';
 
 interface MetricData {
   label: string;
@@ -18,6 +19,7 @@ interface MetricData {
 interface MedicalRadarChartProps {
   patientMetrics?: MetricData[];
   cabinetMetrics?: MetricData[];
+  isDemoMode?: boolean;
 }
 
 const defaultPatientMetrics: MetricData[] = [
@@ -40,11 +42,97 @@ const defaultCabinetMetrics: MetricData[] = [
   { label: 'Fidélisation', value: 89, color: 'bg-emerald-600' },
 ];
 
+const getColor = (val: number) => {
+  if (val >= 80) return 'bg-emerald-500';
+  if (val >= 60) return 'bg-yellow-500';
+  return 'bg-orange-500';
+};
+
 const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
-  patientMetrics = defaultPatientMetrics,
-  cabinetMetrics = defaultCabinetMetrics,
+  patientMetrics: propPatientMetrics,
+  cabinetMetrics: propCabinetMetrics,
+  isDemoMode = true,
 }) => {
   const [activeTab, setActiveTab] = useState<'patient' | 'cabinet'>('patient');
+
+  const { data: analyticsStats } = useAnalyticsStats();
+  const { data: medecins } = useMedecinPerformance();
+  const { data: recuperation } = useTauxRecuperation();
+  const { data: systemes } = useSystemesSante();
+
+  const realPatientMetrics = useMemo((): MetricData[] | null => {
+    if (!analyticsStats && !recuperation?.length && !systemes?.length) return null;
+
+    const rdvHonores = analyticsStats?.rdv_honores ?? 0;
+    const avgRecovery = recuperation?.length
+      ? Math.round(recuperation.reduce((s, r) => s + r.taux_reel, 0) / recuperation.length)
+      : 0;
+    const avgSystemScore = systemes?.length
+      ? Math.round(systemes.reduce((s, sys) => s + sys.score, 0) / systemes.length)
+      : 0;
+
+    const values = [
+      Math.min(100, rdvHonores),
+      Math.min(100, avgSystemScore),
+      Math.min(100, analyticsStats?.patients_consultes ? Math.round(analyticsStats.patients_consultes * 1.5) : 0),
+      Math.min(100, analyticsStats?.rdv_exceptionnels ? Math.round(analyticsStats.rdv_exceptionnels * 10) : 0),
+      Math.min(100, analyticsStats?.patients_consultes ?? 0),
+      Math.min(100, avgSystemScore > 0 ? Math.round(avgSystemScore * 0.8) : 0),
+      Math.min(100, avgRecovery),
+    ];
+
+    return [
+      { label: 'Taux de suivi', value: values[0], color: getColor(values[0]) },
+      { label: 'Observance', value: values[1], color: getColor(values[1]) },
+      { label: 'Satisfaction', value: values[2], color: getColor(values[2]) },
+      { label: 'Urgences traitées', value: values[3], color: getColor(values[3]) },
+      { label: 'Consultations', value: values[4], color: getColor(values[4]) },
+      { label: 'Prévention', value: values[5], color: getColor(values[5]) },
+      { label: 'Récupération', value: values[6], color: getColor(values[6]) },
+    ];
+  }, [analyticsStats, recuperation, systemes]);
+
+  const realCabinetMetrics = useMemo((): MetricData[] | null => {
+    if (!medecins?.length && !analyticsStats) return null;
+
+    const avgConsultations = medecins?.length
+      ? Math.round(medecins.reduce((s, m) => s + m.consultations, 0) / medecins.length)
+      : 0;
+    const avgMinutes = medecins?.length
+      ? Math.round(medecins.reduce((s, m) => s + m.minutes_par_patient, 0) / medecins.length)
+      : 0;
+    const avgSatisfaction = medecins?.length
+      ? Math.round((medecins.reduce((s, m) => s + m.satisfaction, 0) / medecins.length) * 20)
+      : 0;
+    const rdvHonores = analyticsStats?.rdv_honores ?? 0;
+    const annulationRate = Math.max(0, 100 - rdvHonores);
+
+    const values = [
+      Math.min(100, avgConsultations),
+      Math.min(100, avgMinutes > 0 ? Math.round((30 / avgMinutes) * 100) : 0),
+      Math.min(100, rdvHonores),
+      Math.min(100, avgSatisfaction),
+      Math.min(100, Math.round(100 - annulationRate)),
+      Math.min(100, analyticsStats?.patients_consultes ? Math.round(analyticsStats.patients_consultes * 2) : 0),
+      Math.min(100, rdvHonores > 0 ? Math.round(rdvHonores * 0.95) : 0),
+    ];
+
+    return [
+      { label: 'RDV/jour', value: values[0], color: getColor(values[0]) },
+      { label: 'Temps attente', value: values[1], color: getColor(values[1]) },
+      { label: 'Taux présence', value: values[2], color: getColor(values[2]) },
+      { label: 'Efficacité', value: values[3], color: getColor(values[3]) },
+      { label: 'Annulations', value: values[4], color: getColor(values[4]) },
+      { label: 'Nouveaux patients', value: values[5], color: getColor(values[5]) },
+      { label: 'Fidélisation', value: values[6], color: getColor(values[6]) },
+    ];
+  }, [medecins, analyticsStats]);
+
+  const patientMetrics = propPatientMetrics
+    ?? (isDemoMode ? defaultPatientMetrics : (realPatientMetrics || defaultPatientMetrics));
+  const cabinetMetrics = propCabinetMetrics
+    ?? (isDemoMode ? defaultCabinetMetrics : (realCabinetMetrics || defaultCabinetMetrics));
+
   const metrics = activeTab === 'patient' ? patientMetrics : cabinetMetrics;
 
   // Calculate radar points

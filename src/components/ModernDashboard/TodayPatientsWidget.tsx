@@ -1,15 +1,26 @@
 import React from 'react';
 import { UserCheck, UserX, Clock, Users } from 'lucide-react';
+import { useTodayPatientStats } from '../../hooks/useTodayPatientStats';
 
-const TodayPatientsWidget: React.FC = () => {
+interface TodayPatientsWidgetProps {
+  isDemoMode?: boolean;
+}
+
+const demoStats = { total: 24, seen: 16, waiting: 5, absent: 3 };
+
+const TodayPatientsWidget: React.FC<TodayPatientsWidgetProps> = ({ isDemoMode = true }) => {
+  const { data: todayData } = useTodayPatientStats();
+
+  const s = isDemoMode ? demoStats : (todayData || demoStats);
+
   const stats = [
-    { label: 'Total prévus', value: 24, icon: <Users className="h-4 w-4" />, color: 'text-blue-500 bg-blue-500/10' },
-    { label: 'Consultés', value: 16, icon: <UserCheck className="h-4 w-4" />, color: 'text-emerald-500 bg-emerald-500/10' },
-    { label: 'En attente', value: 5, icon: <Clock className="h-4 w-4" />, color: 'text-amber-500 bg-amber-500/10' },
-    { label: 'Absents', value: 3, icon: <UserX className="h-4 w-4" />, color: 'text-red-500 bg-red-500/10' },
+    { label: 'Total prévus', value: s.total, icon: <Users className="h-4 w-4" />, color: 'text-blue-500 bg-blue-500/10' },
+    { label: 'Consultés', value: s.seen, icon: <UserCheck className="h-4 w-4" />, color: 'text-emerald-500 bg-emerald-500/10' },
+    { label: 'En attente', value: s.waiting, icon: <Clock className="h-4 w-4" />, color: 'text-amber-500 bg-amber-500/10' },
+    { label: 'Absents', value: s.absent, icon: <UserX className="h-4 w-4" />, color: 'text-red-500 bg-red-500/10' },
   ];
 
-  const progress = Math.round((16 / 24) * 100);
+  const progress = s.total > 0 ? Math.round((s.seen / s.total) * 100) : 0;
 
   return (
     <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">

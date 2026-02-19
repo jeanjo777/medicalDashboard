@@ -163,7 +163,7 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
 export const useDashboardStatsQuery = () => {
   const query = useQuery({
-    queryKey: ['dashboardStats'],
+    queryKey: ['dashboard-stats'],
     queryFn: fetchDashboardStats,
     staleTime: 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000, // 5 minutes (cache)

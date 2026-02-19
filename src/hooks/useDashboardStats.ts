@@ -152,7 +152,7 @@ export const useDashboardStats = (): UseDashboardStatsResult => {
         newPatientsLastMonth
       });
 
-      // Calculate revenue based on consultations (150€ per consultation)
+      // Calculate revenue based on consultations (150 FCFA per consultation)
       const baseRevenue = 45000;
       const revenueThisWeek = baseRevenue + (consultationsThisWeek * 150);
       const revenueLastWeek = baseRevenue + (consultationsLastWeek * 150);

@@ -6,20 +6,33 @@
 
 import React from 'react';
 import { FileText } from 'lucide-react';
+import { useAppointmentPassingRate } from '../../hooks/useAppointmentPassingRate';
 
 interface MedicalPassingRateProps {
-  complete: number;
-  cancelled: number;
-  pending: number;
+  complete?: number;
+  cancelled?: number;
+  pending?: number;
   title?: string;
+  isDemoMode?: boolean;
 }
 
+const demoDefaults = { complete: 72, cancelled: 12, pending: 16 };
+
 const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
-  complete = 72,
-  cancelled = 12,
-  pending = 16,
+  complete: completeProp,
+  cancelled: cancelledProp,
+  pending: pendingProp,
   title = "Taux de consultations",
+  isDemoMode = true,
 }) => {
+  const { data: rateData } = useAppointmentPassingRate();
+
+  const rates = isDemoMode ? demoDefaults : (rateData || demoDefaults);
+
+  const complete = completeProp ?? rates.complete;
+  const cancelled = cancelledProp ?? rates.cancelled;
+  const pending = pendingProp ?? rates.pending;
+
   return (
     <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
       <div className="mb-4 flex items-center justify-between">

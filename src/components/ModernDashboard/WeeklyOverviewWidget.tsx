@@ -1,13 +1,22 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
+import { useWeeklyAppointments } from '../../hooks/useWeeklyAppointments';
+
+interface WeeklyOverviewWidgetProps {
+  isDemoMode?: boolean;
+}
 
 const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-const data = [18, 24, 15, 28, 22, 8, 4];
-const maxVal = Math.max(...data);
+const demoData = [18, 24, 15, 28, 22, 8, 4];
 
-const WeeklyOverviewWidget: React.FC = () => {
+const WeeklyOverviewWidget: React.FC<WeeklyOverviewWidgetProps> = ({ isDemoMode = true }) => {
+  const { data: weeklyData } = useWeeklyAppointments();
+
+  const data = isDemoMode ? demoData : (weeklyData?.counts || demoData);
+  const maxVal = Math.max(...data, 1);
+  const total = data.reduce((a, b) => a + b, 0);
+
   const today = new Date().getDay();
-  // Convert Sunday=0 to index 6, Monday=1 to index 0, etc.
   const todayIndex = today === 0 ? 6 : today - 1;
 
   return (
@@ -54,7 +63,7 @@ const WeeklyOverviewWidget: React.FC = () => {
 
       <div className="mt-3 pt-3 border-t border-[var(--border-color)] flex items-center justify-between">
         <span className="text-[10px] theme-text-muted">Total semaine</span>
-        <span className="text-xs sm:text-sm font-bold theme-text-primary">{data.reduce((a, b) => a + b, 0)} consultations</span>
+        <span className="text-xs sm:text-sm font-bold theme-text-primary">{total} consultations</span>
       </div>
     </div>
   );

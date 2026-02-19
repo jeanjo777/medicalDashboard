@@ -29,6 +29,9 @@ export function useAppointmentsRealtime(enabled: boolean = true) {
           queryClient.invalidateQueries({ queryKey: ['appointments'] });
           queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
           queryClient.invalidateQueries({ queryKey: ['upcoming-appointments'] });
+          queryClient.invalidateQueries({ queryKey: ['today-patient-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['weekly-appointments'] });
+          queryClient.invalidateQueries({ queryKey: ['appointment-passing-rate'] });
 
           // Log the specific change for debugging
           if (payload.eventType === 'INSERT') {

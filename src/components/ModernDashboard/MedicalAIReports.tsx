@@ -4,8 +4,10 @@
  * Displays AI-generated medical reports with circular progress indicators
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Copy, FileText, Activity, Users, Calendar } from 'lucide-react';
+import { useAnalyticsStats } from '../../hooks/useAnalyticsData';
+import { useDashboardStatsQuery } from '../../hooks/useDashboardStatsQuery';
 
 interface ReportItem {
   icon: 'patients' | 'diagnostics' | 'planning';
@@ -16,6 +18,7 @@ interface ReportItem {
 interface MedicalAIReportsProps {
   reports?: ReportItem[];
   onCopy?: () => void;
+  isDemoMode?: boolean;
 }
 
 const defaultReports: ReportItem[] = [
@@ -25,9 +28,42 @@ const defaultReports: ReportItem[] = [
 ];
 
 const MedicalAIReports: React.FC<MedicalAIReportsProps> = ({
-  reports = defaultReports,
+  reports: reportsProp,
   onCopy,
+  isDemoMode = true,
 }) => {
+  const { data: analyticsStats } = useAnalyticsStats();
+  const { stats: dashStats } = useDashboardStatsQuery();
+
+  const realReports = useMemo((): ReportItem[] | null => {
+    if (!analyticsStats) return null;
+
+    const casRisque = analyticsStats.cas_risque ?? 0;
+    const rdvHonores = analyticsStats.rdv_honores ?? 0;
+    const appointmentsToday = dashStats.appointmentsToday ?? 0;
+
+    return [
+      {
+        icon: 'patients' as const,
+        label: 'Patients à risque',
+        progress: Math.min(100, Math.max(0, casRisque > 0 ? Math.round(100 - casRisque * 5) : 85)),
+      },
+      {
+        icon: 'diagnostics' as const,
+        label: 'Diagnostics IA',
+        progress: Math.min(100, Math.max(0, Math.round(rdvHonores))),
+      },
+      {
+        icon: 'planning' as const,
+        label: 'Planning optimal',
+        progress: Math.min(100, Math.max(0, appointmentsToday > 0 ? Math.round((appointmentsToday / 30) * 100) : 0)),
+      },
+    ];
+  }, [analyticsStats, dashStats]);
+
+  const reports = reportsProp
+    ?? (isDemoMode ? defaultReports : (realReports || defaultReports));
+
   const handleCopy = () => {
     if (onCopy) {
       onCopy();
