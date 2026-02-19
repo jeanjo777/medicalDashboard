@@ -60,23 +60,13 @@ const calculateDaysOverdue = (dateStr: string): number => {
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 };
 
-/**
- * Generate a deterministic alert ID based on type and entity
- * This ensures consistent IDs across refreshes for deduplication
- */
 const generateAlertId = (type: string, entityId: string, subType?: string): string => {
   const baseId = `${type}-${entityId}`;
   return subType ? `${baseId}-${subType}` : baseId;
 };
 
-/**
- * Extract base ID for acknowledgment matching
- * Returns type-entityId without any suffix
- */
 const getBaseAlertId = (alertId: string): string => {
   const parts = alertId.split('-');
-  // Alert IDs follow pattern: type-entityId or type-entityId-subType
-  // We want to match on type-entityId
   if (parts.length >= 2) {
     return `${parts[0]}-${parts[1]}`;
   }
@@ -100,177 +90,168 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
       const thirtyDaysAgo = getDateString(30);
       const allAlerts: PatientAlert[] = [];
 
-      // Query 1: High-risk patients (riskScore >= 70)
-      const { data: highRiskPatients, error: highRiskError } = await supabase
-        .from('patients')
-        .select('id, first_name, last_name, riskScore, primary_pathology, status')
-        .gte('riskScore', 70)
-        .order('riskScore', { ascending: false });
+      // Run all queries in parallel, each one handles its own errors
+      const results = await Promise.allSettled([
+        // Query 1: High-risk patients (riskScore >= 70)
+        supabase
+          .from('patients')
+          .select('id, first_name, last_name, riskScore, primary_pathology, status')
+          .gte('riskScore', 70)
+          .order('riskScore', { ascending: false }),
 
-      if (highRiskError) {
-        logger.error('[usePatientAlerts] Error fetching high-risk patients:', highRiskError);
-      } else if (highRiskPatients) {
-        highRiskPatients.forEach((patient) => {
-          const riskScore = patient.riskScore || 70;
-          const priority: AlertPriority = riskScore >= 85 ? 'critical' : 'high';
+        // Query 2: Pending consultations without AI response (needs attention)
+        supabase
+          .from('consultations')
+          .select('id, patient_id, symptoms, status, created_at')
+          .eq('status', 'pending')
+          .is('ai_response', null),
 
-          allAlerts.push({
-            id: generateAlertId('high_risk', patient.id),
-            type: 'high_risk_patient',
-            priority,
-            patient_id: patient.id,
-            patient_name: `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'Patient inconnu',
-            title: priority === 'critical' ? 'Patient à risque critique' : 'Patient à risque élevé',
-            message: `Score de risque: ${riskScore}${patient.primary_pathology ? ` - ${patient.primary_pathology}` : ''}`,
-            metadata: {
-              riskScore,
-              primary_pathology: patient.primary_pathology,
-            },
-            created_at: new Date().toISOString(),
-            is_acknowledged: false,
-          });
-        });
-      }
+        // Query 3: Patients with status 'active' and their consultations
+        supabase
+          .from('patients')
+          .select('id, first_name, last_name, status, created_at')
+          .order('created_at', { ascending: false }),
 
-      // Query 2: Overdue follow-ups
-      const { data: consultationsWithFollowUp, error: followUpError } = await supabase
-        .from('consultations')
-        .select(`
-          id,
-          patient_id,
-          follow_up_date,
-          status,
-          patients (
-            first_name,
-            last_name
-          )
-        `)
-        .lt('follow_up_date', today)
-        .not('follow_up_date', 'is', null);
+        // Query 4: Missed/cancelled appointments (last 30 days)
+        supabase
+          .from('appointments')
+          .select('id, patient_id, patient_name, appointment_date, appointment_time, status')
+          .in('status', ['cancelled', 'annule', 'no_show'])
+          .gte('appointment_date', thirtyDaysAgo)
+          .order('appointment_date', { ascending: false }),
 
-      if (followUpError) {
-        logger.error('[usePatientAlerts] Error fetching overdue follow-ups:', followUpError);
-      } else if (consultationsWithFollowUp) {
-        consultationsWithFollowUp.forEach((consultation) => {
-          const daysOverdue = calculateDaysOverdue(consultation.follow_up_date);
-          let priority: AlertPriority = 'medium';
+        // Query 5: Unacknowledged analytics alerts
+        supabase
+          .from('analytics_alerts')
+          .select('id, title, message, severity, created_at, is_acknowledged')
+          .eq('is_acknowledged', false)
+          .order('created_at', { ascending: false }),
+      ]);
 
-          if (daysOverdue > 14) priority = 'critical';
-          else if (daysOverdue > 7) priority = 'high';
-
-          const patient = consultation.patients as { first_name?: string; last_name?: string } | null;
-          const patientName = patient
-            ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim()
-            : 'Patient inconnu';
-
-          allAlerts.push({
-            id: generateAlertId('overdue_follow_up', consultation.patient_id),
-            type: 'overdue_follow_up',
-            priority,
-            patient_id: consultation.patient_id,
-            patient_name: patientName,
-            title: 'Suivi en retard',
-            message: `Consultation de suivi prévue il y a ${daysOverdue} jour${daysOverdue > 1 ? 's' : ''}`,
-            metadata: {
-              follow_up_date: consultation.follow_up_date,
-              days_overdue: daysOverdue,
-            },
-            created_at: new Date().toISOString(),
-            is_acknowledged: false,
-          });
-        });
-      }
-
-      // Query 3: Patients without recent consultation (> 30 days)
-      const { data: allPatients, error: patientsError } = await supabase
-        .from('patients')
-        .select(`
-          id,
-          first_name,
-          last_name,
-          status,
-          consultations (
-            created_at
-          )
-        `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (patientsError) {
-        logger.error('[usePatientAlerts] Error fetching patients:', patientsError);
-      } else if (allPatients) {
-        allPatients.forEach((patient) => {
-          const consultations = patient.consultations as { created_at: string }[] | null;
-
-          if (!consultations || consultations.length === 0) {
-            // Patient with no consultations at all
+      // Process Query 1: High-risk patients
+      if (results[0].status === 'fulfilled') {
+        const { data: highRiskPatients, error: err } = results[0].value;
+        if (!err && highRiskPatients) {
+          highRiskPatients.forEach((patient) => {
+            const riskScore = patient.riskScore || 70;
+            const priority: AlertPriority = riskScore >= 85 ? 'critical' : 'high';
             allAlerts.push({
-              id: generateAlertId('no_consultation', patient.id),
-              type: 'no_recent_consultation',
-              priority: 'medium',
+              id: generateAlertId('high_risk', patient.id),
+              type: 'high_risk_patient',
+              priority,
               patient_id: patient.id,
               patient_name: `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'Patient inconnu',
-              title: 'Aucune consultation',
-              message: 'Ce patient n\'a jamais eu de consultation',
-              metadata: {},
+              title: priority === 'critical' ? 'Patient à risque critique' : 'Patient à risque élevé',
+              message: `Score de risque: ${riskScore}${patient.primary_pathology ? ` - ${patient.primary_pathology}` : ''}`,
+              metadata: { riskScore, primary_pathology: patient.primary_pathology },
               created_at: new Date().toISOString(),
               is_acknowledged: false,
             });
-          } else {
-            // Check last consultation date
-            const lastConsultation = consultations.reduce((latest, c) => {
-              return new Date(c.created_at) > new Date(latest.created_at) ? c : latest;
-            }, consultations[0]);
+          });
+        }
+      }
 
-            const daysSinceLastConsultation = calculateDaysOverdue(lastConsultation.created_at);
+      // Process Query 2: Pending consultations without AI response
+      if (results[1].status === 'fulfilled') {
+        const { data: pendingConsults, error: err } = results[1].value;
+        if (!err && pendingConsults) {
+          pendingConsults.forEach((consultation) => {
+            const daysOld = calculateDaysOverdue(consultation.created_at);
+            let priority: AlertPriority = 'medium';
+            if (daysOld > 7) priority = 'critical';
+            else if (daysOld > 3) priority = 'high';
 
-            if (daysSinceLastConsultation > 30) {
+            allAlerts.push({
+              id: generateAlertId('pending_consult', consultation.id),
+              type: 'overdue_follow_up',
+              priority,
+              patient_id: consultation.patient_id || 'unknown',
+              patient_name: 'Consultation en attente',
+              title: 'Consultation sans réponse IA',
+              message: consultation.symptoms
+                ? `Symptômes: "${consultation.symptoms}" - en attente depuis ${daysOld > 0 ? `${daysOld} jour${daysOld > 1 ? 's' : ''}` : "aujourd'hui"}`
+                : `Consultation en attente depuis ${daysOld > 0 ? `${daysOld} jour${daysOld > 1 ? 's' : ''}` : "aujourd'hui"}`,
+              metadata: { days_overdue: daysOld },
+              created_at: consultation.created_at,
+              is_acknowledged: false,
+            });
+          });
+        }
+      }
+
+      // Process Query 3: Patients without recent activity
+      if (results[2].status === 'fulfilled') {
+        const { data: allPatients, error: err } = results[2].value;
+        if (!err && allPatients && allPatients.length > 0) {
+          // Check patients created more than 30 days ago without recent consultation
+          allPatients.forEach((patient) => {
+            const daysSinceCreation = calculateDaysOverdue(patient.created_at);
+            if (daysSinceCreation > 30) {
               allAlerts.push({
                 id: generateAlertId('no_recent', patient.id),
                 type: 'no_recent_consultation',
                 priority: 'medium',
                 patient_id: patient.id,
                 patient_name: `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'Patient inconnu',
-                title: 'Sans consultation récente',
-                message: `Dernière consultation il y a ${daysSinceLastConsultation} jours`,
-                metadata: {
-                  last_consultation_date: lastConsultation.created_at,
-                },
+                title: 'Patient sans activité récente',
+                message: `Aucune activité depuis ${daysSinceCreation} jours`,
+                metadata: {},
                 created_at: new Date().toISOString(),
                 is_acknowledged: false,
               });
             }
-          }
-        });
+          });
+        }
       }
 
-      // Query 4: Missed appointments (last 30 days)
-      const { data: missedAppointments, error: missedError } = await supabase
-        .from('appointments')
-        .select('id, patient_id, patient_name, appointment_date, appointment_time, status')
-        .in('status', ['cancelled', 'annule', 'no_show'])
-        .gte('appointment_date', thirtyDaysAgo)
-        .order('appointment_date', { ascending: false });
-
-      if (missedError) {
-        logger.error('[usePatientAlerts] Error fetching missed appointments:', missedError);
-      } else if (missedAppointments) {
-        missedAppointments.forEach((appointment) => {
-          allAlerts.push({
-            id: generateAlertId('missed', appointment.id),
-            type: 'missed_appointment',
-            priority: 'high',
-            patient_id: appointment.patient_id,
-            patient_name: appointment.patient_name || 'Patient inconnu',
-            title: 'Rendez-vous manqué',
-            message: `Rendez-vous du ${new Date(appointment.appointment_date).toLocaleDateString('fr-FR')} non honoré`,
-            metadata: {
-              appointment_date: appointment.appointment_date,
-            },
-            created_at: new Date().toISOString(),
-            is_acknowledged: false,
+      // Process Query 4: Missed appointments
+      if (results[3].status === 'fulfilled') {
+        const { data: missedAppointments, error: err } = results[3].value;
+        if (!err && missedAppointments) {
+          missedAppointments.forEach((appointment) => {
+            allAlerts.push({
+              id: generateAlertId('missed', appointment.id),
+              type: 'missed_appointment',
+              priority: 'high',
+              patient_id: appointment.patient_id || 'unknown',
+              patient_name: appointment.patient_name || 'Patient inconnu',
+              title: 'Rendez-vous manqué',
+              message: `Rendez-vous du ${new Date(appointment.appointment_date).toLocaleDateString('fr-FR')} non honoré`,
+              metadata: { appointment_date: appointment.appointment_date },
+              created_at: new Date().toISOString(),
+              is_acknowledged: false,
+            });
           });
-        });
+        }
+      }
+
+      // Process Query 5: Unacknowledged analytics alerts
+      if (results[4].status === 'fulfilled') {
+        const { data: analyticsAlerts, error: err } = results[4].value;
+        if (!err && analyticsAlerts) {
+          analyticsAlerts.forEach((alert) => {
+            const severityMap: Record<string, AlertPriority> = {
+              critical: 'critical',
+              high: 'high',
+              warning: 'medium',
+              info: 'low',
+            };
+            const priority = severityMap[alert.severity] || 'medium';
+
+            allAlerts.push({
+              id: generateAlertId('analytics', alert.id),
+              type: 'high_risk_patient',
+              priority,
+              patient_id: 'system',
+              patient_name: 'Système IA',
+              title: alert.title || 'Alerte IA',
+              message: alert.message || 'Alerte analytique nécessitant votre attention',
+              metadata: {},
+              created_at: alert.created_at,
+              is_acknowledged: false,
+            });
+          });
+        }
       }
 
       // Sort alerts by priority
@@ -281,14 +262,14 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
         low: 3,
       };
 
-      const sortedAlerts = allAlerts.sort((a, b) => {
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
-      });
+      const sortedAlerts = allAlerts.sort(
+        (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+      );
 
-      // Deduplicate alerts by base ID (same type + same entity)
+      // Deduplicate alerts by base ID
       const deduplicatedAlerts = sortedAlerts.reduce((acc, alert) => {
         const baseId = getBaseAlertId(alert.id);
-        if (!acc.some(a => getBaseAlertId(a.id) === baseId)) {
+        if (!acc.some((a) => getBaseAlertId(a.id) === baseId)) {
           acc.push(alert);
         }
         return acc;
@@ -324,20 +305,20 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
   }, []);
 
   // Group alerts by priority
-  const alertsByPriority = useMemo(() => ({
-    critical: alerts.filter((a) => a.priority === 'critical'),
-    high: alerts.filter((a) => a.priority === 'high'),
-    medium: alerts.filter((a) => a.priority === 'medium'),
-    low: alerts.filter((a) => a.priority === 'low'),
-  }), [alerts]);
+  const alertsByPriority = useMemo(
+    () => ({
+      critical: alerts.filter((a) => a.priority === 'critical'),
+      high: alerts.filter((a) => a.priority === 'high'),
+      medium: alerts.filter((a) => a.priority === 'medium'),
+      low: alerts.filter((a) => a.priority === 'low'),
+    }),
+    [alerts]
+  );
 
   // Initial fetch and auto-refresh
   useEffect(() => {
     fetchAlerts();
-
-    // Refresh every 60 seconds
     const interval = setInterval(fetchAlerts, 60000);
-
     return () => clearInterval(interval);
   }, [fetchAlerts]);
 
@@ -345,30 +326,10 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
   useEffect(() => {
     const channel = supabase
       .channel('patient-alerts-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'patients' },
-        () => {
-          logger.info('[usePatientAlerts] Patient change detected, refetching...');
-          fetchAlerts();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'consultations' },
-        () => {
-          logger.info('[usePatientAlerts] Consultation change detected, refetching...');
-          fetchAlerts();
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'appointments' },
-        () => {
-          logger.info('[usePatientAlerts] Appointment change detected, refetching...');
-          fetchAlerts();
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => fetchAlerts())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations' }, () => fetchAlerts())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchAlerts())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'analytics_alerts' }, () => fetchAlerts())
       .subscribe();
 
     return () => {
