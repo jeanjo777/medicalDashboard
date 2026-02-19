@@ -57,14 +57,14 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
     // Compute monthly growth from departmentStats if available
     const monthlyGrowth = dynamicData.departmentStats?.length > 0
       ? Math.round(dynamicData.departmentStats.reduce((sum, d) => sum + d.growth, 0) / dynamicData.departmentStats.length * 10) / 10
-      : demoSegmentation.monthlyGrowth;
+      : 0;
 
     return {
       ageGroups,
       genderDistribution,
       riskLevels,
-      pathologySegments: pathologySegments.length > 0 ? pathologySegments : demoSegmentation.pathologySegments,
-      totalPatients: totalPatients || demoSegmentation.totalPatients,
+      pathologySegments,
+      totalPatients,
       monthlyGrowth,
     };
   }, [isDemoMode, dynamicData, pathologiesData]);

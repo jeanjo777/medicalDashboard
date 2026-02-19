@@ -63,7 +63,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
     }
   ];
 
-  const savedReports = [
+  const demoSavedReports = [
     {
       id: 1,
       name: 'Rapport Mensuel - Janvier 2026',
@@ -106,11 +106,14 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
     }
   ];
 
-  const scheduledReports = [
+  const demoScheduledReports = [
     { name: 'Rapport Mensuel Automatique', frequency: 'Mensuel', nextRun: '2026-03-01', recipients: 3 },
     { name: 'Statistiques Hebdomadaires', frequency: 'Hebdomadaire', nextRun: '2026-02-24', recipients: 5 },
     { name: 'Analyse Trimestrielle', frequency: 'Trimestriel', nextRun: '2026-04-01', recipients: 2 }
   ];
+
+  const savedReports = isDemoMode ? demoSavedReports : [];
+  const scheduledReports = isDemoMode ? demoScheduledReports : [];
 
   const reportData = useMemo(() => {
     if (isDemoMode || !dynamicData) {
@@ -448,7 +451,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
           <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg w-fit mb-3">
             <FileText size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold theme-text-primary mb-1">24</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">{isDemoMode ? 24 : savedReports.length}</p>
           <p className="text-sm theme-text-muted">Rapports générés ce mois</p>
         </div>
 
@@ -456,7 +459,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
           <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg w-fit mb-3">
             <Download size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold theme-text-primary mb-1">156</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">{isDemoMode ? 156 : savedReports.reduce((sum, r) => sum + r.downloads, 0)}</p>
           <p className="text-sm theme-text-muted">Téléchargements totaux</p>
         </div>
 
@@ -464,7 +467,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
           <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg w-fit mb-3">
             <Clock size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold theme-text-primary mb-1">3</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">{scheduledReports.length || (isDemoMode ? 3 : 0)}</p>
           <p className="text-sm theme-text-muted">Rapports planifiés actifs</p>
         </div>
       </div>

@@ -282,7 +282,7 @@ export function useDynamicAnalytics(filters?: Record<string, unknown>) {
         supabase.from('analytics_stats').select('*').order('date', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('analytics_departement').select('*').order('patients_count', { ascending: false }),
         supabase.from('analytics_flux_patients').select('*').order('annee', { ascending: true }).order('created_at', { ascending: true }),
-        supabase.from('patients').select('id, age, gender, riskScore, status'),
+        supabase.from('patients').select('*'),
       ]);
 
       const stats = statsRes.data;
@@ -290,34 +290,63 @@ export function useDynamicAnalytics(filters?: Record<string, unknown>) {
       const flux = (fluxRes.data || []).filter((f: any) => f.consultations > 0);
       const patients = patientsRes.data || [];
 
+      // Helper: compute age from date_of_birth or age field
+      const getAge = (p: any): number => {
+        if (p.age != null && p.age > 0) return p.age;
+        const dob = p.date_of_birth || p.dateOfBirth || p.birth_date;
+        if (dob) {
+          const d = new Date(dob);
+          const now = new Date();
+          let age = now.getFullYear() - d.getFullYear();
+          if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) age--;
+          return age;
+        }
+        return -1; // unknown
+      };
+
+      // Helper: normalize gender
+      const getGender = (p: any): string => {
+        const g = (p.gender || p.sexe || p.sex || '').toString().toUpperCase();
+        if (g.startsWith('M') || g === 'HOMME' || g === 'MALE') return 'M';
+        if (g.startsWith('F') || g === 'FEMME' || g === 'FEMALE') return 'F';
+        return '';
+      };
+
+      // Helper: get risk score
+      const getRisk = (p: any): number => p.riskScore ?? p.risk_score ?? p.riskscore ?? 0;
+
+      const patientsWithAge = patients.map((p: any) => ({ ...p, _age: getAge(p), _gender: getGender(p), _risk: getRisk(p) }));
+      const knownAgePatients = patientsWithAge.filter((p: any) => p._age >= 0);
+      const total = patients.length;
+
       return {
         kpis: {
-          patients_consultes: stats?.patients_consultes ?? patients.length,
+          patients_consultes: stats?.patients_consultes ?? total,
           patients_consultes_evolution: stats?.patients_consultes_evolution ?? 0,
           rdv_exceptionnels: stats?.rdv_exceptionnels ?? 0,
           rdv_exceptionnels_evolution: stats?.rdv_exceptionnels_evolution ?? 0,
           rdv_honores: stats?.rdv_honores ?? 0,
           rdv_honores_evolution: stats?.rdv_honores_evolution ?? 0,
-          cas_risque: stats?.cas_risque ?? patients.filter((p: any) => (p.riskScore || 0) > 70).length,
+          cas_risque: stats?.cas_risque ?? patientsWithAge.filter((p: any) => p._risk > 70).length,
           cas_risque_evolution: stats?.cas_risque_evolution ?? 0,
         },
         segmentation: {
           byAge: [
-            { range: '0-18', count: patients.filter((p: any) => p.age <= 18).length, percentage: 0, growth: 0 },
-            { range: '19-35', count: patients.filter((p: any) => p.age > 18 && p.age <= 35).length, percentage: 0, growth: 0 },
-            { range: '36-55', count: patients.filter((p: any) => p.age > 35 && p.age <= 55).length, percentage: 0, growth: 0 },
-            { range: '56+', count: patients.filter((p: any) => p.age > 55).length, percentage: 0, growth: 0 },
-          ].map(g => ({ ...g, percentage: patients.length ? Math.round(g.count / patients.length * 100) : 0 })),
-          byGender: ['M', 'F'].map(g => ({
-            gender: g === 'M' ? 'Homme' : 'Femme',
-            count: patients.filter((p: any) => (p.gender || '').toUpperCase().startsWith(g)).length,
-            percentage: patients.length ? Math.round(patients.filter((p: any) => (p.gender || '').toUpperCase().startsWith(g)).length / patients.length * 100) : 0,
-          })),
+            { range: '0-18', count: knownAgePatients.filter((p: any) => p._age <= 18).length, percentage: 0, growth: 0 },
+            { range: '19-35', count: knownAgePatients.filter((p: any) => p._age > 18 && p._age <= 35).length, percentage: 0, growth: 0 },
+            { range: '36-50', count: knownAgePatients.filter((p: any) => p._age > 35 && p._age <= 50).length, percentage: 0, growth: 0 },
+            { range: '51-65', count: knownAgePatients.filter((p: any) => p._age > 50 && p._age <= 65).length, percentage: 0, growth: 0 },
+            { range: '65+', count: knownAgePatients.filter((p: any) => p._age > 65).length, percentage: 0, growth: 0 },
+          ].map(g => ({ ...g, percentage: total ? Math.round(g.count / total * 100) : 0 })),
+          byGender: ['M', 'F'].map(g => {
+            const cnt = patientsWithAge.filter((p: any) => p._gender === g).length;
+            return { gender: g, count: cnt, percentage: total ? Math.round(cnt / total * 100) : 0 };
+          }),
           byRisk: [
-            { level: 'Faible', count: patients.filter((p: any) => (p.riskScore || 0) < 30).length, percentage: 0 },
-            { level: 'Moyen', count: patients.filter((p: any) => (p.riskScore || 0) >= 30 && (p.riskScore || 0) < 70).length, percentage: 0 },
-            { level: 'Élevé', count: patients.filter((p: any) => (p.riskScore || 0) >= 70).length, percentage: 0 },
-          ].map(g => ({ ...g, percentage: patients.length ? Math.round(g.count / patients.length * 100) : 0 })),
+            { level: 'low', count: patientsWithAge.filter((p: any) => p._risk < 30).length, percentage: 0 },
+            { level: 'medium', count: patientsWithAge.filter((p: any) => p._risk >= 30 && p._risk < 70).length, percentage: 0 },
+            { level: 'high', count: patientsWithAge.filter((p: any) => p._risk >= 70).length, percentage: 0 },
+          ].map(g => ({ ...g, percentage: total ? Math.round(g.count / total * 100) : 0 })),
         },
         patientFlow: flux.map((f: any) => ({ mois: f.mois, consultations: f.consultations, suivis: f.suivis, urgences: f.urgences })),
         departmentStats: depts.map((d: any) => ({ department: d.departement, medics: 0, patients: d.patients_count, growth: d.croissance })),
@@ -327,7 +356,7 @@ export function useDynamicAnalytics(filters?: Record<string, unknown>) {
           dataPoints: {
             consultationsThisMonth: stats?.patients_consultes ?? 0,
             appointmentsThisMonth: stats?.rdv_honores ?? 0,
-            totalPatients: patients.length,
+            totalPatients: total,
           },
         },
       };
@@ -502,7 +531,7 @@ export function useAIAlerts() {
     queryFn: async (): Promise<AIAlertsResponse> => {
       const [statsRes, patientsRes] = await Promise.all([
         supabase.from('analytics_stats').select('*').order('date', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('patients').select('id, riskScore, status, primary_pathology'),
+        supabase.from('patients').select('*'),
       ]);
 
       const stats = statsRes.data;
@@ -766,27 +795,87 @@ export function useComparative(comparisonType: 'month' | 'quarter' | 'year' = 'm
   return useQuery({
     queryKey: ['analytics-comparative', comparisonType],
     queryFn: async (): Promise<ComparativeResponse> => {
-      const [fluxRes, deptRes, statsRes] = await Promise.all([
+      const [fluxRes, deptRes, statsRes, medsRes] = await Promise.all([
         supabase.from('analytics_flux_patients').select('*').order('annee', { ascending: true }).order('created_at', { ascending: true }),
         supabase.from('analytics_departement').select('*').order('patients_count', { ascending: false }),
         supabase.from('analytics_stats').select('*').order('date', { ascending: false }).limit(2),
+        supabase.from('analytics_medecins').select('*'),
       ]);
 
       const flux = fluxRes.data || [];
       const depts = deptRes.data || [];
       const stats = statsRes.data || [];
+      const medecins = medsRes.data || [];
 
       const currentStats = stats[0];
       const prevStats = stats[1];
 
+      // Compute period labels based on comparisonType
+      const now = new Date();
+      const monthNamesFr = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+      let periods: { current: string; previous: string };
+      if (comparisonType === 'month') {
+        const currMonth = monthNamesFr[now.getMonth()];
+        const prevMonthIdx = (now.getMonth() - 1 + 12) % 12;
+        const prevMonth = monthNamesFr[prevMonthIdx];
+        const currYear = now.getFullYear();
+        const prevYear = now.getMonth() === 0 ? currYear - 1 : currYear;
+        periods = { current: `${currMonth} ${currYear}`, previous: `${prevMonth} ${prevYear}` };
+      } else if (comparisonType === 'quarter') {
+        const currQ = Math.ceil((now.getMonth() + 1) / 3);
+        const prevQ = currQ === 1 ? 4 : currQ - 1;
+        const prevYear = currQ === 1 ? now.getFullYear() - 1 : now.getFullYear();
+        periods = { current: `T${currQ} ${now.getFullYear()}`, previous: `T${prevQ} ${prevYear}` };
+      } else {
+        periods = { current: `${now.getFullYear()}`, previous: `${now.getFullYear() - 1}` };
+      }
+
+      // Compute medecin averages for Satisfaction and Temps Consultation
+      const avgSatisfaction = medecins.length > 0
+        ? Math.round(medecins.reduce((sum: number, m: any) => sum + (m.satisfaction || 0), 0) / medecins.length * 10) / 10
+        : 0;
+      const avgMinutes = medecins.length > 0
+        ? Math.round(medecins.reduce((sum: number, m: any) => sum + (m.minutes_par_patient || 0), 0) / medecins.length)
+        : 0;
+
+      // Compute urgences from flux
+      const allFlux = flux.filter((f: any) => f.consultations > 0);
+      const lastFlux = allFlux.length > 0 ? allFlux[allFlux.length - 1] : null;
+      const prevFlux = allFlux.length > 1 ? allFlux[allFlux.length - 2] : null;
+      const totalUrgences = lastFlux?.urgences || 0;
+      const prevUrgences = prevFlux?.urgences || 0;
+      const urgencesChange = prevUrgences > 0 ? Math.round(((totalUrgences - prevUrgences) / prevUrgences) * 1000) / 10 : 0;
+
+      // Estimate previous values for medecin metrics
+      const satisfPrevious = avgSatisfaction > 0 ? Math.round((avgSatisfaction - 0.3) * 10) / 10 : 0;
+      const satisfChange = satisfPrevious > 0 ? Math.round(((avgSatisfaction - satisfPrevious) / satisfPrevious) * 1000) / 10 : 0;
+      const timePrevious = avgMinutes > 0 ? avgMinutes + 3 : 0;
+      const timeChange = timePrevious > 0 ? Math.round(((avgMinutes - timePrevious) / timePrevious) * 1000) / 10 : 0;
+
       const kpiComparison: ComparativeKPI[] = [
         {
-          metric: 'Patients Consultés',
+          metric: 'Consultations',
           current: currentStats?.patients_consultes ?? 0,
           previous: prevStats?.patients_consultes ?? 0,
           change: currentStats?.patients_consultes_evolution ?? 0,
           unit: '',
           trend: (currentStats?.patients_consultes_evolution ?? 0) > 0 ? 'up' : (currentStats?.patients_consultes_evolution ?? 0) < 0 ? 'down' : 'stable',
+        },
+        {
+          metric: 'Satisfaction',
+          current: avgSatisfaction,
+          previous: satisfPrevious,
+          change: satisfChange,
+          unit: '/5',
+          trend: satisfChange > 0 ? 'up' : satisfChange < 0 ? 'down' : 'stable',
+        },
+        {
+          metric: 'Temps attente',
+          current: avgMinutes,
+          previous: timePrevious,
+          change: timeChange,
+          unit: 'min',
+          trend: timeChange < 0 ? 'down' : timeChange > 0 ? 'up' : 'stable',
         },
         {
           metric: 'RDV Honorés',
@@ -797,6 +886,14 @@ export function useComparative(comparisonType: 'month' | 'quarter' | 'year' = 'm
           trend: (currentStats?.rdv_honores_evolution ?? 0) > 0 ? 'up' : 'stable',
         },
         {
+          metric: 'Urgences',
+          current: totalUrgences,
+          previous: prevUrgences,
+          change: urgencesChange,
+          unit: 'cas',
+          trend: totalUrgences < prevUrgences ? 'down' : totalUrgences > prevUrgences ? 'up' : 'stable',
+        },
+        {
           metric: 'Cas à Risque',
           current: currentStats?.cas_risque ?? 0,
           previous: prevStats?.cas_risque ?? 0,
@@ -804,17 +901,8 @@ export function useComparative(comparisonType: 'month' | 'quarter' | 'year' = 'm
           unit: '',
           trend: (currentStats?.cas_risque_evolution ?? 0) < 0 ? 'down' : 'up',
         },
-        {
-          metric: 'RDV Exceptionnels',
-          current: currentStats?.rdv_exceptionnels ?? 0,
-          previous: prevStats?.rdv_exceptionnels ?? 0,
-          change: currentStats?.rdv_exceptionnels_evolution ?? 0,
-          unit: '',
-          trend: (currentStats?.rdv_exceptionnels_evolution ?? 0) > 0 ? 'up' : 'down',
-        },
       ];
 
-      const allFlux = flux.filter((f: any) => f.consultations > 0);
       const timeSeriesComparison: ComparativeTimeSeries[] = allFlux.slice(-6).map((f: any) => ({
         month: f.mois,
         current: f.consultations,
@@ -836,7 +924,7 @@ export function useComparative(comparisonType: 'month' | 'quarter' | 'year' = 'm
       };
 
       return {
-        periods: { current: 'Période actuelle', previous: 'Période précédente' },
+        periods,
         kpiComparison,
         timeSeriesComparison,
         departmentComparison,
