@@ -219,7 +219,7 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
                 type="monotone"
                 dataKey="lower"
                 stroke="none"
-                fill="white"
+                fill="var(--bg-secondary)"
                 fillOpacity={1}
               />
               <Area
@@ -255,7 +255,7 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
               <span className="text-sm theme-text-secondary">Prédictions</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-3 bg-purple-100 rounded" />
+              <div className="w-4 h-3 bg-purple-500/20 rounded" />
               <span className="text-sm theme-text-secondary">Intervalle de confiance</span>
             </div>
           </div>
@@ -275,7 +275,7 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
           return (
             <div
               key={pred.month}
-              className={`p-5 bg-gradient-to-br ${color.bg} rounded-xl border ${color.border} hover:shadow-lg transition-all duration-300`}
+              className={`p-5 bg-[var(--bg-secondary)] rounded-xl border ${color.border} hover:shadow-lg transition-all duration-300`}
             >
               <div className="flex items-center justify-between mb-3">
                 <span className={`text-sm font-medium ${color.text}`}>{pred.month}</span>

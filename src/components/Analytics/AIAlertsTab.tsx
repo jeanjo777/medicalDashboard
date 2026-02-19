@@ -117,38 +117,38 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
     switch (severity) {
       case 'critical':
         return {
-          bg: 'bg-red-500/5',
-          border: 'border-red-500/20',
+          bg: 'bg-red-500/10',
+          border: 'border-red-500/30',
           icon: 'bg-red-500',
           text: 'text-red-500',
-          badge: 'bg-red-500/10 text-red-500 border-red-500/20',
+          badge: 'bg-red-500/15 text-red-500 border-red-500/30',
           label: 'Critique'
         };
       case 'high':
         return {
-          bg: 'bg-orange-500/5',
-          border: 'border-orange-500/20',
+          bg: 'bg-orange-500/10',
+          border: 'border-orange-500/30',
           icon: 'bg-orange-500',
           text: 'text-orange-500',
-          badge: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+          badge: 'bg-orange-500/15 text-orange-500 border-orange-500/30',
           label: 'Haute'
         };
       case 'medium':
         return {
-          bg: 'bg-amber-500/5',
-          border: 'border-amber-500/20',
+          bg: 'bg-amber-500/10',
+          border: 'border-amber-500/30',
           icon: 'bg-amber-500',
           text: 'text-amber-500',
-          badge: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+          badge: 'bg-amber-500/15 text-amber-500 border-amber-500/30',
           label: 'Moyenne'
         };
       case 'low':
         return {
-          bg: 'bg-blue-500/5',
-          border: 'border-blue-500/20',
+          bg: 'bg-blue-500/10',
+          border: 'border-blue-500/30',
           icon: 'bg-blue-500',
           text: 'text-blue-500',
-          badge: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+          badge: 'bg-blue-500/15 text-blue-500 border-blue-500/30',
           label: 'Faible'
         };
       default:
@@ -404,7 +404,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                             {!alert.isRead && (
                               <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
                             )}
-                            <h3 className="font-semibold theme-text-primary">{alert.title}</h3>
+                            <h3 className="font-semibold text-[var(--text-primary)]">{alert.title}</h3>
                           </div>
                           <p className="text-sm theme-text-secondary mb-3">{alert.description}</p>
 
@@ -432,7 +432,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                         <button
                           type="button"
                           onClick={() => setExpandedAlert(isExpanded ? null : alert.id)}
-                          className="p-2 hover:bg-white/50 rounded-lg transition-all"
+                          className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-all"
                           aria-label={isExpanded ? 'Réduire les détails' : 'Voir les détails'}
                         >
                           <ChevronRight

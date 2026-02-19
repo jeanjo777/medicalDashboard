@@ -273,7 +273,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
                   labelLine={false}
                 >
                   {genderSegments.map((entry, index) => (
-                    <Cell key={`seg-gender-cell-${index}`} fill={`url(#segGenderGradient${index})`} stroke="white" strokeWidth={2} />
+                    <Cell key={`seg-gender-cell-${index}`} fill={`url(#segGenderGradient${index})`} stroke="var(--bg-secondary)" strokeWidth={2} />
                   ))}
                 </Pie>
                 <Tooltip
@@ -318,10 +318,10 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
             {riskSegments.map((segment, index) => (
               <div
                 key={index}
-                className={`p-5 rounded-xl border-2 transition-all hover:shadow-lg ${
-                  segment.level === 'Faible' ? 'bg-emerald-500/10 border-emerald-500/20' :
-                  segment.level === 'Modéré' ? 'bg-amber-500/10 border-amber-500/20' :
-                  'bg-red-500/10 border-red-500/20'
+                className={`p-5 rounded-xl border-2 transition-all hover:shadow-lg bg-[var(--bg-secondary)] ${
+                  segment.level === 'Faible' ? 'border-emerald-500/30' :
+                  segment.level === 'Modéré' ? 'border-amber-500/30' :
+                  'border-red-500/30'
                 }`}
               >
                 <div className="flex items-center justify-between mb-4">
