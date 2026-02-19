@@ -48,7 +48,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
   const { stats: rawDashStats } = useDashboardStatsQuery();
   useMedicalDataRealtime(!isDemoMode);
 
-  // Smart fallback: when real data is all zeros (empty DB), use demo values
+  // Demo values only used when isDemoMode is true
   const demoFallback = {
     appointmentsToday: 24,
     appointmentsTodayChange: 5,
@@ -59,8 +59,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
     newPatientsThisMonth: 12,
     newPatientsThisMonthChange: 18,
   };
-  const hasRealStats = rawDashStats.appointmentsToday > 0 || rawDashStats.newPatientsThisMonth > 0 || rawDashStats.patientsInTreatment > 0;
-  const dashStats = isDemoMode ? demoFallback : (hasRealStats ? rawDashStats : demoFallback);
+  const dashStats = isDemoMode ? demoFallback : rawDashStats;
 
   return (
     <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">

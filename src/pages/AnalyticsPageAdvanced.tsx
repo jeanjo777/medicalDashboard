@@ -78,16 +78,17 @@ const AnalyticsPageAdvanced: React.FC = () => {
     logger.info(`Exporting data as ${format}`);
 
     // Build a generic overview dataset from analytics data for export
+    const src = isDemoMode ? demoAnalyticsData : { totalPatients: 0, newPatientsThisMonth: 0, totalAppointments: 0, appointmentsToday: 0, completedConsultations: 0, patientSatisfaction: 0, averageWaitTime: 0, bedOccupancy: 0, emergencyCases: 0 };
     const overviewData = [
-      { Metric: 'Total Patients', Value: demoAnalyticsData.totalPatients, Period: 'Current' },
-      { Metric: 'New Patients This Month', Value: demoAnalyticsData.newPatientsThisMonth, Period: 'Current' },
-      { Metric: 'Total Appointments', Value: demoAnalyticsData.totalAppointments, Period: 'Current' },
-      { Metric: 'Appointments Today', Value: demoAnalyticsData.appointmentsToday, Period: 'Current' },
-      { Metric: 'Completed Consultations', Value: demoAnalyticsData.completedConsultations, Period: 'Current' },
-      { Metric: 'Patient Satisfaction', Value: demoAnalyticsData.patientSatisfaction, Period: 'Current' },
-      { Metric: 'Average Wait Time (min)', Value: demoAnalyticsData.averageWaitTime, Period: 'Current' },
-      { Metric: 'Bed Occupancy (%)', Value: demoAnalyticsData.bedOccupancy, Period: 'Current' },
-      { Metric: 'Emergency Cases', Value: demoAnalyticsData.emergencyCases, Period: 'Current' },
+      { Metric: 'Total Patients', Value: src.totalPatients, Period: 'Current' },
+      { Metric: 'New Patients This Month', Value: src.newPatientsThisMonth, Period: 'Current' },
+      { Metric: 'Total Appointments', Value: src.totalAppointments, Period: 'Current' },
+      { Metric: 'Appointments Today', Value: src.appointmentsToday, Period: 'Current' },
+      { Metric: 'Completed Consultations', Value: src.completedConsultations, Period: 'Current' },
+      { Metric: 'Patient Satisfaction', Value: src.patientSatisfaction, Period: 'Current' },
+      { Metric: 'Average Wait Time (min)', Value: src.averageWaitTime, Period: 'Current' },
+      { Metric: 'Bed Occupancy (%)', Value: src.bedOccupancy, Period: 'Current' },
+      { Metric: 'Emergency Cases', Value: src.emergencyCases, Period: 'Current' },
     ];
 
     const exportFormat = format as ExportFormat;

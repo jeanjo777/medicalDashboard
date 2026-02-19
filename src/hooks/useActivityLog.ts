@@ -128,8 +128,7 @@ export const useActivityLog = (
       setActivities(data || []);
     } catch (err) {
       logger.error('Error fetching activities:', err);
-      logger.info('Using demo activity data as fallback');
-      setActivities(DEMO_ACTIVITIES.slice(0, limit));
+      setActivities([]);
       setError(null);
     } finally {
       setLoading(false);
