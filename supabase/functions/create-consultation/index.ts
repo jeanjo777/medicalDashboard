@@ -204,14 +204,27 @@ Deno.serve(async (req: Request) => {
       .eq('id', patientId)
       .maybeSingle();
 
+    // Auto-create patient profile if it doesn't exist
     if (!patient) {
-      return new Response(
-        JSON.stringify({ error: 'Patient not found. Please create a patient profile first.' }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      const { error: createPatientError } = await supabase
+        .from('patients')
+        .insert({
+          id: patientId,
+          first_name: user.username || 'Patient',
+          last_name: '',
+          status: 'Active',
+        });
+
+      if (createPatientError) {
+        console.error('Error creating patient profile:', createPatientError);
+        return new Response(
+          JSON.stringify({ error: 'Could not create patient profile. Please try again.' }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
     }
 
     // Generate AI analysis using Claude API (with fallback)
