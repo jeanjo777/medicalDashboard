@@ -674,18 +674,18 @@ const MessageBubble: React.FC<{
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
 
   // TTS state - sentence-by-sentence playback with slider
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  // Uses cancel+restart instead of pause/resume (Chrome pause bug workaround)
+  const [ttsState, setTtsState] = useState<'idle' | 'playing' | 'paused'>('idle');
   const [currentSentence, setCurrentSentence] = useState(0);
   const sentencesRef = useRef<string[]>([]);
-  const isCancelledRef = useRef(false);
+  const stoppedRef = useRef(false);
+  const pausedAtRef = useRef(0);
 
-  // Split text into sentences on content change
+  // Split text into sentences once
   const getSentences = useCallback(() => {
     if (sentencesRef.current.length > 0) return sentencesRef.current;
     const plainText = stripMarkdown(message.content);
     if (!plainText) return [];
-    // Split on sentence-ending punctuation, keeping meaningful chunks
     const raw = plainText.split(/(?<=[.!?:]\s)|(?<=\n\n)/g);
     sentencesRef.current = raw
       .map(s => s.trim())
@@ -694,78 +694,92 @@ const MessageBubble: React.FC<{
   }, [message.content]);
 
   const totalSentences = getSentences().length;
+  const isSpeaking = ttsState === 'playing';
+  const isPaused = ttsState === 'paused';
 
-  // Speak from a specific sentence index
+  // Core: speak sentences sequentially from a given index
   const speakFrom = useCallback((fromIndex: number) => {
     const sentences = getSentences();
     if (sentences.length === 0) return;
 
     window.speechSynthesis.cancel();
-    isCancelledRef.current = false;
+    stoppedRef.current = false;
 
     const speakNext = (idx: number) => {
-      if (isCancelledRef.current || idx >= sentences.length) {
-        setIsSpeaking(false);
-        setIsPaused(false);
-        setCurrentSentence(0);
+      // Check stopped ref synchronously (not React state)
+      if (stoppedRef.current || idx >= sentences.length) {
+        if (!stoppedRef.current) {
+          // Finished all sentences naturally
+          setTtsState('idle');
+          setCurrentSentence(0);
+          pausedAtRef.current = 0;
+        }
         return;
       }
 
       setCurrentSentence(idx);
+      pausedAtRef.current = idx;
+
       const utterance = new SpeechSynthesisUtterance(sentences[idx]);
       utterance.lang = 'fr-FR';
       utterance.rate = 1.0;
       utterance.onend = () => {
-        if (!isCancelledRef.current) {
+        if (!stoppedRef.current) {
           speakNext(idx + 1);
         }
       };
       utterance.onerror = () => {
-        if (!isCancelledRef.current) {
+        if (!stoppedRef.current) {
           speakNext(idx + 1);
         }
       };
       window.speechSynthesis.speak(utterance);
     };
 
-    setIsSpeaking(true);
-    setIsPaused(false);
+    setTtsState('playing');
     speakNext(fromIndex);
   }, [getSentences]);
 
   const handleSpeak = () => {
-    if (isSpeaking && !isPaused) {
-      window.speechSynthesis.pause();
-      setIsPaused(true);
+    if (ttsState === 'playing') {
+      // PAUSE: cancel speech, remember position
+      stoppedRef.current = true;
+      window.speechSynthesis.cancel();
+      setTtsState('paused');
       return;
     }
-    if (isPaused) {
-      window.speechSynthesis.resume();
-      setIsPaused(false);
+    if (ttsState === 'paused') {
+      // RESUME: restart from saved position
+      speakFrom(pausedAtRef.current);
       return;
     }
+    // START from beginning
     speakFrom(0);
   };
 
   const handleStopSpeech = () => {
-    isCancelledRef.current = true;
+    stoppedRef.current = true;
     window.speechSynthesis.cancel();
-    setIsSpeaking(false);
-    setIsPaused(false);
+    setTtsState('idle');
+    setCurrentSentence(0);
+    pausedAtRef.current = 0;
   };
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const idx = parseInt(e.target.value, 10);
     setCurrentSentence(idx);
-    if (isSpeaking || isPaused) {
+    pausedAtRef.current = idx;
+    if (ttsState === 'playing') {
+      // Jump to new position while playing
       speakFrom(idx);
     }
+    // If paused, just update position - will resume from here
   };
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      isCancelledRef.current = true;
+      stoppedRef.current = true;
       window.speechSynthesis.cancel();
     };
   }, []);
