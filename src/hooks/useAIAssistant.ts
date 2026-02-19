@@ -286,28 +286,33 @@ export function useAIAssistant(): UseAIAssistantReturn {
   }, []);
 
   const deleteConversation = useCallback(async (id: string) => {
+    // Optimistic update - remove from UI immediately
+    setConversations(prev => prev.filter(c => c.id !== id));
+
+    if (currentConsultationId === id) {
+      setMessages([]);
+      setCurrentConsultationId(null);
+      localStorage.removeItem(SESSION_KEY_CONSULTATION);
+      localStorage.removeItem(SESSION_KEY_MESSAGES);
+      setError(null);
+    }
+
     try {
-      const { error: err } = await supabase
-        .from('consultations')
-        .delete()
-        .eq('id', id);
+      // Use RPC function (SECURITY DEFINER) to bypass RLS
+      const { error: err } = await supabase.rpc('delete_consultation', {
+        consultation_id_param: id,
+      });
 
-      if (err) throw err;
-
-      setConversations(prev => prev.filter(c => c.id !== id));
-
-      // If deleting the active conversation, reset to new
-      if (currentConsultationId === id) {
-        setMessages([]);
-        setCurrentConsultationId(null);
-        localStorage.removeItem(SESSION_KEY_CONSULTATION);
-        localStorage.removeItem(SESSION_KEY_MESSAGES);
-        setError(null);
+      if (err) {
+        logger.error('RPC delete failed:', err);
+        // Resync if DB delete failed
+        loadConversations();
       }
     } catch (err) {
       logger.error('Failed to delete conversation', err as Error);
+      loadConversations();
     }
-  }, [currentConsultationId]);
+  }, [currentConsultationId, loadConversations]);
 
   const newConversation = useCallback(() => {
     setMessages([]);
