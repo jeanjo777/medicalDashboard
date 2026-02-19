@@ -139,14 +139,14 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
           appointment_time: formData.appointment_time,
           motif: formData.motif,
           type_consultation: formData.type_consultation,
-          notes: formData.notes,
+          message: formData.notes,
           duration: formData.duration,
           status: formData.status
         }]);
 
       if (insertError) {
         logger.error('[AddAppointmentModal] Error inserting appointment:', insertError);
-        setError('Erreur lors de la création du rendez-vous');
+        setError(`Erreur lors de la création du rendez-vous: ${insertError.message}`);
         return;
       }
 
