@@ -18,7 +18,7 @@ interface UseDemoModeReturn {
  * Persiste l'état dans localStorage pour maintenir le choix de l'utilisateur
  *
  * @param options - Options de configuration
- * @param options.defaultEnabled - Si true, le mode démo est activé par défaut (default: true)
+ * @param options.defaultEnabled - Si true, le mode démo est activé par défaut (default: false)
  * @param options.storageKey - Clé localStorage personnalisée (default: 'medical-app-demo-mode')
  *
  * @example
@@ -32,7 +32,7 @@ interface UseDemoModeReturn {
  */
 export const useDemoMode = (options: UseDemoModeOptions = {}): UseDemoModeReturn => {
   const {
-    defaultEnabled = true,
+    defaultEnabled = false,
     storageKey = 'medical-app-demo-mode'
   } = options;
 
@@ -41,6 +41,13 @@ export const useDemoMode = (options: UseDemoModeOptions = {}): UseDemoModeReturn
     if (typeof window === 'undefined') return defaultEnabled;
 
     try {
+      // Migration v2: clear old demo-mode=true so new default (false) takes effect
+      const migrationKey = 'medical-app-demo-mode-v2';
+      if (!localStorage.getItem(migrationKey)) {
+        localStorage.removeItem(storageKey);
+        localStorage.setItem(migrationKey, '1');
+      }
+
       const stored = localStorage.getItem(storageKey);
       if (stored !== null) {
         return JSON.parse(stored);
