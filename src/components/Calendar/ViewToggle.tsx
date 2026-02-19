@@ -22,7 +22,7 @@ const ViewToggle: React.FC<ViewToggleProps> = ({ currentView, onViewChange }) =>
           key={view.id}
           type="button"
           onClick={() => onViewChange(view.id)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer ${
             currentView === view.id
               ? 'bg-white text-primary shadow-sm'
               : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'

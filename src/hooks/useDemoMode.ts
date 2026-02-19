@@ -56,7 +56,7 @@ export const useDemoMode = (options: UseDemoModeOptions = {}): UseDemoModeReturn
     try {
       localStorage.setItem(storageKey, JSON.stringify(isDemoMode));
     } catch (error) {
-      console.warn('Impossible de sauvegarder le mode démo dans localStorage:', error);
+      // localStorage non disponible — mode démo non persisté
     }
   }, [isDemoMode, storageKey]);
 

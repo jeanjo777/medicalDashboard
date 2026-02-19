@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { Download, FileText, Calendar, CheckCircle, Clock, TrendingUp, Users, Activity, BarChart3, Mail, Printer } from 'lucide-react';
 import { exportData } from '../../utils/exportUtils';
 import { useDynamicAnalytics, usePredictions, useAIAlerts } from '../../hooks/useAnalyticsData';
@@ -17,6 +17,16 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
   const [selectedPeriod, setSelectedPeriod] = useState('2026-02');
   const [selectedFormat, setSelectedFormat] = useState('csv');
   const [isGenerating, setIsGenerating] = useState(false);
+  const generateFormRef = useRef<HTMLDivElement>(null);
+
+  const scrollToGenerateForm = () => {
+    generateFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const handleTemplateClick = (templateId: string) => {
+    setSelectedReportType(templateId);
+    scrollToGenerateForm();
+  };
 
   const reportTemplates = [
     {
@@ -169,10 +179,10 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
 
   const getColorClasses = (color: string) => {
     const colors: Record<string, { bg: string; border: string; icon: string; iconBg: string }> = {
-      emerald: { bg: 'bg-white', border: 'border-emerald-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
-      blue: { bg: 'bg-white', border: 'border-blue-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
-      purple: { bg: 'bg-white', border: 'border-purple-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600' },
-      orange: { bg: 'bg-white', border: 'border-orange-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-orange-500 to-red-600' }
+      emerald: { bg: 'bg-[var(--bg-secondary)]', border: 'border-emerald-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600' },
+      blue: { bg: 'bg-[var(--bg-secondary)]', border: 'border-blue-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-blue-500 to-indigo-600' },
+      purple: { bg: 'bg-[var(--bg-secondary)]', border: 'border-purple-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-purple-500 to-pink-600' },
+      orange: { bg: 'bg-[var(--bg-secondary)]', border: 'border-orange-200', icon: 'text-white', iconBg: 'bg-gradient-to-br from-orange-500 to-red-600' }
     };
     return colors[color] || colors.blue;
   };
@@ -182,8 +192,8 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Générateur de Rapports</h2>
-          <p className="text-gray-500 text-sm mt-1">Créez et gérez vos rapports analytiques</p>
+          <h2 className="text-xl font-bold theme-text-primary">Générateur de Rapports</h2>
+          <p className="theme-text-muted text-sm mt-1">Créez et gérez vos rapports analytiques</p>
         </div>
       </div>
 
@@ -195,16 +205,19 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
           return (
             <div
               key={template.id}
-              className={`${colorClasses.bg} rounded-xl border ${colorClasses.border} p-5 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer`}
+              onClick={() => handleTemplateClick(template.id)}
+              className={`${colorClasses.bg} rounded-xl border ${colorClasses.border} p-5 shadow-sm hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer ${
+                selectedReportType === template.id ? 'ring-2 ring-blue-500 ring-offset-2' : ''
+              }`}
             >
               <div className={`p-3 ${colorClasses.iconBg} rounded-lg w-fit mb-4`}>
                 <Icon size={24} className={colorClasses.icon} />
               </div>
-              <h3 className="text-gray-800 font-semibold mb-2">{template.title}</h3>
-              <p className="text-sm text-gray-500 mb-4">{template.description}</p>
+              <h3 className="theme-text-primary font-semibold mb-2">{template.title}</h3>
+              <p className="text-sm theme-text-muted mb-4">{template.description}</p>
               <div className="space-y-1">
                 {template.metrics.slice(0, 3).map((metric, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs text-gray-500">
+                  <div key={idx} className="flex items-center gap-2 text-xs theme-text-muted">
                     <CheckCircle size={12} className="text-emerald-500" />
                     <span>{metric}</span>
                   </div>
@@ -216,49 +229,53 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
       </div>
 
       {/* Generate Report Form */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <h3 className="text-lg font-semibold text-gray-800">Générer un nouveau rapport</h3>
+      <div ref={generateFormRef} className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <h3 className="text-lg font-semibold theme-text-primary">Générer un nouveau rapport</h3>
         </div>
 
         <div className="p-5">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div>
-              <label htmlFor="report-type" className="block text-sm text-gray-600 mb-2 font-medium">Type de rapport</label>
+              <label htmlFor="report-type" className="block text-sm theme-text-secondary mb-2 font-medium">Type de rapport</label>
               <select
                 id="report-type"
                 value={selectedReportType}
                 onChange={(e) => setSelectedReportType(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
                 aria-label="Type de rapport"
               >
                 <option value="monthly">Rapport Mensuel</option>
                 <option value="quarterly">Rapport Trimestriel</option>
                 <option value="annual">Rapport Annuel</option>
                 <option value="custom">Personnalisé</option>
+                <option value="performance">Rapport de Performance</option>
+                <option value="patients">Rapport Patients</option>
+                <option value="activity">Rapport d'Activité</option>
+                <option value="analytics">Rapport Analytique</option>
               </select>
             </div>
 
             <div>
-              <label htmlFor="report-period" className="block text-sm text-gray-600 mb-2 font-medium">Période</label>
+              <label htmlFor="report-period" className="block text-sm theme-text-secondary mb-2 font-medium">Période</label>
               <input
                 id="report-period"
                 type="month"
                 value={selectedPeriod}
                 onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
                 aria-label="Période du rapport"
                 title="Sélectionner la période"
               />
             </div>
 
             <div>
-              <label htmlFor="report-format" className="block text-sm text-gray-600 mb-2 font-medium">Format</label>
+              <label htmlFor="report-format" className="block text-sm theme-text-secondary mb-2 font-medium">Format</label>
               <select
                 id="report-format"
                 value={selectedFormat}
                 onChange={(e) => setSelectedFormat(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                className="w-full px-4 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
                 aria-label="Format d'export"
               >
                 <option value="csv">CSV</option>
@@ -305,11 +322,11 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
       {/* Recent Reports and Scheduled */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Reports */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="lg:col-span-2 bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800">Rapports Récents</h3>
-              <span className="text-sm text-gray-500">{savedReports.length} rapports</span>
+              <h3 className="text-lg font-semibold theme-text-primary">Rapports Récents</h3>
+              <span className="text-sm theme-text-muted">{savedReports.length} rapports</span>
             </div>
           </div>
 
@@ -317,15 +334,15 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
             {savedReports.map((report) => (
               <div
                 key={report.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
+                className="flex items-center justify-between p-4 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors group"
               >
                 <div className="flex items-center gap-4 flex-1">
                   <div className="p-3 bg-blue-100 rounded-lg">
                     <FileText size={20} className="text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-gray-800 font-medium mb-1">{report.name}</p>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <p className="theme-text-primary font-medium mb-1">{report.name}</p>
+                    <div className="flex items-center gap-3 text-xs theme-text-muted">
                       <span className="flex items-center gap-1">
                         <Calendar size={12} />
                         {new Date(report.date).toLocaleDateString('fr-FR')}
@@ -333,7 +350,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
                       <span>•</span>
                       <span>{report.size}</span>
                       <span>•</span>
-                      <span className="px-2 py-0.5 bg-gray-200 rounded text-gray-600">
+                      <span className="px-2 py-0.5 bg-[var(--bg-tertiary)] rounded theme-text-secondary">
                         {report.format}
                       </span>
                       <span>•</span>
@@ -361,7 +378,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
                   <button
                     type="button"
                     onClick={() => handlePrintReport(report)}
-                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500"
+                    className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors theme-text-muted"
                     aria-label="Imprimer"
                   >
                     <Printer size={18} />
@@ -369,7 +386,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
                   <button
                     type="button"
                     onClick={() => handleEmailReport(report)}
-                    className="p-2 hover:bg-gray-200 rounded-lg transition-colors text-gray-500"
+                    className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors theme-text-muted"
                     aria-label="Envoyer par email"
                   >
                     <Mail size={18} />
@@ -381,38 +398,44 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
         </div>
 
         {/* Scheduled Reports */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-orange-50">
-            <h3 className="text-lg font-semibold text-gray-800">Rapports Planifiés</h3>
+        <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+            <h3 className="text-lg font-semibold theme-text-primary">Rapports Planifiés</h3>
           </div>
 
           <div className="p-5 space-y-4">
             {scheduledReports.map((schedule, index) => (
-              <div key={index} className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div key={index} className="p-4 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-gray-800 font-medium text-sm">{schedule.name}</p>
+                  <p className="theme-text-primary font-medium text-sm">{schedule.name}</p>
                   <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium">
                     Actif
                   </span>
                 </div>
-                <div className="space-y-2 text-xs text-gray-500">
+                <div className="space-y-2 text-xs theme-text-muted">
                   <div className="flex items-center justify-between">
                     <span>Fréquence:</span>
-                    <span className="text-gray-700 font-medium">{schedule.frequency}</span>
+                    <span className="theme-text-secondary font-medium">{schedule.frequency}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Prochaine exécution:</span>
-                    <span className="text-gray-700 font-medium">{new Date(schedule.nextRun).toLocaleDateString('fr-FR')}</span>
+                    <span className="theme-text-secondary font-medium">{new Date(schedule.nextRun).toLocaleDateString('fr-FR')}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Destinataires:</span>
-                    <span className="text-gray-700 font-medium">{schedule.recipients} personnes</span>
+                    <span className="theme-text-secondary font-medium">{schedule.recipients} personnes</span>
                   </div>
                 </div>
               </div>
             ))}
 
-            <button type="button" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded-lg transition-all text-sm font-medium">
+            <button
+              type="button"
+              onClick={() => {
+                scrollToGenerateForm();
+              }}
+              className="w-full px-4 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-blue-300 hover:bg-blue-50 theme-text-secondary hover:text-blue-600 rounded-lg transition-all text-sm font-medium cursor-pointer"
+            >
               + Planifier un nouveau rapport
             </button>
           </div>
@@ -421,28 +444,28 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-all">
+        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-sm p-5 hover:shadow-md transition-all">
           <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg w-fit mb-3">
             <FileText size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold text-gray-800 mb-1">24</p>
-          <p className="text-sm text-gray-500">Rapports générés ce mois</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">24</p>
+          <p className="text-sm theme-text-muted">Rapports générés ce mois</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-all">
+        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-sm p-5 hover:shadow-md transition-all">
           <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg w-fit mb-3">
             <Download size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold text-gray-800 mb-1">156</p>
-          <p className="text-sm text-gray-500">Téléchargements totaux</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">156</p>
+          <p className="text-sm theme-text-muted">Téléchargements totaux</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-all">
+        <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] shadow-sm p-5 hover:shadow-md transition-all">
           <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg w-fit mb-3">
             <Clock size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold text-gray-800 mb-1">3</p>
-          <p className="text-sm text-gray-500">Rapports planifiés actifs</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">3</p>
+          <p className="text-sm theme-text-muted">Rapports planifiés actifs</p>
         </div>
       </div>
     </div>

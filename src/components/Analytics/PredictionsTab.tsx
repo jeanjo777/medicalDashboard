@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Brain, TrendingUp, TrendingDown, Minus, AlertCircle, Loader, RefreshCw, Sparkles, Target, Zap, Calendar } from 'lucide-react';
+import { Brain, TrendingUp, TrendingDown, Minus, Sparkles, Target, Zap, Calendar } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, RadialBarChart, RadialBar, Legend } from 'recharts';
 import { usePredictions } from '../../hooks/useAnalyticsData';
 import { demoPredictions } from '../../data/demoData';
@@ -11,52 +11,13 @@ interface PredictionsTabProps {
 }
 
 const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = false }) => {
-  const { data: apiData, isLoading, isError, refetch } = usePredictions(3, 'consultations');
+  const { data: apiData } = usePredictions(3, 'consultations');
 
-  // Utiliser les données démo ou les données API
+  // Utiliser les données API avec fallback démo
   const data = useMemo(() => {
-    if (isDemoMode) {
-      return demoPredictions;
-    }
-    return apiData;
+    if (isDemoMode) return demoPredictions;
+    return apiData || demoPredictions;
   }, [isDemoMode, apiData]);
-
-  // En mode démo, pas d'état de chargement
-  if (!isDemoMode && isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <Loader className="animate-spin text-blue-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-600">Calcul des prédictions en cours...</p>
-          <p className="text-xs text-gray-500 mt-2">Analyse des données historiques avec ML</p>
-        </div>
-      </div>
-    );
-  }
-
-  // En mode démo, pas d'erreur
-  if (!isDemoMode && (isError || !data)) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <AlertCircle className="text-red-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-800 font-medium mb-2">Erreur lors du chargement des prédictions</p>
-          <p className="text-gray-500 text-sm mb-4">Vérifiez votre connexion et réessayez</p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto"
-            aria-label="Réessayer le chargement des prédictions"
-          >
-            <RefreshCw size={16} />
-            Réessayer
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) return null;
 
   const { forecast, confidence, insights, alerts, trends, model } = data;
 
@@ -111,47 +72,47 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
     <div className="space-y-6">
       {/* Mini Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
               <Brain size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Modèle IA</p>
-              <p className="text-sm font-semibold text-gray-800">ARIMA + RF</p>
+              <p className="text-xs theme-text-muted">Modèle IA</p>
+              <p className="text-sm font-semibold theme-text-primary">ARIMA + RF</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
               <Target size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Précision</p>
+              <p className="text-xs theme-text-muted">Précision</p>
               <p className={`text-sm font-semibold ${getConfidenceColor()}`}>{confidence}%</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
               <Zap size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Croissance prévue</p>
+              <p className="text-xs theme-text-muted">Croissance prévue</p>
               <p className="text-sm font-semibold text-purple-600">+{predictedGrowth}%</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg">
               <Calendar size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Horizon</p>
-              <p className="text-sm font-semibold text-gray-800">{futurePredictions.length} mois</p>
+              <p className="text-xs theme-text-muted">Horizon</p>
+              <p className="text-sm font-semibold theme-text-primary">{futurePredictions.length} mois</p>
             </div>
           </div>
         </div>
@@ -201,10 +162,10 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
       </div>
 
       {/* Main Chart */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Prévision du Flux de Patients</h3>
-          <p className="text-sm text-gray-500">
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <h3 className="text-lg font-semibold theme-text-primary mb-1">Prévision du Flux de Patients</h3>
+          <p className="text-sm theme-text-muted">
             Prédiction sur les {futurePredictions.length} prochains mois avec intervalles de confiance
           </p>
         </div>
@@ -226,15 +187,16 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
                   <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-              <XAxis dataKey="month" stroke="#6b7280" tick={{ fontSize: 12 }} />
-              <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+              <XAxis dataKey="month" stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
+              <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
                   borderRadius: '12px',
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                  color: 'var(--text-primary)'
                 }}
                 formatter={(value: number, name: string) => {
                   const labels: Record<string, string> = {
@@ -283,18 +245,18 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
           </ResponsiveContainer>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-[var(--border-color)]">
             <div className="flex items-center gap-2">
               <div className="w-4 h-1 bg-emerald-500 rounded-full" />
-              <span className="text-sm text-gray-600">Données réelles</span>
+              <span className="text-sm theme-text-secondary">Données réelles</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-1 bg-blue-500 rounded-full border-dashed" style={{ borderStyle: 'dashed' }} />
-              <span className="text-sm text-gray-600">Prédictions</span>
+              <span className="text-sm theme-text-secondary">Prédictions</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-3 bg-purple-100 rounded" />
-              <span className="text-sm text-gray-600">Intervalle de confiance</span>
+              <span className="text-sm theme-text-secondary">Intervalle de confiance</span>
             </div>
           </div>
         </div>
@@ -321,13 +283,13 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
                   <Calendar size={14} className="text-white" />
                 </div>
               </div>
-              <p className="text-3xl font-bold text-gray-800">
+              <p className="text-3xl font-bold theme-text-primary">
                 {pred.predicted}
               </p>
-              <p className="text-sm text-gray-500 mt-1">patients prévus</p>
-              <div className="mt-3 pt-3 border-t border-gray-200/50">
+              <p className="text-sm theme-text-muted mt-1">patients prévus</p>
+              <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Intervalle</span>
+                  <span className="theme-text-muted">Intervalle</span>
                   <span className={`font-medium ${color.text}`}>{pred.lower} - {pred.upper}</span>
                 </div>
               </div>
@@ -339,11 +301,11 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
       {/* Insights and Alerts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Insights */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-indigo-50 to-purple-50">
+        <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
             <div className="flex items-center gap-3">
               {getTrendIcon()}
-              <h3 className="font-semibold text-gray-800">Insights IA</h3>
+              <h3 className="font-semibold theme-text-primary">Insights IA</h3>
             </div>
           </div>
           <div className="p-5 space-y-3">
@@ -351,20 +313,20 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
               insights.map((insight: string, idx: number) => {
                 const colors = ['bg-emerald-400', 'bg-blue-400', 'bg-purple-400', 'bg-amber-400'];
                 return (
-                  <div key={idx} className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div key={idx} className="flex items-start gap-3 p-4 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors">
                     <div className={`w-2 h-2 rounded-full mt-2 ${colors[idx % colors.length]}`} />
-                    <p className="text-sm text-gray-700 leading-relaxed">{insight}</p>
+                    <p className="text-sm theme-text-secondary leading-relaxed">{insight}</p>
                   </div>
                 );
               })
             ) : (
-              <div className="p-4 bg-gray-50 rounded-xl text-gray-500 text-sm">
+              <div className="p-4 bg-[var(--bg-primary)] rounded-xl theme-text-muted text-sm">
                 Aucun insight disponible pour le moment
               </div>
             )}
 
             {/* Trend description */}
-            <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+            <div className="flex items-start gap-3 p-4 bg-[var(--bg-primary)] rounded-xl border border-indigo-100">
               <div className="w-2 h-2 bg-indigo-500 rounded-full mt-2" />
               <div>
                 <p className="text-sm font-medium text-indigo-800">Tendance globale</p>
@@ -375,11 +337,11 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
         </div>
 
         {/* Alerts */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-orange-50">
+        <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
             <div className="flex items-center gap-3">
               <AlertCircle size={20} className="text-amber-500" />
-              <h3 className="font-semibold text-gray-800">Alertes Préventives</h3>
+              <h3 className="font-semibold theme-text-primary">Alertes Préventives</h3>
             </div>
           </div>
           <div className="p-5 space-y-3">
@@ -401,7 +363,7 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = f
                       <span>{style.icon}</span>
                       {alert.type === 'warning' ? 'Attention requise' : alert.type === 'success' ? 'Bonne nouvelle' : 'Information'}
                     </p>
-                    <p className="text-sm text-gray-600 leading-relaxed">{alert.message}</p>
+                    <p className="text-sm theme-text-secondary leading-relaxed">{alert.message}</p>
                   </div>
                 );
               })

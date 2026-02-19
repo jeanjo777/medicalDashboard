@@ -46,7 +46,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
 
   const handleProfile = () => {
     setIsOpen(false);
-    navigate('/profile');
+    navigate('/settings');
   };
 
   const handleSettings = () => {

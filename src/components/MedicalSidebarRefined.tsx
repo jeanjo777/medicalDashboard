@@ -190,6 +190,8 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
 
   const handleLogout = () => {
     logger.info('Logging out...');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
     navigate('/login');
     setIsMobileOpen(false);
   };

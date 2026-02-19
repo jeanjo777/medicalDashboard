@@ -27,6 +27,7 @@ import { useDemoMode } from '../hooks/useDemoMode';
 import { demoAnalyticsData, demoChartData } from '../data/demoData';
 import ErrorBoundary from '../components/ErrorBoundary';
 import logger from '../utils/logger';
+import { exportData, ExportFormat, flattenData } from '../utils/exportUtils';
 
 const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React.ElementType; sidebarId: string }> = {
   '/analytics-advanced': { title: 'Analytics & Statistiques', subtitle: "Vue d'ensemble de l'activité et rapports détaillés", icon: BarChart3, sidebarId: 'statistics' },
@@ -73,8 +74,37 @@ const AnalyticsPageAdvanced: React.FC = () => {
     }
   }, [location.pathname]);
 
-  const handleExport = (format: string) => {
+  const handleExport = async (format: string) => {
     logger.info(`Exporting data as ${format}`);
+
+    // Build a generic overview dataset from analytics data for export
+    const overviewData = [
+      { Metric: 'Total Patients', Value: demoAnalyticsData.totalPatients, Period: 'Current' },
+      { Metric: 'New Patients This Month', Value: demoAnalyticsData.newPatientsThisMonth, Period: 'Current' },
+      { Metric: 'Total Appointments', Value: demoAnalyticsData.totalAppointments, Period: 'Current' },
+      { Metric: 'Appointments Today', Value: demoAnalyticsData.appointmentsToday, Period: 'Current' },
+      { Metric: 'Completed Consultations', Value: demoAnalyticsData.completedConsultations, Period: 'Current' },
+      { Metric: 'Patient Satisfaction', Value: demoAnalyticsData.patientSatisfaction, Period: 'Current' },
+      { Metric: 'Average Wait Time (min)', Value: demoAnalyticsData.averageWaitTime, Period: 'Current' },
+      { Metric: 'Bed Occupancy (%)', Value: demoAnalyticsData.bedOccupancy, Period: 'Current' },
+      { Metric: 'Emergency Cases', Value: demoAnalyticsData.emergencyCases, Period: 'Current' },
+    ];
+
+    const exportFormat = format as ExportFormat;
+    const options = {
+      filename: `analytics_${currentTab}`,
+      title: `MediCare Pro - ${pageConfig.title}`,
+      metadata: {
+        tab: currentTab,
+        exportedAt: new Date().toISOString(),
+      },
+    };
+
+    try {
+      await exportData(flattenData(overviewData), exportFormat, options);
+    } catch (err: any) {
+      logger.error('[AnalyticsPageAdvanced] Export error:', err);
+    }
   };
 
   const renderContent = () => {

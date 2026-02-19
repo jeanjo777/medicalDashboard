@@ -80,18 +80,51 @@ const ConfirmModal: React.FC<{
 );
 
 // Password change modal
-const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ onClose, onSave }) => {
+const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void; onError: (msg: string) => void }> = ({ onClose, onSave, onError }) => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleSubmit = () => {
+    setValidationError(null);
+
+    if (!currentPassword) {
+      setValidationError('Veuillez entrer votre mot de passe actuel.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setValidationError('Le nouveau mot de passe doit contenir au moins 8 caractères.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setValidationError('Les mots de passe ne correspondent pas.');
+      return;
+    }
+
+    // TODO: Call Supabase Edge Function for password change when available.
+    // For now, validation passes but no backend call is made.
+    console.warn('Password change API is not yet implemented. Validation passed with provided credentials.');
+    onError('Changement de mot de passe non disponible pour le moment.');
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="theme-bg-secondary rounded-xl border theme-border p-6 max-w-md w-full mx-4 shadow-2xl">
         <h3 className="text-lg font-bold theme-text-primary mb-4">Modifier le mot de passe</h3>
+        {validationError && (
+          <div className="mb-4 p-3 bg-red-500/15 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
+            <AlertTriangle size={16} className="flex-shrink-0" />
+            {validationError}
+          </div>
+        )}
         <div className="space-y-4">
           <div>
             <label className="block text-sm theme-text-secondary mb-2">Mot de passe actuel</label>
             <div className="relative">
-              <input type={showCurrent ? 'text' : 'password'} placeholder="Entrez votre mot de passe actuel" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none pr-10" />
+              <input type={showCurrent ? 'text' : 'password'} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Entrez votre mot de passe actuel" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none pr-10" />
               <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted">
                 {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -100,7 +133,7 @@ const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ 
           <div>
             <label className="block text-sm theme-text-secondary mb-2">Nouveau mot de passe</label>
             <div className="relative">
-              <input type={showNew ? 'text' : 'password'} placeholder="Entrez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none pr-10" />
+              <input type={showNew ? 'text' : 'password'} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Entrez votre nouveau mot de passe (min. 8 caractères)" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none pr-10" />
               <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted">
                 {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -108,12 +141,12 @@ const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ 
           </div>
           <div>
             <label className="block text-sm theme-text-secondary mb-2">Confirmer le mot de passe</label>
-            <input type="password" placeholder="Confirmez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none" />
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmez votre nouveau mot de passe" className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none" />
           </div>
         </div>
         <div className="flex gap-3 justify-end mt-6">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg theme-bg-tertiary theme-text-primary hover:opacity-80 cursor-pointer">Annuler</button>
-          <button type="button" onClick={onSave} className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white cursor-pointer">Enregistrer</button>
+          <button type="button" onClick={handleSubmit} className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-dark text-white cursor-pointer">Enregistrer</button>
         </div>
       </div>
     </div>
@@ -155,6 +188,19 @@ const SettingsPage: React.FC = () => {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+  // Profile form state – initialised from localStorage (or user object as fallback)
+  const [profileData, setProfileData] = useState(() => {
+    const saved = localStorage.getItem('app-profile');
+    if (saved) return JSON.parse(saved);
+    return {
+      prenom: user?.prenom || 'John',
+      nom: user?.nom || 'Doe',
+      email: user?.email || 'contact@medicare.com',
+      telephone: '+33 6 12 34 56 78',
+      specialite: 'Médecine générale'
+    };
+  });
+
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
@@ -172,6 +218,7 @@ const SettingsPage: React.FC = () => {
   const handleSave = () => {
     localStorage.setItem('app-language', language);
     localStorage.setItem('app-notifications', JSON.stringify(notifications));
+    localStorage.setItem('app-profile', JSON.stringify(profileData));
     setSaved(true);
     showToast('Paramètres enregistrés avec succès');
     setTimeout(() => setSaved(false), 2000);
@@ -246,7 +293,8 @@ const SettingsPage: React.FC = () => {
                   <label className="block text-sm theme-text-secondary mb-2">Prénom</label>
                   <input
                     type="text"
-                    defaultValue={user?.prenom || 'John'}
+                    value={profileData.prenom}
+                    onChange={(e) => setProfileData((prev: typeof profileData) => ({ ...prev, prenom: e.target.value }))}
                     className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
@@ -254,7 +302,8 @@ const SettingsPage: React.FC = () => {
                   <label className="block text-sm theme-text-secondary mb-2">Nom</label>
                   <input
                     type="text"
-                    defaultValue={user?.nom || 'Doe'}
+                    value={profileData.nom}
+                    onChange={(e) => setProfileData((prev: typeof profileData) => ({ ...prev, nom: e.target.value }))}
                     className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
@@ -262,7 +311,8 @@ const SettingsPage: React.FC = () => {
                   <label className="block text-sm theme-text-secondary mb-2">Email</label>
                   <input
                     type="email"
-                    defaultValue={user?.email || 'contact@medicare.com'}
+                    value={profileData.email}
+                    onChange={(e) => setProfileData((prev: typeof profileData) => ({ ...prev, email: e.target.value }))}
                     className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
@@ -270,7 +320,8 @@ const SettingsPage: React.FC = () => {
                   <label className="block text-sm theme-text-secondary mb-2">Téléphone</label>
                   <input
                     type="tel"
-                    defaultValue="+33 6 12 34 56 78"
+                    value={profileData.telephone}
+                    onChange={(e) => setProfileData((prev: typeof profileData) => ({ ...prev, telephone: e.target.value }))}
                     className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
                   />
                 </div>
@@ -278,7 +329,11 @@ const SettingsPage: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold theme-text-primary mb-4">Spécialité</h3>
-              <select className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors">
+              <select
+                value={profileData.specialite}
+                onChange={(e) => setProfileData((prev: typeof profileData) => ({ ...prev, specialite: e.target.value }))}
+                className="w-full px-4 py-2.5 theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none transition-colors"
+              >
                 <option>Médecine générale</option>
                 <option>Cardiologie</option>
                 <option>Neurologie</option>

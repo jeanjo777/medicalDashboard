@@ -25,6 +25,7 @@ import AddPatientModal from '../components/AddPatientModal';
 import EditPatientModal from '../components/EditPatientModal';
 import PatientDetailModalEnhanced from '../components/PatientDetailModalEnhanced';
 import { calculateAge } from '../utils/dateHelpers';
+import { exportData } from '../utils/exportUtils';
 import logger from '../utils/logger';
 
 interface Patient {
@@ -91,8 +92,8 @@ const EnhancedPatientsPage: React.FC = () => {
         name: patient.name || 'Unknown',
         age: calculateAge(patient.date_of_birth),
         gender: patient.gender,
-        condition: getRandomCondition(),
-        status: getRandomStatus(),
+        condition: patient.primary_pathology || 'Non renseigné',
+        status: patient.status || 'active',
         last_visit: patient.registered_at || new Date().toISOString(),
         created_at: patient.registered_at || new Date().toISOString(),
         email: patient.email,
@@ -149,16 +150,6 @@ const EnhancedPatientsPage: React.FC = () => {
   const handleDeleteCancel = () => {
     setShowDeleteConfirm(false);
     setPatientToDelete(null);
-  };
-
-  const getRandomCondition = () => {
-    const conditions = ['Hypertension', 'Diabetes Type 2', 'Asthma', 'Arthritis', 'Migraine', 'Heart Disease', 'Allergies', 'Back Pain'];
-    return conditions[Math.floor(Math.random() * conditions.length)];
-  };
-
-  const getRandomStatus = (): 'active' | 'inactive' | 'in_treatment' | 'recovered' => {
-    const statuses: ('active' | 'inactive' | 'in_treatment' | 'recovered')[] = ['active', 'inactive', 'in_treatment', 'recovered'];
-    return statuses[Math.floor(Math.random() * statuses.length)];
   };
 
   const mockPatients: Patient[] = [
@@ -281,38 +272,37 @@ const EnhancedPatientsPage: React.FC = () => {
   }, [patients]);
 
   return (
-    <div className="flex min-h-screen bg-[#0f172a]">
+    <div className="flex min-h-screen bg-[var(--bg-primary)]">
       <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
 
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         {/* Header */}
-        <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
+        <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
           <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-0 lg:justify-between">
             <div className="min-w-0 flex-1 lg:ml-0 ml-14">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Patient Records</h1>
-              <p className="text-gray-400 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">Manage and view patient information</p>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold theme-text-primary">Patient Records</h1>
+              <p className="theme-text-muted text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">Manage and view patient information</p>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               <div className="relative flex-1 lg:flex-initial">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted" size={18} />
                 <input
                   type="text"
                   placeholder="Search patients..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full lg:w-80 pl-10 pr-4 py-2 sm:py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-xs sm:text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full lg:w-80 pl-10 pr-4 py-2 sm:py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-xs sm:text-sm theme-text-secondary placeholder-[var(--text-muted)] focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
 
-              <button className="relative p-2.5 hover:bg-[#334155] rounded-lg transition-colors">
-                <Bell size={22} className="text-gray-400" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+              <button className="relative p-2.5 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors" title="Notifications">
+                <Bell size={22} className="theme-text-muted" />
               </button>
 
-              <div className="flex items-center gap-3 px-4 py-2 bg-[#0f172a] rounded-lg border border-[#334155]">
-                <UserIcon size={20} className="text-gray-400" />
-                <span className="text-sm font-medium text-white">DA</span>
+              <div className="flex items-center gap-3 px-4 py-2 bg-[var(--bg-primary)] rounded-lg border border-[var(--border-color)]">
+                <UserIcon size={20} className="theme-text-muted" />
+                <span className="text-sm font-medium theme-text-primary">DA</span>
               </div>
             </div>
           </div>
@@ -322,11 +312,11 @@ const EnhancedPatientsPage: React.FC = () => {
         <main className="flex-1 p-3 sm:p-4 lg:p-8 overflow-auto">
           {/* Summary Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
-            <div className="bg-[#1e293b] rounded-xl p-3 sm:p-4 lg:p-6 border border-[#334155]">
+            <div className="bg-[var(--bg-secondary)] rounded-xl p-3 sm:p-4 lg:p-6 border border-[var(--border-color)]">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-gray-400 text-xs sm:text-sm mb-1 truncate">Total Patients</p>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{stats.total}</h3>
+                  <p className="theme-text-muted text-xs sm:text-sm mb-1 truncate">Total Patients</p>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold theme-text-primary">{stats.total}</h3>
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Users className="text-blue-500 w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -338,11 +328,11 @@ const EnhancedPatientsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#1e293b] rounded-xl p-3 sm:p-4 lg:p-6 border border-[#334155]">
+            <div className="bg-[var(--bg-secondary)] rounded-xl p-3 sm:p-4 lg:p-6 border border-[var(--border-color)]">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-gray-400 text-xs sm:text-sm mb-1 truncate">Actifs</p>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{stats.active}</h3>
+                  <p className="theme-text-muted text-xs sm:text-sm mb-1 truncate">Actifs</p>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold theme-text-primary">{stats.active}</h3>
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Activity className="text-emerald-500 w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -350,11 +340,11 @@ const EnhancedPatientsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#1e293b] rounded-xl p-3 sm:p-4 lg:p-6 border border-[#334155]">
+            <div className="bg-[var(--bg-secondary)] rounded-xl p-3 sm:p-4 lg:p-6 border border-[var(--border-color)]">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-gray-400 text-xs sm:text-sm mb-1 truncate">Guéris</p>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{stats.recovered}</h3>
+                  <p className="theme-text-muted text-xs sm:text-sm mb-1 truncate">Guéris</p>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold theme-text-primary">{stats.recovered}</h3>
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-blue-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <TrendingUp className="text-blue-500 w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -362,11 +352,11 @@ const EnhancedPatientsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#1e293b] rounded-xl p-3 sm:p-4 lg:p-6 border border-[#334155]">
+            <div className="bg-[var(--bg-secondary)] rounded-xl p-3 sm:p-4 lg:p-6 border border-[var(--border-color)]">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="text-gray-400 text-xs sm:text-sm mb-1 truncate">En traitement</p>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{stats.underTreatment}</h3>
+                  <p className="theme-text-muted text-xs sm:text-sm mb-1 truncate">En traitement</p>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold theme-text-primary">{stats.underTreatment}</h3>
                 </div>
                 <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-orange-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Calendar className="text-orange-500 w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
@@ -376,12 +366,12 @@ const EnhancedPatientsPage: React.FC = () => {
           </div>
 
           {/* Filters and Actions */}
-          <div className="bg-[#1e293b] rounded-xl border border-[#334155] p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] p-3 sm:p-4 mb-4 sm:mb-6">
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#0f172a] hover:bg-[#334155] text-gray-300 rounded-lg transition-colors text-xs sm:text-sm border border-[#334155]"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] theme-text-secondary rounded-lg transition-colors text-xs sm:text-sm border border-[var(--border-color)]"
                 >
                   <Filter size={16} />
                   <span>Filtres</span>
@@ -400,13 +390,30 @@ const EnhancedPatientsPage: React.FC = () => {
                   </button>
                 )}
 
-                <span className="text-xs sm:text-sm text-gray-400">
+                <span className="text-xs sm:text-sm theme-text-muted">
                   {filteredAndSortedPatients.length}/{patients.length} patients
                 </span>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3">
-                <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#0f172a] hover:bg-[#334155] text-gray-300 rounded-lg transition-colors text-xs sm:text-sm border border-[#334155]">
+                <button
+                  onClick={() => {
+                    exportData(
+                      filteredAndSortedPatients.map(p => ({
+                        ID: p.patient_id,
+                        Nom: p.name,
+                        Age: p.age,
+                        Genre: p.gender || 'N/A',
+                        Condition: p.condition,
+                        Statut: p.status,
+                        Derniere_visite: p.last_visit,
+                      })),
+                      'csv',
+                      { filename: 'patients_export' }
+                    );
+                  }}
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] theme-text-secondary rounded-lg transition-colors text-xs sm:text-sm border border-[var(--border-color)]"
+                >
                   <Download size={16} />
                   <span className="hidden sm:inline">Export</span>
                 </button>
@@ -422,13 +429,13 @@ const EnhancedPatientsPage: React.FC = () => {
             </div>
 
             {showFilters && (
-              <div className="mt-4 pt-4 border-t border-[#334155] flex flex-wrap gap-4">
+              <div className="mt-4 pt-4 border-t border-[var(--border-color)] flex flex-wrap gap-4">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-2">Statut</label>
+                  <label className="block text-xs theme-text-muted mb-2">Statut</label>
                   <select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-sm text-gray-300 focus:outline-none focus:border-blue-500"
+                    className="px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm theme-text-secondary focus:outline-none focus:border-blue-500"
                   >
                     <option value="all">Tous les statuts</option>
                     <option value="active">Actif</option>
@@ -439,11 +446,11 @@ const EnhancedPatientsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-400 mb-2">Condition</label>
+                  <label className="block text-xs theme-text-muted mb-2">Condition</label>
                   <select
                     value={filterCondition}
                     onChange={(e) => setFilterCondition(e.target.value)}
-                    className="px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-sm text-gray-300 focus:outline-none focus:border-blue-500"
+                    className="px-4 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm theme-text-secondary focus:outline-none focus:border-blue-500"
                   >
                     <option value="all">All Conditions</option>
                     {uniqueConditions.map(condition => (
@@ -456,14 +463,14 @@ const EnhancedPatientsPage: React.FC = () => {
           </div>
 
           {/* Patient Table - Desktop */}
-          <div className="hidden md:block bg-[#1e293b] rounded-xl border border-[#334155] overflow-hidden">
+          <div className="hidden md:block bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-[#0f172a] border-b border-[#334155]">
+                  <tr className="bg-[var(--bg-primary)] border-b border-[var(--border-color)]">
                     <th
                       onClick={() => handleSort('patient_id')}
-                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-300 transition-colors"
+                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider cursor-pointer hover:text-[var(--text-secondary)] transition-colors"
                     >
                       <div className="flex items-center gap-1">
                         ID
@@ -474,7 +481,7 @@ const EnhancedPatientsPage: React.FC = () => {
                     </th>
                     <th
                       onClick={() => handleSort('name')}
-                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-300 transition-colors"
+                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider cursor-pointer hover:text-[var(--text-secondary)] transition-colors"
                     >
                       <div className="flex items-center gap-1">
                         Nom
@@ -485,7 +492,7 @@ const EnhancedPatientsPage: React.FC = () => {
                     </th>
                     <th
                       onClick={() => handleSort('age')}
-                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-300 transition-colors"
+                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider cursor-pointer hover:text-[var(--text-secondary)] transition-colors"
                     >
                       <div className="flex items-center gap-1">
                         Age
@@ -494,12 +501,12 @@ const EnhancedPatientsPage: React.FC = () => {
                         )}
                       </div>
                     </th>
-                    <th className="hidden lg:table-cell px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <th className="hidden lg:table-cell px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
                       Genre
                     </th>
                     <th
                       onClick={() => handleSort('condition')}
-                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-300 transition-colors"
+                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider cursor-pointer hover:text-[var(--text-secondary)] transition-colors"
                     >
                       <div className="flex items-center gap-1">
                         Condition
@@ -510,7 +517,7 @@ const EnhancedPatientsPage: React.FC = () => {
                     </th>
                     <th
                       onClick={() => handleSort('status')}
-                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-300 transition-colors"
+                      className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider cursor-pointer hover:text-[var(--text-secondary)] transition-colors"
                     >
                       <div className="flex items-center gap-1">
                         Statut
@@ -521,7 +528,7 @@ const EnhancedPatientsPage: React.FC = () => {
                     </th>
                     <th
                       onClick={() => handleSort('last_visit')}
-                      className="hidden lg:table-cell px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-300 transition-colors"
+                      className="hidden lg:table-cell px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider cursor-pointer hover:text-[var(--text-secondary)] transition-colors"
                     >
                       <div className="flex items-center gap-1">
                         Dernière visite
@@ -530,21 +537,21 @@ const EnhancedPatientsPage: React.FC = () => {
                         )}
                       </div>
                     </th>
-                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    <th className="px-3 lg:px-6 py-3 lg:py-4 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#334155]">
+                <tbody className="divide-y divide-[var(--border-color)]">
                   {loading ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                      <td colSpan={8} className="px-4 py-8 text-center theme-text-muted">
                         Chargement...
                       </td>
                     </tr>
                   ) : filteredAndSortedPatients.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
+                      <td colSpan={8} className="px-4 py-8 text-center theme-text-muted">
                         Aucun patient trouvé
                       </td>
                     </tr>
@@ -556,8 +563,8 @@ const EnhancedPatientsPage: React.FC = () => {
                           setSelectedPatient(patient);
                           setShowDetailModal(true);
                         }}
-                        className={`cursor-pointer transition-colors hover:bg-[#334155]/30 ${
-                          index % 2 === 0 ? 'bg-[#1e293b]' : 'bg-[#0f172a]/50'
+                        className={`cursor-pointer transition-colors hover:bg-[var(--bg-tertiary)]/30 ${
+                          index % 2 === 0 ? 'bg-[var(--bg-secondary)]' : 'bg-[var(--bg-primary)]/50'
                         }`}
                       >
                         <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
@@ -569,7 +576,7 @@ const EnhancedPatientsPage: React.FC = () => {
                               <span className="text-white text-xs lg:text-sm font-semibold">{getInitials(patient.name)}</span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs lg:text-sm font-medium text-white truncate max-w-[120px] lg:max-w-none">{patient.name}</p>
+                              <p className="text-xs lg:text-sm font-medium theme-text-primary truncate max-w-[120px] lg:max-w-none">{patient.name}</p>
                               {isToday(new Date(patient.created_at)) && (
                                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] lg:text-xs font-medium bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
                                   New
@@ -579,15 +586,15 @@ const EnhancedPatientsPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
-                          <span className="text-xs lg:text-sm text-gray-300">
+                          <span className="text-xs lg:text-sm theme-text-secondary">
                             {patient.age !== null ? `${patient.age} ans` : 'N/A'}
                           </span>
                         </td>
                         <td className="hidden lg:table-cell px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-300">{patient.gender || 'N/A'}</span>
+                          <span className="text-sm theme-text-secondary">{patient.gender || 'N/A'}</span>
                         </td>
                         <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
-                          <span className="text-xs lg:text-sm text-gray-300 truncate max-w-[100px] lg:max-w-none block">{patient.condition}</span>
+                          <span className="text-xs lg:text-sm theme-text-secondary truncate max-w-[100px] lg:max-w-none block">{patient.condition}</span>
                         </td>
                         <td className="px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 lg:px-3 py-0.5 lg:py-1 rounded-full text-[10px] lg:text-xs font-medium border ${getStatusColor(patient.status)}`}>
@@ -595,7 +602,7 @@ const EnhancedPatientsPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="hidden lg:table-cell px-3 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-300">
+                          <span className="text-sm theme-text-secondary">
                             {format(new Date(patient.last_visit), 'MMM dd, yyyy')}
                           </span>
                         </td>
@@ -645,11 +652,11 @@ const EnhancedPatientsPage: React.FC = () => {
           {/* Patient Cards - Mobile */}
           <div className="md:hidden space-y-3">
             {loading ? (
-              <div className="bg-[#1e293b] rounded-xl border border-[#334155] p-6 text-center text-gray-400">
+              <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] p-6 text-center theme-text-muted">
                 Chargement...
               </div>
             ) : filteredAndSortedPatients.length === 0 ? (
-              <div className="bg-[#1e293b] rounded-xl border border-[#334155] p-6 text-center text-gray-400">
+              <div className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] p-6 text-center theme-text-muted">
                 Aucun patient trouvé
               </div>
             ) : (
@@ -660,7 +667,7 @@ const EnhancedPatientsPage: React.FC = () => {
                     setSelectedPatient(patient);
                     setShowDetailModal(true);
                   }}
-                  className="bg-[#1e293b] rounded-xl border border-[#334155] p-4 cursor-pointer hover:bg-[#334155]/30 transition-colors active:scale-[0.98]"
+                  className="bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)] p-4 cursor-pointer hover:bg-[var(--bg-tertiary)]/30 transition-colors active:scale-[0.98]"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -668,8 +675,8 @@ const EnhancedPatientsPage: React.FC = () => {
                         <span className="text-white text-sm font-semibold">{getInitials(patient.name)}</span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{patient.name}</p>
-                        <p className="text-xs text-gray-400">{patient.patient_id} &middot; {patient.age !== null ? `${patient.age} ans` : 'Age N/A'}</p>
+                        <p className="text-sm font-medium theme-text-primary truncate">{patient.name}</p>
+                        <p className="text-xs theme-text-muted">{patient.patient_id} &middot; {patient.age !== null ? `${patient.age} ans` : 'Age N/A'}</p>
                       </div>
                     </div>
                     <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border flex-shrink-0 ${getStatusColor(patient.status)}`}>
@@ -677,7 +684,7 @@ const EnhancedPatientsPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
-                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                    <div className="flex items-center gap-4 text-xs theme-text-muted">
                       <span>{patient.condition}</span>
                       <span>{format(new Date(patient.last_visit), 'dd/MM/yyyy')}</span>
                     </div>
@@ -736,17 +743,17 @@ const EnhancedPatientsPage: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && patientToDelete && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-2xl shadow-2xl border border-[#334155] w-full max-w-md">
+          <div className="bg-gradient-to-br from-[var(--bg-primary)] to-[var(--bg-secondary)] rounded-2xl shadow-2xl border border-[var(--border-color)] w-full max-w-md">
             <div className="p-6">
               <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertCircle className="text-red-500" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-white text-center mb-2">
+              <h3 className="text-xl font-bold theme-text-primary text-center mb-2">
                 Confirmer la suppression
               </h3>
-              <p className="text-gray-400 text-center mb-6">
+              <p className="theme-text-muted text-center mb-6">
                 Êtes-vous sûr de vouloir supprimer le patient{' '}
-                <span className="font-semibold text-white">{patientToDelete.name}</span>?
+                <span className="font-semibold theme-text-primary">{patientToDelete.name}</span>?
                 <br />
                 Cette action est irréversible.
               </p>
@@ -754,7 +761,7 @@ const EnhancedPatientsPage: React.FC = () => {
                 <button
                   onClick={handleDeleteCancel}
                   disabled={deleteLoading}
-                  className="flex-1 px-4 py-2.5 bg-[#334155] hover:bg-[#475569] text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2.5 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] theme-text-primary rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Annuler
                 </button>

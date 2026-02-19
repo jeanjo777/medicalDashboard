@@ -41,19 +41,19 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
   if (filters.pathology) activeBadges.push({ label: filters.pathology, key: 'pathology' });
   if (filters.severity) activeBadges.push({ label: `Sévérité: ${filters.severity}`, key: 'severity' });
 
-  const inputClass = "w-full px-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const inputClass = "w-full px-4 py-2 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500";
 
   return (
-    <div className="bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 p-6 animate-in slide-in-from-top-2 duration-300">
+    <div className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)] p-6 animate-in slide-in-from-top-2 duration-300">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <Sliders size={20} className="text-blue-500" />
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Filtres Avancés</h3>
+            <h3 className="text-lg font-semibold theme-text-primary">Filtres Avancés</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white"
+            className="p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors theme-text-muted hover:text-[var(--text-primary)]"
           >
             <X size={20} />
           </button>
@@ -61,7 +61,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               <Calendar size={16} className="inline mr-2" />
               Date de début
             </label>
@@ -74,7 +74,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               <Calendar size={16} className="inline mr-2" />
               Date de fin
             </label>
@@ -87,7 +87,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               <Activity size={16} className="inline mr-2" />
               Département
             </label>
@@ -104,7 +104,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               <Users size={16} className="inline mr-2" />
               Médecin
             </label>
@@ -121,7 +121,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               <Activity size={16} className="inline mr-2" />
               Pathologie
             </label>
@@ -138,7 +138,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium theme-text-primary mb-2">
               <AlertCircle size={16} className="inline mr-2" />
               Sévérité
             </label>
@@ -156,7 +156,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
         </div>
 
         <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-3">
+          <label className="block text-sm font-medium theme-text-primary mb-3">
             <Sliders size={16} className="inline mr-2" />
             Tranche d'âge: {filters.ageRange[0]} - {filters.ageRange[1]} ans
           </label>
@@ -182,7 +182,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
 
         {activeBadges.length > 0 && (
           <div className="mb-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Filtres actifs:</p>
+            <p className="text-sm theme-text-muted mb-2">Filtres actifs:</p>
             <div className="flex flex-wrap gap-2">
               {activeBadges.map((badge) => (
                 <span
@@ -212,7 +212,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({ filters, setFilters, 
         <div className="flex justify-end gap-3">
           <button
             onClick={handleReset}
-            className="px-6 py-2 bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white rounded-lg transition-colors"
+            className="px-6 py-2 bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] rounded-lg transition-colors"
           >
             Réinitialiser
           </button>

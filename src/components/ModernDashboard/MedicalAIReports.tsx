@@ -28,13 +28,23 @@ const MedicalAIReports: React.FC<MedicalAIReportsProps> = ({
   reports = defaultReports,
   onCopy,
 }) => {
+  const handleCopy = () => {
+    if (onCopy) {
+      onCopy();
+      return;
+    }
+    const text = reports.map(r => `${r.label}: ${r.progress}%`).join('\n');
+    navigator.clipboard.writeText(text);
+  };
+
   return (
     <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold theme-text-primary">Rapports IA</h2>
         <button
-          onClick={onCopy}
+          onClick={handleCopy}
           className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+          title="Copier les donnees"
         >
           <Copy className="h-3.5 w-3.5 theme-text-muted" />
         </button>

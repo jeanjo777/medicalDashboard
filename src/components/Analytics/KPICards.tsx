@@ -98,7 +98,7 @@ const KPICards: React.FC<KPICardsProps> = ({ isDemoMode = false, demoData }) => 
 
             <div className="relative z-10">
               <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 bg-[#0f172a]/80 rounded-xl ${kpi.iconColor} group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`p-3 bg-[var(--bg-primary)]/80 rounded-xl ${kpi.iconColor} group-hover:scale-110 transition-transform duration-300`}>
                   <Icon size={24} />
                 </div>
                 {kpi.badge && (
@@ -109,9 +109,9 @@ const KPICards: React.FC<KPICardsProps> = ({ isDemoMode = false, demoData }) => 
                 )}
               </div>
 
-              <h3 className="text-gray-400 text-sm font-medium mb-2">{kpi.title}</h3>
+              <h3 className="theme-text-muted text-sm font-medium mb-2">{kpi.title}</h3>
               <div className="flex items-end justify-between">
-                <p className="text-3xl font-bold text-white tracking-tight">{kpi.value}</p>
+                <p className="text-3xl font-bold theme-text-primary tracking-tight">{kpi.value}</p>
                 <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${kpi.isPositive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
                   <TrendIcon size={14} />
                   <span className="text-sm font-semibold">{kpi.change}</span>
@@ -119,7 +119,7 @@ const KPICards: React.FC<KPICardsProps> = ({ isDemoMode = false, demoData }) => 
               </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800/50 rounded-b-xl overflow-hidden">
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-[var(--border-color)]/50 rounded-b-xl overflow-hidden">
               <div
                 className={`h-full ${kpi.isPositive ? 'bg-emerald-500' : 'bg-red-500'} transition-all duration-1000 ease-out`}
                 style={{ width: `${Math.min(Math.abs(parseFloat(kpi.change)), 100)}%` }}

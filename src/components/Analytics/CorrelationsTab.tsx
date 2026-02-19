@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line, Area, AreaChart, ComposedChart, Bar } from 'recharts';
-import { TrendingUp, ArrowUpRight, ArrowDownRight, Sparkles, Target, Lightbulb, GitBranch, Activity, Zap, Loader, AlertCircle, RefreshCw } from 'lucide-react';
+import { TrendingUp, ArrowUpRight, ArrowDownRight, Sparkles, Target, Lightbulb, GitBranch, Activity, Zap } from 'lucide-react';
 import ExportButton from '../Common/ExportButton';
 import { demoCorrelations } from '../../data/demoData';
 import { useCorrelations } from '../../hooks/useAnalyticsData';
@@ -13,7 +13,7 @@ interface CorrelationsTabProps {
 
 const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode = false }) => {
   const [selectedCorrelation, setSelectedCorrelation] = useState<number>(0);
-  const { data: apiData, isLoading, isError, refetch } = useCorrelations();
+  const { data: apiData } = useCorrelations();
 
   const correlationData = useMemo(() => {
     if (isDemoMode) return demoCorrelations;
@@ -47,43 +47,16 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
     if (abs >= 0.8) return { label: 'Très forte', color: 'text-purple-600', bg: 'bg-purple-100' };
     if (abs >= 0.6) return { label: 'Forte', color: 'text-blue-600', bg: 'bg-blue-100' };
     if (abs >= 0.4) return { label: 'Modérée', color: 'text-amber-600', bg: 'bg-amber-100' };
-    return { label: 'Faible', color: 'text-gray-600', bg: 'bg-gray-100' };
+    return { label: 'Faible', color: 'theme-text-secondary', bg: 'bg-gray-100' };
   };
-
-  if (!isDemoMode && isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <Loader className="animate-spin text-blue-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-600">Calcul des corrélations en cours...</p>
-          <p className="text-xs text-gray-500 mt-2">Analyse des relations entre métriques</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isDemoMode && isError && !apiData) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <AlertCircle className="text-red-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-800 font-medium mb-2">Erreur lors du chargement des corrélations</p>
-          <p className="text-gray-500 text-sm mb-4">Vérifiez votre connexion et réessayez</p>
-          <button type="button" onClick={() => refetch()} className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto">
-            <RefreshCw size={16} /> Réessayer
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Analyse des Corrélations</h2>
-          <p className="text-gray-500 text-sm mt-1">Relations entre les différentes métriques</p>
+          <h2 className="text-xl font-bold theme-text-primary">Analyse des Corrélations</h2>
+          <p className="theme-text-muted text-sm mt-1">Relations entre les différentes métriques</p>
         </div>
         <ExportButton
           data={exportData}
@@ -95,46 +68,46 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
 
       {/* Mini Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
               <ArrowUpRight size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Corrélations +</p>
+              <p className="text-xs theme-text-muted">Corrélations +</p>
               <p className="text-xl font-bold text-emerald-600">{stats.positiveCount}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg">
               <ArrowDownRight size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Corrélations -</p>
+              <p className="text-xs theme-text-muted">Corrélations -</p>
               <p className="text-xl font-bold text-red-600">{stats.negativeCount}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg">
               <Zap size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Fortes</p>
+              <p className="text-xs theme-text-muted">Fortes</p>
               <p className="text-xl font-bold text-purple-600">{stats.strongCount}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
               <Activity size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Coefficient Moy.</p>
+              <p className="text-xs theme-text-muted">Coefficient Moy.</p>
               <p className="text-xl font-bold text-blue-600">{stats.avgCoefficient}</p>
             </div>
           </div>
@@ -142,10 +115,10 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
       </div>
 
       {/* Scatter Chart */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Corrélation: Consultations vs Satisfaction</h3>
-          <p className="text-sm text-gray-500">Coefficient de corrélation: 0.78 (forte corrélation positive)</p>
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <h3 className="text-lg font-semibold theme-text-primary mb-1">Corrélation: Consultations vs Satisfaction</h3>
+          <p className="text-sm theme-text-muted">Coefficient de corrélation: 0.78 (forte corrélation positive)</p>
         </div>
 
         <div className="p-5">
@@ -161,33 +134,33 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
                   <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.6}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
               <XAxis
                 type="number"
                 dataKey="x"
                 name="Consultations"
-                stroke="#6b7280"
+                stroke="var(--text-muted)"
                 tick={{ fontSize: 12 }}
-                label={{ value: 'Nombre de consultations', position: 'insideBottom', offset: -10, fill: '#6b7280', fontSize: 12 }}
+                label={{ value: 'Nombre de consultations', position: 'insideBottom', offset: -10, fill: 'var(--text-muted)', fontSize: 12 }}
               />
               <YAxis
                 type="number"
                 dataKey="y"
                 name="Satisfaction"
-                stroke="#6b7280"
+                stroke="var(--text-muted)"
                 tick={{ fontSize: 12 }}
-                label={{ value: 'Satisfaction (%)', angle: -90, position: 'insideLeft', fill: '#6b7280', fontSize: 12 }}
+                label={{ value: 'Satisfaction (%)', angle: -90, position: 'insideLeft', fill: 'var(--text-muted)', fontSize: 12 }}
               />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xl">
-                        <p className="text-gray-800 font-semibold mb-2">{data.name}</p>
+                      <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 shadow-xl">
+                        <p className="theme-text-primary font-semibold mb-2">{data.name}</p>
                         <div className="space-y-1">
-                          <p className="text-sm text-gray-600">Consultations: <span className="font-medium text-gray-800">{data.x}</span></p>
-                          <p className="text-sm text-gray-600">Satisfaction: <span className="font-medium text-gray-800">{data.y}%</span></p>
+                          <p className="text-sm theme-text-secondary">Consultations: <span className="font-medium theme-text-primary">{data.x}</span></p>
+                          <p className="text-sm theme-text-secondary">Satisfaction: <span className="font-medium theme-text-primary">{data.y}%</span></p>
                           <p className="text-sm text-emerald-600 mt-2 font-medium">Note: {data.satisfaction}/5</p>
                         </div>
                       </div>
@@ -209,14 +182,14 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
           </ResponsiveContainer>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-[var(--border-color)]">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-emerald-500 rounded-full" />
-              <span className="text-sm text-gray-600">Satisfaction &ge; 4.7</span>
+              <span className="text-sm theme-text-secondary">Satisfaction &ge; 4.7</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-500 rounded-full" />
-              <span className="text-sm text-gray-600">Satisfaction &lt; 4.7</span>
+              <span className="text-sm theme-text-secondary">Satisfaction &lt; 4.7</span>
             </div>
           </div>
         </div>
@@ -229,7 +202,7 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
           return (
             <div
               key={index}
-              className={`bg-white rounded-xl border-2 p-5 transition-all hover:shadow-lg cursor-pointer ${
+              className={`bg-[var(--bg-secondary)] rounded-xl border-2 p-5 transition-all hover:shadow-lg cursor-pointer ${
                 selectedCorrelation === index
                   ? corr.type === 'positive' ? 'border-emerald-300' : 'border-red-300'
                   : 'border-gray-200 hover:border-indigo-200'
@@ -246,9 +219,9 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
                         <ArrowDownRight size={18} className="text-red-600" />
                       )}
                     </div>
-                    <h3 className="text-gray-800 font-semibold">{corr.metric1} ↔ {corr.metric2}</h3>
+                    <h3 className="theme-text-primary font-semibold">{corr.metric1} ↔ {corr.metric2}</h3>
                   </div>
-                  <p className="text-sm text-gray-500 leading-relaxed">{corr.description}</p>
+                  <p className="text-sm theme-text-muted leading-relaxed">{corr.description}</p>
                 </div>
                 <div className={`
                   px-3 py-1.5 rounded-full text-sm font-bold
@@ -259,12 +232,12 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
               </div>
 
               {/* Insight */}
-              <div className="p-3 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl mb-4">
+              <div className="p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl mb-4">
                 <div className="flex items-start gap-2">
                   <Lightbulb size={16} className="text-indigo-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-xs text-indigo-600 font-semibold mb-1">Recommandation IA</p>
-                    <p className="text-sm text-gray-700">{corr.insight}</p>
+                    <p className="text-sm theme-text-secondary">{corr.insight}</p>
                   </div>
                 </div>
               </div>
@@ -272,12 +245,12 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
               {/* Progress Bar */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-gray-500">Force de corrélation</span>
+                  <span className="text-xs theme-text-muted">Force de corrélation</span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${strength.bg} ${strength.color}`}>
                     {strength.label}
                   </span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5 overflow-hidden">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ${
                       corr.type === 'positive'
@@ -349,14 +322,14 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
       </div>
 
       {/* Correlation Matrix */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
             <GitBranch size={20} className="text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-800">Matrice de Corrélation</h3>
-            <p className="text-sm text-gray-500">Vue d'ensemble des relations entre métriques</p>
+            <h3 className="font-semibold theme-text-primary">Matrice de Corrélation</h3>
+            <p className="text-sm theme-text-muted">Vue d'ensemble des relations entre métriques</p>
           </div>
         </div>
 
@@ -376,7 +349,7 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
               <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${metrics.length}, minmax(0, 1fr))` }}>
                 {metrics.map((metric, i) => (
                   <div key={i} className="text-center">
-                    <div className="text-xs text-gray-500 mb-2 truncate" title={metric}>{metric.length > 10 ? metric.slice(0, 10) + '.' : metric}</div>
+                    <div className="text-xs theme-text-muted mb-2 truncate" title={metric}>{metric.length > 10 ? metric.slice(0, 10) + '.' : metric}</div>
                     {metrics.map((metric2, j) => {
                       const val = i === j ? 1 : (coeffMap.get(`${metric}|${metric2}`) ?? 0);
                       const intensity = Math.abs(val);
@@ -388,7 +361,7 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode =
                             i === j
                               ? 'bg-gray-800 text-white'
                               : val === 0
-                              ? 'bg-gray-50 text-gray-400'
+                              ? 'bg-[var(--bg-primary)] text-gray-400'
                               : isPositive
                               ? intensity > 0.6 ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-50 text-emerald-600'
                               : intensity > 0.4 ? 'bg-red-100 text-red-700' : 'bg-red-50 text-red-600'

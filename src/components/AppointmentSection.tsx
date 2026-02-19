@@ -69,17 +69,18 @@ const AppointmentSection: React.FC = () => {
       }
 
       // Optionnel: envoyer également au webhook pour notification immédiate
-      try {
-        await fetch('https://autoentreprise.app.n8n.cloud/webhook/5735518c-4123-4a69-b7f9-a1568339f2d5', {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(appointmentData)
-        });
-      } catch (webhookError) {
-        logger.info('Webhook notification échouée (données sauvegardées dans la base):', webhookError);
+      const webhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
+      if (webhookUrl) {
+        try {
+          await fetch(webhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(appointmentData)
+          });
+        } catch {
+          // Webhook optionnel — données déjà sauvegardées en base
+        }
       }
 
       setFormSubmitted(true);

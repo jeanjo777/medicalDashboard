@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Phone, Mail, MapPin, Edit, Printer, Download, Activity, Heart, Droplet, Weight, Ruler, Calendar, User, AlertCircle, Pill, FileText, TrendingUp } from 'lucide-react';
+import { X, Phone, Mail, MapPin, Printer, Download, Activity, Heart, Droplet, Weight, Ruler, Calendar, User, AlertCircle, Pill, FileText, TrendingUp } from 'lucide-react';
 
 interface PatientDetailModalProps {
   isOpen: boolean;
@@ -170,14 +170,6 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
             <div className="flex gap-2">
               <button
                 type="button"
-                className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all backdrop-blur-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50"
-                title="Modifier"
-                aria-label="Modifier le patient"
-              >
-                <Edit size={18} />
-              </button>
-              <button
-                type="button"
                 onClick={() => window.print()}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all backdrop-blur-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50"
                 title="Imprimer"
@@ -187,8 +179,18 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
               </button>
               <button
                 type="button"
+                onClick={() => {
+                  const content = `DOSSIER PATIENT\n${'='.repeat(40)}\nNom: ${patient.name}\nEmail: ${patient.email}\nTéléphone: ${patient.phone}\nÂge: ${age} ans\nGenre: ${patient.gender || 'Non spécifié'}\nStatut: ${patient.status}\nPathologie: ${patient.primary_pathology || 'Non spécifiée'}\n\nDate d'export: ${new Date().toLocaleDateString('fr-FR')}`;
+                  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `dossier_${patient.name?.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
                 className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all backdrop-blur-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50"
-                title="Exporter en PDF"
+                title="Exporter le dossier"
                 aria-label="Exporter le dossier"
               >
                 <Download size={18} />
@@ -314,7 +316,16 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
                             {entry.type}
                           </span>
                         </div>
-                        <button type="button" className="text-blue-400 hover:text-blue-300 text-sm font-medium cursor-pointer hover:underline">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const el = document.getElementById(`history-detail-${entry.id}`);
+                            if (el) {
+                              el.classList.toggle('hidden');
+                            }
+                          }}
+                          className="text-blue-400 hover:text-blue-300 text-sm font-medium cursor-pointer hover:underline"
+                        >
                           Voir détails
                         </button>
                       </div>

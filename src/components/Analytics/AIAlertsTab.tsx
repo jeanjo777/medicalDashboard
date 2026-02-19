@@ -153,11 +153,11 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
         };
       default:
         return {
-          bg: 'bg-gray-50',
-          border: 'border-gray-200',
+          bg: 'bg-[var(--bg-primary)]',
+          border: 'border-[var(--border-color)]',
           icon: 'bg-gray-500',
-          text: 'text-gray-700',
-          badge: 'bg-gray-100 text-gray-700 border-gray-200',
+          text: 'theme-text-secondary',
+          badge: 'bg-[var(--bg-tertiary)] theme-text-secondary border-[var(--border-color)]',
           label: 'Info'
         };
     }
@@ -224,57 +224,57 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
     <div className="space-y-6">
       {/* Header avec statistiques */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
               <Bell size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Total Alertes</p>
-              <p className="text-xl font-bold text-gray-800">{stats.total}</p>
+              <p className="text-xs theme-text-muted">Total Alertes</p>
+              <p className="text-xl font-bold theme-text-primary">{stats.total}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-red-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-red-200 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg">
               <AlertTriangle size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Critiques</p>
+              <p className="text-xs theme-text-muted">Critiques</p>
               <p className="text-xl font-bold text-red-600">{stats.critical}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-orange-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-orange-200 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-600 rounded-lg">
               <Zap size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Priorité haute</p>
+              <p className="text-xs theme-text-muted">Priorité haute</p>
               <p className="text-xl font-bold text-orange-600">{stats.high}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-blue-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-blue-200 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
               <Eye size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Non lues</p>
+              <p className="text-xs theme-text-muted">Non lues</p>
               <p className="text-xl font-bold text-blue-600">{stats.unread}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-4 border border-purple-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-purple-200 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
               <CheckCircle size={18} className="text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Actions requises</p>
+              <p className="text-xs theme-text-muted">Actions requises</p>
               <p className="text-xl font-bold text-purple-600">{stats.actionRequired}</p>
             </div>
           </div>
@@ -282,7 +282,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
       </div>
 
       {/* Filtres */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+      <div className="bg-[var(--bg-secondary)] rounded-xl p-4 border border-[var(--border-color)] shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             <Filter size={16} className="text-gray-400" />
@@ -292,7 +292,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 selectedFilter === 'all'
                   ? 'bg-indigo-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-[var(--bg-tertiary)] theme-text-secondary hover:bg-[var(--bg-tertiary)]'
               }`}
             >
               Toutes ({stats.total})
@@ -348,7 +348,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
               type="button"
               onClick={() => setShowReadAlerts(!showReadAlerts)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
-                showReadAlerts ? 'bg-gray-100 text-gray-600' : 'bg-indigo-100 text-indigo-600'
+                showReadAlerts ? 'bg-[var(--bg-tertiary)] theme-text-secondary' : 'bg-indigo-100 text-indigo-600'
               }`}
             >
               {showReadAlerts ? <Eye size={14} /> : <EyeOff size={14} />}
@@ -359,7 +359,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
               onClick={() => refetch()}
               disabled={isLoading}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all ${
-                isLoading ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                isLoading ? 'bg-blue-100 text-blue-600' : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)] theme-text-secondary'
               }`}
             >
               <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
@@ -372,10 +372,10 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
       {/* Liste des alertes */}
       <div className="space-y-4">
         {filteredAlerts.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
+          <div className="bg-[var(--bg-secondary)] rounded-2xl p-12 text-center border border-[var(--border-color)]">
             <CheckCircle size={48} className="mx-auto text-emerald-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Aucune alerte</h3>
-            <p className="text-gray-500 text-sm">Toutes les alertes ont été traitées ou filtrées.</p>
+            <h3 className="text-lg font-semibold theme-text-primary mb-2">Aucune alerte</h3>
+            <p className="theme-text-muted text-sm">Toutes les alertes ont été traitées ou filtrées.</p>
           </div>
         ) : (
           filteredAlerts.map((alert: AIAlert) => {
@@ -386,7 +386,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
             return (
               <div
                 key={alert.id}
-                className={`bg-white rounded-xl border ${config.border} overflow-hidden transition-all duration-300 hover:shadow-lg ${
+                className={`bg-[var(--bg-secondary)] rounded-xl border ${config.border} overflow-hidden transition-all duration-300 hover:shadow-lg ${
                   !alert.isRead ? 'ring-2 ring-indigo-200' : ''
                 }`}
               >
@@ -404,19 +404,19 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                             {!alert.isRead && (
                               <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
                             )}
-                            <h3 className="font-semibold text-gray-800">{alert.title}</h3>
+                            <h3 className="font-semibold theme-text-primary">{alert.title}</h3>
                           </div>
-                          <p className="text-sm text-gray-600 mb-3">{alert.description}</p>
+                          <p className="text-sm theme-text-secondary mb-3">{alert.description}</p>
 
                           <div className="flex items-center gap-3 flex-wrap">
                             <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${config.badge}`}>
                               {config.label}
                             </span>
-                            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
+                            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--bg-tertiary)] rounded-full text-xs theme-text-secondary">
                               <CategoryIcon size={12} />
                               {getCategoryLabel(alert.category)}
                             </span>
-                            <span className="flex items-center gap-1.5 text-xs text-gray-500">
+                            <span className="flex items-center gap-1.5 text-xs theme-text-muted">
                               <Clock size={12} />
                               {formatTimeAgo(alert.timestamp)}
                             </span>
@@ -447,28 +447,28 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
 
                 {/* Contenu étendu */}
                 {isExpanded && (
-                  <div className="p-5 border-t border-gray-100 bg-white">
+                  <div className="p-5 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Métriques */}
                       {alert.metrics && (
                         <div className="space-y-3">
-                          <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                          <h4 className="text-sm font-semibold theme-text-primary flex items-center gap-2">
                             <Activity size={14} className="text-indigo-500" />
                             Métriques
                           </h4>
-                          <div className="bg-gray-50 rounded-xl p-4">
+                          <div className="bg-[var(--bg-primary)] rounded-xl p-4">
                             <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm text-gray-600">Valeur actuelle</span>
+                              <span className="text-sm theme-text-secondary">Valeur actuelle</span>
                               <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold text-gray-800">{alert.metrics.current}</span>
+                                <span className="text-lg font-bold theme-text-primary">{alert.metrics.current}</span>
                                 {getTrendIcon(alert.metrics.trend)}
                               </div>
                             </div>
                             <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm text-gray-600">Seuil d'alerte</span>
+                              <span className="text-sm theme-text-secondary">Seuil d'alerte</span>
                               <span className="text-lg font-bold text-red-500">{alert.metrics.threshold}</span>
                             </div>
-                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all duration-500 ${
                                   alert.metrics.current > alert.metrics.threshold ? 'bg-red-500' : 'bg-emerald-500'
@@ -483,7 +483,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                       {/* Départements affectés */}
                       {alert.affectedDepartments && alert.affectedDepartments.length > 0 && (
                         <div className="space-y-3">
-                          <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                          <h4 className="text-sm font-semibold theme-text-primary flex items-center gap-2">
                             <Building2 size={14} className="text-indigo-500" />
                             Départements concernés
                           </h4>
@@ -503,7 +503,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                       {/* Recommandations */}
                       {alert.recommendations && alert.recommendations.length > 0 && (
                         <div className="md:col-span-2 space-y-3">
-                          <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                          <h4 className="text-sm font-semibold theme-text-primary flex items-center gap-2">
                             <Sparkles size={14} className="text-indigo-500" />
                             Recommandations IA
                           </h4>
@@ -511,12 +511,12 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                             {alert.recommendations.map((rec, idx) => (
                               <div
                                 key={idx}
-                                className="flex items-start gap-3 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-100"
+                                className="flex items-start gap-3 p-3 bg-[var(--bg-primary)] rounded-lg border border-indigo-100"
                               >
                                 <div className="w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">
                                   {idx + 1}
                                 </div>
-                                <p className="text-sm text-gray-700">{rec}</p>
+                                <p className="text-sm theme-text-secondary">{rec}</p>
                               </div>
                             ))}
                           </div>
@@ -525,7 +525,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[var(--border-color)]">
                       <button
                         type="button"
                         onClick={() => handleTakeCharge(alert.id)}
@@ -543,7 +543,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                         onClick={() => handleMarkAsRead(alert.id)}
                         disabled={alert.isRead}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                          alert.isRead ? 'bg-gray-50 text-gray-400 cursor-default' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          alert.isRead ? 'bg-[var(--bg-primary)] text-gray-400 cursor-default' : 'bg-[var(--bg-tertiary)] theme-text-secondary hover:bg-[var(--bg-tertiary)]'
                         }`}
                       >
                         {alert.isRead ? 'Lu' : 'Marquer comme lu'}
@@ -551,7 +551,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
                       <button
                         type="button"
                         onClick={() => handleDismiss(alert.id)}
-                        className="px-4 py-2 text-gray-500 hover:text-red-600 text-sm transition-all"
+                        className="px-4 py-2 theme-text-muted hover:text-red-600 text-sm transition-all"
                       >
                         Ignorer
                       </button>

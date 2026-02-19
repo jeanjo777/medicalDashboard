@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react';
-import { Settings, Activity, Building2 } from 'lucide-react';
+import { Activity, Building2 } from 'lucide-react';
 
 interface MetricData {
   label: string;
@@ -74,13 +74,10 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
   return (
     <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 sm:p-5 shadow-sm transition-colors duration-300">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4">
         <h2 className="text-base sm:text-lg font-semibold theme-text-primary">
           Vue d'ensemble
         </h2>
-        <button className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer">
-          <Settings className="h-4 w-4 theme-text-muted" />
-        </button>
       </div>
 
       {/* Tabs */}

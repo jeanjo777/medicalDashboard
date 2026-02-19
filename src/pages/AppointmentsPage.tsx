@@ -290,7 +290,7 @@ const AppointmentsPage: React.FC = () => {
 
   const handleEditAppointment = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
-    setShowDetailModal(true);
+    setShowEditModal(true);
   };
 
   const handleCancelClick = (appointment: Appointment) => {

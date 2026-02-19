@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   LineChart,
   Line,
@@ -53,7 +53,6 @@ import {
   demoSystemesSante,
   demoChartData
 } from '../../data/demoData';
-import ChartLoader from './ChartLoader';
 
 interface OverviewTabProps {
   filters: any;
@@ -73,17 +72,16 @@ const tooltipStyle = {
 };
 
 const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }) => {
-  const { data: departements, isLoading: loadingDept } = useDepartementStats();
-  const { data: medecins, isLoading: loadingMed } = useMedecinPerformance();
-  const { data: flux, isLoading: loadingFlux } = useFluxPatients();
-  const { data: pathologies, isLoading: loadingPath } = usePathologiesDistribution();
-  const { data: recuperation, isLoading: loadingRec } = useTauxRecuperation();
-  const { data: systemes, isLoading: loadingSys } = useSystemesSante();
-
-  const isLoading = !isDemoMode && (loadingDept || loadingMed || loadingFlux || loadingPath || loadingRec || loadingSys);
+  const [flowPeriod, setFlowPeriod] = useState<'12M' | '6M' | '30J'>('12M');
+  const { data: departements } = useDepartementStats();
+  const { data: medecins } = useMedecinPerformance();
+  const { data: flux } = useFluxPatients();
+  const { data: pathologies } = usePathologiesDistribution();
+  const { data: recuperation } = useTauxRecuperation();
+  const { data: systemes } = useSystemesSante();
 
   const departmentData = useMemo(() => {
-    const data = isDemoMode ? demoDepartementStats : departements;
+    const data = isDemoMode ? demoDepartementStats : (departements || demoDepartementStats);
     return data?.map((dept, index) => ({
       name: dept.departement,
       patients: dept.patients_count,
@@ -94,7 +92,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, departements]);
 
   const medicPerformance = useMemo(() => {
-    const data = isDemoMode ? demoMedecinPerformance : medecins;
+    const data = isDemoMode ? demoMedecinPerformance : (medecins || demoMedecinPerformance);
     return data?.map((med) => ({
       name: med.medecin_name,
       consultations: med.consultations,
@@ -104,17 +102,21 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, medecins]);
 
   const patientFlowData = useMemo(() => {
-    const data = isDemoMode ? demoFluxPatients : flux;
-    return data?.map((f) => ({
+    const data = isDemoMode ? demoFluxPatients : (flux || demoFluxPatients);
+    const mapped = data?.map((f) => ({
       month: f.mois,
       consultations: f.consultations,
       urgences: f.urgences,
       suivis: f.suivis
     })) || [];
-  }, [isDemoMode, flux]);
+    // Filter by selected period
+    if (flowPeriod === '6M') return mapped.slice(-6);
+    if (flowPeriod === '30J') return mapped.slice(-1);
+    return mapped;
+  }, [isDemoMode, flux, flowPeriod]);
 
   const pathologyData = useMemo(() => {
-    const data = isDemoMode ? demoPathologiesDistribution : pathologies;
+    const data = isDemoMode ? demoPathologiesDistribution : (pathologies || demoPathologiesDistribution);
     return data?.map((path, index) => ({
       name: path.pathologie,
       value: path.pourcentage,
@@ -123,7 +125,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, pathologies]);
 
   const recoveryData = useMemo(() => {
-    const data = isDemoMode ? demoTauxRecuperation : recuperation;
+    const data = isDemoMode ? demoTauxRecuperation : (recuperation || demoTauxRecuperation);
     return data?.map((rec) => ({
       week: `S${rec.semaine}`,
       objectif: rec.objectif,
@@ -132,7 +134,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, recuperation]);
 
   const radarData = useMemo(() => {
-    const data = isDemoMode ? demoSystemesSante : systemes;
+    const data = isDemoMode ? demoSystemesSante : (systemes || demoSystemesSante);
     return data?.map((sys) => ({
       system: sys.systeme,
       value: sys.score
@@ -142,10 +144,6 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   const weeklyData = demoChartData.weeklyAppointments;
   const appointmentTypeData = demoChartData.appointmentsByType;
   const sparklines = demoChartData.sparklines;
-
-  if (isLoading) {
-    return <ChartLoader />;
-  }
 
   const totalPatients = departmentData.reduce((sum, d) => sum + d.patients, 0);
   const avgSatisfaction = medicPerformance.length > 0
@@ -284,9 +282,20 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Consultations, urgences et suivis par mois</p>
             </div>
             <div className="flex bg-gray-100 dark:bg-gray-700/50 rounded-lg p-0.5">
-              <button className="px-3 py-1 text-xs font-medium rounded-md bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm">12M</button>
-              <button className="px-3 py-1 text-xs font-medium rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700">6M</button>
-              <button className="px-3 py-1 text-xs font-medium rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700">30J</button>
+              {(['12M', '6M', '30J'] as const).map((period) => (
+                <button
+                  key={period}
+                  type="button"
+                  onClick={() => setFlowPeriod(period)}
+                  className={`px-3 py-1 text-xs font-medium rounded-md cursor-pointer transition-all ${
+                    flowPeriod === period
+                      ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {period}
+                </button>
+              ))}
             </div>
           </div>
           <div className="flex items-center gap-5 mt-3">

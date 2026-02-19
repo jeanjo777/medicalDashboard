@@ -25,18 +25,23 @@ import TodayPatientsWidget from '../components/ModernDashboard/TodayPatientsWidg
 import QuickActionsWidget from '../components/ModernDashboard/QuickActionsWidget';
 import NotificationsWidget from '../components/ModernDashboard/NotificationsWidget';
 import UserMenu from '../components/Common/UserMenu';
+import { GlobalSearch } from '../components/Common/GlobalSearch';
+import { NotificationCenter } from '../components/Common/NotificationCenter';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
+import { useToast } from '../components/Common/Toast';
 
 const ModernDashboardPageHybrid: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [showSearch, setShowSearch] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
     return saved ? JSON.parse(saved) : false;
   });
   const { user } = useMedicAuth();
+  const { showToast } = useToast();
 
   const userName = user
     ? `Dr. ${user.prenom || ''} ${user.nom || ''}`.trim() || 'Professionnel de santé'
@@ -69,13 +74,15 @@ const ModernDashboardPageHybrid: React.FC = () => {
 
             {/* Right: Actions */}
             <div className="flex items-center gap-2">
-              <button type="button" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Rechercher">
-                <Search className="h-4 w-4 theme-text-secondary" />
-              </button>
-              <button type="button" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Notifications">
-                <Bell className="h-4 w-4 theme-text-secondary" />
-              </button>
-              <button type="button" className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Aide">
+              {showSearch ? (
+                <GlobalSearch />
+              ) : (
+                <button type="button" onClick={() => setShowSearch(true)} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Rechercher">
+                  <Search className="h-4 w-4 theme-text-secondary" />
+                </button>
+              )}
+              <NotificationCenter />
+              <button type="button" onClick={() => showToast({ type: 'info', title: 'Aide', message: 'Pour toute assistance, contactez support@medicalai.fr ou consultez la documentation.' })} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Aide">
                 <HelpCircle className="h-4 w-4 theme-text-secondary" />
               </button>
               <UserMenu userName={userName} userInitials={userInitials} />
@@ -165,7 +172,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   {/* Add New Card */}
                   <div className="rounded-2xl border-2 border-dashed border-[var(--border-color)] theme-bg-secondary p-4 shadow-sm transition-colors duration-300">
                     <div className="flex items-center justify-center">
-                      <button type="button" className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Ajouter un widget">
+                      <button type="button" onClick={() => showToast({ type: 'info', title: 'Fonctionnalite a venir', message: 'L\'ajout de widgets personnalises sera disponible prochainement.' })} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Ajouter un widget">
                         <Plus className="h-5 w-5 theme-text-muted" />
                       </button>
                     </div>

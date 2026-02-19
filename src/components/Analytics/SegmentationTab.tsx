@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, RadialBarChart, RadialBar } from 'recharts';
-import { Users, TrendingUp, TrendingDown, Target, Filter, Sparkles, AlertCircle, Activity, Minus, Loader, RefreshCw } from 'lucide-react';
+import { Users, TrendingUp, TrendingDown, Target, Filter, Sparkles, Activity, Minus, AlertCircle } from 'lucide-react';
 import ExportButton from '../Common/ExportButton';
 import { demoSegmentation } from '../../data/demoData';
 import { useDynamicAnalytics, usePathologiesDistribution } from '../../hooks/useAnalyticsData';
@@ -12,7 +12,7 @@ interface SegmentationTabProps {
 }
 
 const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode = false }) => {
-  const { data: dynamicData, isLoading: dynLoading, isError: dynError, refetch: dynRefetch } = useDynamicAnalytics(filters);
+  const { data: dynamicData } = useDynamicAnalytics(filters);
   const { data: pathologiesData } = usePathologiesDistribution();
 
   const segmentData = useMemo(() => {
@@ -116,33 +116,6 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
       fill: r.fill
     })), [riskSegments]);
 
-  if (!isDemoMode && dynLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <Loader className="animate-spin text-blue-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-600">Chargement de la segmentation...</p>
-          <p className="text-xs text-gray-500 mt-2">Analyse démographique en cours</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isDemoMode && dynError && !dynamicData) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <AlertCircle className="text-red-500 mx-auto mb-4" size={48} />
-          <p className="text-gray-800 font-medium mb-2">Erreur lors du chargement de la segmentation</p>
-          <p className="text-gray-500 text-sm mb-4">Vérifiez votre connexion et réessayez</p>
-          <button type="button" onClick={() => dynRefetch()} className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 mx-auto">
-            <RefreshCw size={16} /> Réessayer
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case 'up': return <TrendingUp size={14} className="text-emerald-500" />;
@@ -156,8 +129,8 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">Segmentation des Patients</h2>
-          <p className="text-gray-500 text-sm mt-1">Analyse démographique et médicale</p>
+          <h2 className="text-xl font-bold theme-text-primary">Segmentation des Patients</h2>
+          <p className="theme-text-muted text-sm mt-1">Analyse démographique et médicale</p>
         </div>
         <ExportButton
           data={exportData}
@@ -169,50 +142,50 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
               <Users size={20} className="text-white" />
             </div>
-            <h3 className="text-gray-600 text-sm font-medium">Total Patients</h3>
+            <h3 className="theme-text-secondary text-sm font-medium">Total Patients</h3>
           </div>
-          <p className="text-3xl font-bold text-gray-800">{segmentData.totalPatients.toLocaleString()}</p>
+          <p className="text-3xl font-bold theme-text-primary">{segmentData.totalPatients.toLocaleString()}</p>
           <p className="text-sm text-emerald-600 mt-1 flex items-center gap-1">
             <TrendingUp size={14} />
             +{segmentData.monthlyGrowth}% vs mois dernier
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
               <Target size={20} className="text-white" />
             </div>
-            <h3 className="text-gray-600 text-sm font-medium">Segments Actifs</h3>
+            <h3 className="theme-text-secondary text-sm font-medium">Segments Actifs</h3>
           </div>
-          <p className="text-3xl font-bold text-gray-800">12</p>
-          <p className="text-sm text-gray-500 mt-1">Groupes démographiques</p>
+          <p className="text-3xl font-bold theme-text-primary">12</p>
+          <p className="text-sm theme-text-muted mt-1">Groupes démographiques</p>
         </div>
 
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg">
               <Activity size={20} className="text-white" />
             </div>
-            <h3 className="text-gray-600 text-sm font-medium">Segment Principal</h3>
+            <h3 className="theme-text-secondary text-sm font-medium">Segment Principal</h3>
           </div>
-          <p className="text-3xl font-bold text-gray-800">{mainSegment.range}</p>
+          <p className="text-3xl font-bold theme-text-primary">{mainSegment.range}</p>
           <p className="text-sm text-purple-600 mt-1">{mainSegment.percentage}% des patients</p>
         </div>
 
-        <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+        <div className="bg-[var(--bg-secondary)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="p-2 bg-gradient-to-br from-red-500 to-rose-600 rounded-lg">
               <AlertCircle size={20} className="text-white" />
             </div>
-            <h3 className="text-gray-600 text-sm font-medium">Risque Élevé</h3>
+            <h3 className="theme-text-secondary text-sm font-medium">Risque Élevé</h3>
           </div>
-          <p className="text-3xl font-bold text-gray-800">{riskSegments.find(r => r.level === 'Élevé')?.patients || 0}</p>
+          <p className="text-3xl font-bold theme-text-primary">{riskSegments.find(r => r.level === 'Élevé')?.patients || 0}</p>
           <p className="text-sm text-red-600 mt-1">Surveillance requise</p>
         </div>
       </div>
@@ -220,10 +193,10 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
       {/* Graphiques Age et Genre */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Segmentation par Âge */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Segmentation par Âge</h3>
-            <p className="text-sm text-gray-500">Distribution et croissance par tranche d'âge</p>
+        <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+            <h3 className="text-lg font-semibold theme-text-primary mb-1">Segmentation par Âge</h3>
+            <p className="text-sm theme-text-muted">Distribution et croissance par tranche d'âge</p>
           </div>
 
           <div className="p-5">
@@ -237,15 +210,16 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
                     </linearGradient>
                   ))}
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="range" stroke="#6b7280" tick={{ fontSize: 12 }} />
-                <YAxis stroke="#6b7280" tick={{ fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+                <XAxis dataKey="range" stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
+                <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12 }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '12px',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                    color: 'var(--text-primary)'
                   }}
                   formatter={(value: number) => [`${value} patients`, 'Patients']}
                 />
@@ -259,9 +233,9 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
 
             <div className="mt-4 grid grid-cols-5 gap-2">
               {ageSegments.map((segment, index) => (
-                <div key={index} className="text-center p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                  <p className="text-xs text-gray-500 mb-1">{segment.range}</p>
-                  <p className="text-sm font-bold text-gray-800">{segment.percentage}%</p>
+                <div key={index} className="text-center p-3 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors">
+                  <p className="text-xs theme-text-muted mb-1">{segment.range}</p>
+                  <p className="text-sm font-bold theme-text-primary">{segment.percentage}%</p>
                   <p className="text-xs text-emerald-600 mt-1">{segment.growth}</p>
                 </div>
               ))}
@@ -270,10 +244,10 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
         </div>
 
         {/* Segmentation par Genre */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
-            <h3 className="text-lg font-semibold text-gray-800 mb-1">Segmentation par Genre</h3>
-            <p className="text-sm text-gray-500">Répartition démographique</p>
+        <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+            <h3 className="text-lg font-semibold theme-text-primary mb-1">Segmentation par Genre</h3>
+            <p className="text-sm theme-text-muted">Répartition démographique</p>
           </div>
 
           <div className="p-5">
@@ -304,10 +278,11 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
                     borderRadius: '12px',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)'
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                    color: 'var(--text-primary)'
                   }}
                 />
               </PieChart>
@@ -315,14 +290,14 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
 
             <div className="mt-4 space-y-2">
               {genderSegments.map((segment, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                <div key={index} className="flex items-center justify-between p-3 bg-[var(--bg-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: segment.fill }} />
-                    <span className="text-gray-700 text-sm font-medium">{segment.name}</span>
+                    <span className="theme-text-secondary text-sm font-medium">{segment.name}</span>
                   </div>
                   <div className="text-right">
-                    <p className="text-gray-800 font-semibold">{segment.count.toLocaleString()}</p>
-                    <p className="text-xs text-gray-500">{segment.value}%</p>
+                    <p className="theme-text-primary font-semibold">{segment.count.toLocaleString()}</p>
+                    <p className="text-xs theme-text-muted">{segment.value}%</p>
                   </div>
                 </div>
               ))}
@@ -332,10 +307,10 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
       </div>
 
       {/* Segmentation par Risque */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-amber-50 to-orange-50">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Segmentation par Niveau de Risque</h3>
-          <p className="text-sm text-gray-500">Classification des patients selon le niveau de risque médical</p>
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <h3 className="text-lg font-semibold theme-text-primary mb-1">Segmentation par Niveau de Risque</h3>
+          <p className="text-sm theme-text-muted">Classification des patients selon le niveau de risque médical</p>
         </div>
 
         <div className="p-5">
@@ -357,14 +332,14 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
                   }`}>{segment.level}</h4>
                   <div className="w-4 h-4 rounded-full" style={{ backgroundColor: segment.fill }} />
                 </div>
-                <p className="text-4xl font-bold text-gray-800 mb-1">{segment.patients.toLocaleString()}</p>
-                <p className="text-sm text-gray-500 mb-4">patients</p>
+                <p className="text-4xl font-bold theme-text-primary mb-1">{segment.patients.toLocaleString()}</p>
+                <p className="text-sm theme-text-muted mb-4">patients</p>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">Pourcentage</span>
+                    <span className="theme-text-muted">Pourcentage</span>
                     <span className="font-semibold" style={{ color: segment.fill }}>{segment.percentage}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5 overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${segment.percentage}%`, backgroundColor: segment.fill }}
@@ -378,10 +353,10 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
       </div>
 
       {/* Segmentation par Pathologie */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-gray-100 bg-gradient-to-r from-teal-50 to-cyan-50">
-          <h3 className="text-lg font-semibold text-gray-800 mb-1">Segmentation par Pathologie</h3>
-          <p className="text-sm text-gray-500">Classification par type de condition médicale</p>
+      <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+        <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
+          <h3 className="text-lg font-semibold theme-text-primary mb-1">Segmentation par Pathologie</h3>
+          <p className="text-sm theme-text-muted">Classification par type de condition médicale</p>
         </div>
 
         <div className="p-5 space-y-3">
@@ -390,12 +365,12 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
             return (
               <div
                 key={index}
-                className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all"
+                className="p-4 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)] hover:border-indigo-200 hover:shadow-md transition-all"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex-1">
-                    <h4 className="text-gray-800 font-semibold mb-1">{segment.pathology}</h4>
-                    <p className="text-sm text-gray-500">{segment.patients.toLocaleString()} patients</p>
+                    <h4 className="theme-text-primary font-semibold mb-1">{segment.pathology}</h4>
+                    <p className="text-sm theme-text-muted">{segment.patients.toLocaleString()} patients</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
@@ -408,20 +383,20 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
                     <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
                       segment.trend === 'up' ? 'bg-emerald-100 text-emerald-700' :
                       segment.trend === 'down' ? 'bg-red-100 text-red-700' :
-                      'bg-gray-100 text-gray-600'
+                      'bg-gray-100 theme-text-secondary'
                     }`}>
                       {getTrendIcon(segment.trend)}
                       {segment.trend === 'up' ? 'En hausse' : segment.trend === 'down' ? 'En baisse' : 'Stable'}
                     </div>
                   </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-2.5 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500"
                     style={{ width: `${progressWidth}%` }}
                   />
                 </div>
-                <div className="mt-2 text-xs text-gray-500 text-right">{progressWidth.toFixed(1)}% du total</div>
+                <div className="mt-2 text-xs theme-text-muted text-right">{progressWidth.toFixed(1)}% du total</div>
               </div>
             );
           })}

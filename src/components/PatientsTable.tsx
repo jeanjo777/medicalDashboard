@@ -42,6 +42,7 @@ import { Search, Filter, ChevronDown, ChevronUp, Eye, Edit, Trash2, Plus, X } fr
 import { supabase } from '../lib/supabase';
 import PatientStatusBadge from './PatientStatusBadge';
 import AddPatientModal from './AddPatientModal';
+import EditPatientModal from './EditPatientModal';
 import PatientDetailModal from './PatientDetailModal';
 import ErrorState from './ErrorState';
 import EmptyState from './EmptyState';

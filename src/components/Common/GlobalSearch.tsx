@@ -201,7 +201,7 @@ export const GlobalSearch: React.FC = () => {
       {/* Search Input */}
       <div className="relative">
         <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+          className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted"
           size={18}
         />
         <input
@@ -214,7 +214,7 @@ export const GlobalSearch: React.FC = () => {
             if (results.length > 0) setIsOpen(true);
           }}
           placeholder="Rechercher patients, rendez-vous..."
-          className="w-80 pl-10 pr-10 py-2.5 bg-[#0f172a] border border-[#334155] rounded-lg text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors"
+          className="w-80 pl-10 pr-10 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-sm theme-text-secondary placeholder-[var(--text-muted)] focus:outline-none focus:border-blue-500 transition-colors"
         />
 
         {/* Loading Spinner */}
@@ -229,7 +229,7 @@ export const GlobalSearch: React.FC = () => {
         {query && !loading && (
           <button
             onClick={handleClear}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-muted hover:text-[var(--text-primary)] transition-colors"
           >
             <X size={18} />
           </button>
@@ -238,14 +238,14 @@ export const GlobalSearch: React.FC = () => {
 
       {/* Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-full mt-2 w-full bg-[#1e293b] border border-[#334155] rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50">
+        <div className="absolute top-full mt-2 w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50">
           {results.length === 0 && !loading && query.length >= 2 && (
             <div className="p-6 text-center">
-              <Search size={48} className="mx-auto text-gray-600 mb-3" />
-              <p className="text-gray-400 text-sm">
+              <Search size={48} className="mx-auto theme-text-secondary mb-3" />
+              <p className="theme-text-muted text-sm">
                 Aucun résultat pour "{query}"
               </p>
-              <p className="text-gray-500 text-xs mt-1">
+              <p className="theme-text-muted text-xs mt-1">
                 Essayez un autre terme de recherche
               </p>
             </div>
@@ -256,7 +256,7 @@ export const GlobalSearch: React.FC = () => {
               {Object.entries(groupedResults).map(([type, items]) => (
                 <div key={type} className="mb-2 last:mb-0">
                   {/* Category Header */}
-                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase">
+                  <div className="px-4 py-2 text-xs font-semibold theme-text-muted uppercase">
                     {typeLabels[type as keyof typeof typeLabels]} ({items.length})
                   </div>
 
@@ -275,7 +275,7 @@ export const GlobalSearch: React.FC = () => {
                           transition-colors text-left
                           ${isSelected
                             ? 'bg-blue-600/20 border-l-2 border-blue-500'
-                            : 'hover:bg-[#334155] border-l-2 border-transparent'
+                            : 'hover:bg-[var(--bg-tertiary)] border-l-2 border-transparent'
                           }
                         `}
                       >
@@ -286,14 +286,14 @@ export const GlobalSearch: React.FC = () => {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">
+                          <p className="text-sm font-medium theme-text-primary truncate">
                             {result.title}
                           </p>
-                          <p className="text-xs text-gray-400 truncate mt-0.5">
+                          <p className="text-xs theme-text-muted truncate mt-0.5">
                             {result.subtitle}
                           </p>
                           {result.date && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs theme-text-muted mt-1">
                               {result.date}
                             </p>
                           )}
@@ -312,9 +312,9 @@ export const GlobalSearch: React.FC = () => {
               ))}
 
               {/* Footer */}
-              <div className="px-4 py-2 border-t border-[#334155] text-xs text-gray-500 flex items-center justify-between">
+              <div className="px-4 py-2 border-t border-[var(--border-color)] text-xs theme-text-muted flex items-center justify-between">
                 <span>↑↓ Navigation • ↵ Sélection • Esc Fermer</span>
-                <span className="text-gray-600">{results.length} résultats</span>
+                <span className="theme-text-secondary">{results.length} résultats</span>
               </div>
             </div>
           )}

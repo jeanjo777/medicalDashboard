@@ -24,9 +24,9 @@ const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
     <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold theme-text-primary">{title}</h2>
-        <button className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg">
           <FileText className="h-3.5 w-3.5 theme-text-muted" />
-        </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-center">

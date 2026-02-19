@@ -34,7 +34,7 @@ const PatientFilters: React.FC<PatientFiltersProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-2 font-bold text-gray-900 dark:text-white hover:text-primary dark:hover:text-blue-400 transition-colors"
+            className="flex items-center gap-2 font-bold text-gray-900 dark:text-white hover:text-primary dark:hover:text-blue-400 transition-colors cursor-pointer"
           >
             <Filter size={20} />
             Filtres avancés
@@ -48,7 +48,7 @@ const PatientFilters: React.FC<PatientFiltersProps> = ({
         {activeFiltersCount > 0 && (
           <button
             onClick={onReset}
-            className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
           >
             <X size={16} />
             Réinitialiser
