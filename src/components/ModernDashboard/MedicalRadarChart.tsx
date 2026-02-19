@@ -19,27 +19,26 @@ interface MetricData {
 interface MedicalRadarChartProps {
   patientMetrics?: MetricData[];
   cabinetMetrics?: MetricData[];
-  isDemoMode?: boolean;
 }
 
 const defaultPatientMetrics: MetricData[] = [
-  { label: 'Taux de suivi', value: 85, color: 'bg-emerald-500' },
-  { label: 'Observance', value: 72, color: 'bg-emerald-500' },
-  { label: 'Satisfaction', value: 91, color: 'bg-emerald-600' },
-  { label: 'Urgences traitées', value: 68, color: 'bg-yellow-500' },
-  { label: 'Consultations', value: 78, color: 'bg-emerald-500' },
-  { label: 'Prévention', value: 65, color: 'bg-yellow-500' },
-  { label: 'Récupération', value: 82, color: 'bg-emerald-500' },
+  { label: 'Taux de suivi', value: 0, color: 'bg-emerald-500' },
+  { label: 'Observance', value: 0, color: 'bg-emerald-500' },
+  { label: 'Satisfaction', value: 0, color: 'bg-emerald-600' },
+  { label: 'Urgences traitées', value: 0, color: 'bg-yellow-500' },
+  { label: 'Consultations', value: 0, color: 'bg-emerald-500' },
+  { label: 'Prévention', value: 0, color: 'bg-yellow-500' },
+  { label: 'Récupération', value: 0, color: 'bg-emerald-500' },
 ];
 
 const defaultCabinetMetrics: MetricData[] = [
-  { label: 'RDV/jour', value: 88, color: 'bg-emerald-500' },
-  { label: 'Temps attente', value: 45, color: 'bg-orange-500' },
-  { label: 'Taux présence', value: 92, color: 'bg-emerald-600' },
-  { label: 'Efficacité', value: 76, color: 'bg-emerald-500' },
-  { label: 'Annulations', value: 18, color: 'bg-emerald-500' },
-  { label: 'Nouveaux patients', value: 67, color: 'bg-yellow-500' },
-  { label: 'Fidélisation', value: 89, color: 'bg-emerald-600' },
+  { label: 'RDV/jour', value: 0, color: 'bg-emerald-500' },
+  { label: 'Temps attente', value: 0, color: 'bg-orange-500' },
+  { label: 'Taux présence', value: 0, color: 'bg-emerald-600' },
+  { label: 'Efficacité', value: 0, color: 'bg-emerald-500' },
+  { label: 'Annulations', value: 0, color: 'bg-emerald-500' },
+  { label: 'Nouveaux patients', value: 0, color: 'bg-yellow-500' },
+  { label: 'Fidélisation', value: 0, color: 'bg-emerald-600' },
 ];
 
 const getColor = (val: number) => {
@@ -51,7 +50,6 @@ const getColor = (val: number) => {
 const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
   patientMetrics: propPatientMetrics,
   cabinetMetrics: propCabinetMetrics,
-  isDemoMode = true,
 }) => {
   const [activeTab, setActiveTab] = useState<'patient' | 'cabinet'>('patient');
 
@@ -128,10 +126,8 @@ const MedicalRadarChart: React.FC<MedicalRadarChartProps> = ({
     ];
   }, [medecins, analyticsStats]);
 
-  const patientMetrics = propPatientMetrics
-    ?? (isDemoMode ? defaultPatientMetrics : (realPatientMetrics || defaultPatientMetrics));
-  const cabinetMetrics = propCabinetMetrics
-    ?? (isDemoMode ? defaultCabinetMetrics : (realCabinetMetrics || defaultCabinetMetrics));
+  const patientMetrics = propPatientMetrics ?? (realPatientMetrics || defaultPatientMetrics);
+  const cabinetMetrics = propCabinetMetrics ?? (realCabinetMetrics || defaultCabinetMetrics);
 
   const metrics = activeTab === 'patient' ? patientMetrics : cabinetMetrics;
 

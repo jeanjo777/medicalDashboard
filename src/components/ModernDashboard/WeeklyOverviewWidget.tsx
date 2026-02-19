@@ -2,18 +2,14 @@ import React from 'react';
 import { Calendar } from 'lucide-react';
 import { useWeeklyAppointments } from '../../hooks/useWeeklyAppointments';
 
-interface WeeklyOverviewWidgetProps {
-  isDemoMode?: boolean;
-}
-
 const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-const demoData = [18, 24, 15, 28, 22, 8, 4];
+const emptyData = [0, 0, 0, 0, 0, 0, 0];
 
-const WeeklyOverviewWidget: React.FC<WeeklyOverviewWidgetProps> = ({ isDemoMode = true }) => {
+const WeeklyOverviewWidget: React.FC = () => {
   const { data: weeklyData } = useWeeklyAppointments();
 
   const hasRealData = weeklyData?.counts && weeklyData.counts.some(v => v > 0);
-  const data = isDemoMode ? demoData : (hasRealData ? weeklyData.counts : demoData);
+  const data = hasRealData ? weeklyData.counts : emptyData;
   const maxVal = Math.max(...data, 1);
   const total = data.reduce((a, b) => a + b, 0);
 

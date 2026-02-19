@@ -13,22 +13,20 @@ interface MedicalPassingRateProps {
   cancelled?: number;
   pending?: number;
   title?: string;
-  isDemoMode?: boolean;
 }
 
-const demoDefaults = { complete: 72, cancelled: 12, pending: 16 };
+const emptyDefaults = { complete: 0, cancelled: 0, pending: 0 };
 
 const MedicalPassingRate: React.FC<MedicalPassingRateProps> = ({
   complete: completeProp,
   cancelled: cancelledProp,
   pending: pendingProp,
   title = "Taux de consultations",
-  isDemoMode = true,
 }) => {
   const { data: rateData } = useAppointmentPassingRate();
 
   const hasRealData = rateData && (rateData.complete > 0 || rateData.cancelled > 0 || rateData.pending > 0);
-  const rates = isDemoMode ? demoDefaults : (hasRealData ? rateData : demoDefaults);
+  const rates = hasRealData ? rateData : emptyDefaults;
 
   const complete = completeProp ?? rates.complete;
   const cancelled = cancelledProp ?? rates.cancelled;

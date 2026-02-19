@@ -14,69 +14,6 @@ export interface ActivityItem {
   metadata?: Record<string, any>;
 }
 
-const DEMO_ACTIVITIES: ActivityItem[] = [
-  {
-    id: 'demo-1',
-    user_name: 'Dr. Martin',
-    user_initials: 'DM',
-    action: 'Nouveau patient enregistré',
-    entity_type: 'patient',
-    entity_id: 'demo-patient-1',
-    entity_name: 'Marie Dupont',
-    created_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-2',
-    user_name: 'Dr. Bernard',
-    user_initials: 'DB',
-    action: 'Consultation terminée',
-    entity_type: 'consultation',
-    entity_id: 'demo-consult-1',
-    entity_name: 'Jean Leroy',
-    created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-3',
-    user_name: 'Dr. Martin',
-    user_initials: 'DM',
-    action: 'Rendez-vous confirmé',
-    entity_type: 'appointment',
-    entity_id: 'demo-apt-1',
-    entity_name: 'Sophie Martin',
-    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-4',
-    user_name: 'Dr. Petit',
-    user_initials: 'DP',
-    action: 'Ordonnance créée',
-    entity_type: 'consultation',
-    entity_id: 'demo-consult-2',
-    entity_name: 'Pierre Dubois',
-    created_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-5',
-    user_name: 'Dr. Bernard',
-    user_initials: 'DB',
-    action: 'Dossier médical mis à jour',
-    entity_type: 'patient',
-    entity_id: 'demo-patient-2',
-    entity_name: 'Claire Moreau',
-    created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-6',
-    user_name: 'Dr. Martin',
-    user_initials: 'DM',
-    action: 'Résultats d\'analyse ajoutés',
-    entity_type: 'patient',
-    entity_id: 'demo-patient-3',
-    entity_name: 'Luc Fontaine',
-    created_at: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
-  },
-];
-
 interface UseActivityLogOptions {
   limit?: number;
   entityType?: string;

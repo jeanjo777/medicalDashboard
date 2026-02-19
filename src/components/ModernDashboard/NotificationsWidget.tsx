@@ -4,10 +4,6 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-interface NotificationsWidgetProps {
-  isDemoMode?: boolean;
-}
-
 interface DisplayNotification {
   id: string;
   icon: React.ReactNode;
@@ -15,37 +11,6 @@ interface DisplayNotification {
   time: string;
   type: 'info' | 'warning' | 'success' | 'error';
 }
-
-const demoNotifications: DisplayNotification[] = [
-  {
-    id: '1',
-    icon: <AlertCircle className="h-3.5 w-3.5" />,
-    text: 'Résultats labo de M. Dupont disponibles',
-    time: 'Il y a 12 min',
-    type: 'warning',
-  },
-  {
-    id: '2',
-    icon: <Calendar className="h-3.5 w-3.5" />,
-    text: 'RDV confirmé avec Mme Martin à 14h',
-    time: 'Il y a 25 min',
-    type: 'info',
-  },
-  {
-    id: '3',
-    icon: <UserCheck className="h-3.5 w-3.5" />,
-    text: 'Nouveau patient enregistré : P. Leroy',
-    time: 'Il y a 1h',
-    type: 'success',
-  },
-  {
-    id: '4',
-    icon: <Clock className="h-3.5 w-3.5" />,
-    text: 'Rappel : Réunion équipe à 16h30',
-    time: 'Il y a 2h',
-    type: 'info',
-  },
-];
 
 const getIconForType = (type: string) => {
   switch (type) {
@@ -67,12 +32,11 @@ const typeStyles: Record<string, string> = {
   error: 'bg-red-500/10 text-red-500',
 };
 
-const NotificationsWidget: React.FC<NotificationsWidgetProps> = ({ isDemoMode = true }) => {
+const NotificationsWidget: React.FC = () => {
   const { notifications: realNotifications } = useNotifications();
 
   const notifications: DisplayNotification[] = useMemo(() => {
-    if (isDemoMode) return demoNotifications;
-    if (!realNotifications?.length) return demoNotifications;
+    if (!realNotifications?.length) return [];
 
     return realNotifications.slice(0, 5).map((n) => ({
       id: n.id,
@@ -81,7 +45,7 @@ const NotificationsWidget: React.FC<NotificationsWidgetProps> = ({ isDemoMode = 
       time: formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: fr }),
       type: n.type,
     }));
-  }, [isDemoMode, realNotifications]);
+  }, [realNotifications]);
 
   return (
     <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">

@@ -2,23 +2,27 @@ import React, { useState, useMemo } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { TrendingUp, TrendingDown, Minus, Sparkles, Target, CheckCircle, AlertTriangle } from 'lucide-react';
 import ExportButton from '../Common/ExportButton';
-import { demoComparative, demoComparativeByType } from '../../data/demoData';
 import { useComparative } from '../../hooks/useAnalyticsData';
 
 interface ComparativeTabProps {
   filters: any;
-  isDemoMode?: boolean;
-  demoData?: any;
 }
 
-const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters, isDemoMode = false }) => {
+const defaultComparative = {
+  periods: { current: '', previous: '' },
+  kpiComparison: [] as any[],
+  timeSeriesComparison: [] as any[],
+  departmentComparison: [] as any[],
+  insights: { positive: [] as string[], stable: [] as string[], attention: [] as string[] },
+};
+
+const ComparativeTab: React.FC<ComparativeTabProps> = ({ filters }) => {
   const [comparisonType, setComparisonType] = useState<'month' | 'quarter' | 'year'>('month');
   const { data: apiData } = useComparative(comparisonType);
 
   const compareData = useMemo(() => {
-    if (isDemoMode) return demoComparativeByType[comparisonType] || demoComparative;
-    return apiData || demoComparativeByType[comparisonType] || demoComparative;
-  }, [isDemoMode, apiData, comparisonType]);
+    return apiData || defaultComparative;
+  }, [apiData]);
 
   const { periods, kpiComparison, timeSeriesComparison, departmentComparison, insights } = compareData;
 

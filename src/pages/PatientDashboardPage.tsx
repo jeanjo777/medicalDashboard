@@ -225,6 +225,7 @@ const PatientDashboardPage = () => {
           </div>
         </div>
 
+        {/* Consultation IA button hidden for now
         <div className="flex justify-center animate-fade-in-up delay-300">
           <button
             onClick={() => (window.location.href = '/consultation')}
@@ -237,6 +238,7 @@ const PatientDashboardPage = () => {
             </span>
           </button>
         </div>
+        */}
       </div>
     </div>
   );

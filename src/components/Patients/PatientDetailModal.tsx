@@ -41,8 +41,6 @@ interface PatientDetailModalProps {
   patientId: string;
   onPatientUpdated?: () => void;
   onPatientDeleted?: () => void;
-  isDemoMode?: boolean;
-  demoPatientData?: Partial<Patient>;
 }
 
 const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
@@ -51,8 +49,6 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
   patientId,
   onPatientUpdated,
   onPatientDeleted,
-  isDemoMode = false,
-  demoPatientData,
 }) => {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,24 +87,6 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
       setLoading(true);
       setError(null);
 
-      if (isDemoMode && demoPatientData) {
-        const demoPatient: Patient = {
-          id: demoPatientData.id || patientId,
-          name: demoPatientData.name || 'Patient Démo',
-          email: demoPatientData.email || 'demo@example.com',
-          phone: demoPatientData.phone || '+33 6 00 00 00 00',
-          date_of_birth: demoPatientData.date_of_birth || '1990-01-01',
-          address: demoPatientData.address || 'Adresse non renseignée',
-          status: demoPatientData.status || 'active',
-          notes: demoPatientData.notes || '',
-          created_at: demoPatientData.created_at || new Date().toISOString(),
-          updated_at: demoPatientData.updated_at || new Date().toISOString(),
-        };
-        setPatient(demoPatient);
-        setEditedPatient(demoPatient);
-        return;
-      }
-
       const { data, error: fetchError } = await supabase
         .from('patients')
         .select('*')
@@ -139,13 +117,6 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
 
   const handleSave = async () => {
     if (!patient) return;
-
-    if (isDemoMode) {
-      setPatient({ ...patient, ...editedPatient });
-      setIsEditing(false);
-      showToast({ type: 'info', title: 'Mode Démo', message: 'Les modifications ne sont pas enregistrées en mode démo' });
-      return;
-    }
 
     try {
       setSaving(true);
@@ -191,12 +162,6 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
 
   const handleDelete = async () => {
     if (!patient) return;
-
-    if (isDemoMode) {
-      showToast({ type: 'info', title: 'Mode Démo', message: 'Suppression non disponible en mode démo' });
-      setShowDeleteDialog(false);
-      return;
-    }
 
     try {
       setDeleting(true);

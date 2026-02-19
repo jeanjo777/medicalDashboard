@@ -1,76 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Bell, Check, X, AlertCircle, Info, CheckCircle, AlertTriangle, Trash2 } from 'lucide-react';
-import { useNotifications, Notification } from '../../hooks/useNotifications';
+import { useNotifications } from '../../hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import logger from '../../utils/logger';
 
-interface NotificationCenterProps {
-  isDemoMode?: boolean;
-}
-
-const demoNotifications: Notification[] = [
-  {
-    id: 'demo-1',
-    user_id: 'demo',
-    title: 'Résultats de laboratoire',
-    message: 'Résultats labo de M. Dupont disponibles',
-    type: 'warning',
-    priority: 'high',
-    is_read: false,
-    created_at: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-2',
-    user_id: 'demo',
-    title: 'RDV confirmé',
-    message: 'RDV confirmé avec Mme Martin à 14h',
-    type: 'info',
-    priority: 'medium',
-    is_read: false,
-    created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-3',
-    user_id: 'demo',
-    title: 'Nouveau patient',
-    message: 'Nouveau patient enregistré : P. Leroy',
-    type: 'success',
-    priority: 'low',
-    is_read: true,
-    created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'demo-4',
-    user_id: 'demo',
-    title: 'Rappel',
-    message: 'Rappel : Réunion équipe à 16h30',
-    type: 'info',
-    priority: 'medium',
-    is_read: true,
-    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-  },
-];
-
-export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isDemoMode = false }) => {
+export const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
-  const [demoReadIds, setDemoReadIds] = useState<Set<string>>(new Set());
-  const { notifications: realNotifications, unreadCount: realUnreadCount, isLoading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
-
-  const notifications = useMemo(() => {
-    if (isDemoMode) {
-      return demoNotifications.map(n => ({
-        ...n,
-        is_read: n.is_read || demoReadIds.has(n.id),
-      }));
-    }
-    return realNotifications;
-  }, [isDemoMode, realNotifications, demoReadIds]);
-
-  const unreadCount = isDemoMode
-    ? notifications.filter(n => !n.is_read).length
-    : realUnreadCount;
+  const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
 
   const filteredNotifications = filter === 'unread'
     ? notifications.filter((n) => !n.is_read)
@@ -127,10 +65,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isDemoMo
 
   const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
     if (!isRead) {
-      if (isDemoMode) {
-        setDemoReadIds(prev => new Set(prev).add(notificationId));
-        return;
-      }
       try {
         await markAsRead(notificationId);
       } catch (err) {
@@ -140,16 +74,11 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isDemoMo
   };
 
   const handleMarkAllAsRead = async () => {
-    if (isDemoMode) {
-      setDemoReadIds(new Set(demoNotifications.map(n => n.id)));
-      return;
-    }
     await markAllAsRead();
   };
 
   const handleDelete = async (e: React.MouseEvent, notificationId: string) => {
     e.stopPropagation();
-    if (isDemoMode) return;
     try {
       await deleteNotification(notificationId);
     } catch (err) {

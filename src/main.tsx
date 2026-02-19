@@ -27,7 +27,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.tsx'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage.tsx'));
 const ModernDashboardPageClassic = lazy(() => import('./pages/ModernDashboardPage.tsx'));
 const PatientDashboardPage = lazy(() => import('./pages/PatientDashboardPage.tsx'));
-const ConsultationPage = lazy(() => import('./pages/ConsultationPage.tsx'));
+// const ConsultationPage = lazy(() => import('./pages/ConsultationPage.tsx')); // Hidden for now
 const PatientsManagementPage = lazy(() => import('./pages/PatientsManagementPage.tsx'));
 const PatientRegisterPage = lazy(() => import('./pages/PatientRegisterPage.tsx'));
 const MedicRegisterPage = lazy(() => import('./pages/MedicRegisterPage.tsx'));
@@ -64,7 +64,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/dashboard" element={<ProtectedRoute><ModernDashboardPage /></ProtectedRoute>} />
               <Route path="/dashboard-classic" element={<ProtectedRoute><ModernDashboardPageClassic /></ProtectedRoute>} />
               <Route path="/patient-dashboard" element={<ProtectedRoute><PatientDashboardPage /></ProtectedRoute>} />
-              <Route path="/consultation" element={<ProtectedRoute><ConsultationPage /></ProtectedRoute>} />
+              {/* <Route path="/consultation" element={<ProtectedRoute><ConsultationPage /></ProtectedRoute>} /> Hidden for now */}
               <Route path="/patients" element={<ProtectedRoute><PatientsManagementPage /></ProtectedRoute>} />
               <Route path="/register-patient" element={<ProtectedRoute><PatientRegisterPage /></ProtectedRoute>} />
               <Route path="/treatment/:patientId" element={<ProtectedRoute><PatientTreatmentPage /></ProtectedRoute>} />

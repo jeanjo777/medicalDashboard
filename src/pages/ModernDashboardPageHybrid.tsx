@@ -26,11 +26,9 @@ import QuickActionsWidget from '../components/ModernDashboard/QuickActionsWidget
 import NotificationsWidget from '../components/ModernDashboard/NotificationsWidget';
 import { GlobalSearch } from '../components/Common/GlobalSearch';
 import { NotificationCenter } from '../components/Common/NotificationCenter';
-import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useMedicAuth } from '../hooks/useMedicAuth';
 import { useToast } from '../components/Common/Toast';
-import { useDemoMode } from '../hooks/useDemoMode';
 import { useMedicalDataRealtime } from '../hooks/useAppointmentsRealtime';
 import { useDashboardStatsQuery } from '../hooks/useDashboardStatsQuery';
 
@@ -44,22 +42,10 @@ const ModernDashboardPageHybrid: React.FC = () => {
     return saved ? JSON.parse(saved) : false;
   });
   const { showToast } = useToast();
-  const { isDemoMode, toggleDemoMode, disableDemoMode } = useDemoMode();
   const { stats: rawDashStats } = useDashboardStatsQuery();
-  useMedicalDataRealtime(!isDemoMode);
+  useMedicalDataRealtime(true);
 
-  // Demo values only used when isDemoMode is true
-  const demoFallback = {
-    appointmentsToday: 24,
-    appointmentsTodayChange: 5,
-    patientsInTreatment: 15,
-    patientsInTreatmentChange: 2,
-    totalRevenue: 45000,
-    totalRevenueChange: 12,
-    newPatientsThisMonth: 12,
-    newPatientsThisMonthChange: 18,
-  };
-  const dashStats = isDemoMode ? demoFallback : rawDashStats;
+  const dashStats = rawDashStats;
 
   return (
     <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
@@ -92,17 +78,13 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   <Search className="h-4 w-4 theme-text-secondary" />
                 </button>
               )}
-              <NotificationCenter isDemoMode={isDemoMode} />
-              <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
+              <NotificationCenter />
               <button type="button" onClick={() => showToast({ type: 'info', title: 'Aide', message: 'Pour toute assistance, contactez support@medicalai.fr ou consultez la documentation.' })} className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer" aria-label="Aide">
                 <HelpCircle className="h-4 w-4 theme-text-secondary" />
               </button>
             </div>
           </div>
         </header>
-
-        {/* Demo Mode Banner */}
-        <DemoModeBanner isDemoMode={isDemoMode} onDisable={disableDemoMode} />
 
         {/* Content Area */}
         <main className="flex-1 bg-[var(--bg-primary)] p-2 sm:p-3 lg:p-4 overflow-auto transition-colors duration-300">
@@ -116,7 +98,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                 {/* Left Column - Overview (4 cols) */}
                 <div className="lg:col-span-4 space-y-3">
                   <ErrorBoundary>
-                    <MedicalRadarChart isDemoMode={isDemoMode} />
+                    <MedicalRadarChart />
                   </ErrorBoundary>
 
                   <ErrorBoundary>
@@ -124,7 +106,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   </ErrorBoundary>
 
                   <ErrorBoundary>
-                    <TodayPatientsWidget isDemoMode={isDemoMode} />
+                    <TodayPatientsWidget />
                   </ErrorBoundary>
 
                   <ErrorBoundary>
@@ -150,12 +132,12 @@ const ModernDashboardPageHybrid: React.FC = () => {
 
                   {/* AI Reports */}
                   <ErrorBoundary>
-                    <MedicalAIReports isDemoMode={isDemoMode} />
+                    <MedicalAIReports />
                   </ErrorBoundary>
 
                   {/* KPI Performance */}
                   <ErrorBoundary>
-                    <KPIPerformanceWidget isDemoMode={isDemoMode} />
+                    <KPIPerformanceWidget />
                   </ErrorBoundary>
                 </div>
 
@@ -165,20 +147,20 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   <ErrorBoundary>
                     <MedicalFlowCard
                       title="Taux de présence"
-                      value={isDemoMode ? '92%' : `${Math.round(dashStats.patientsInTreatment)}%`}
+                      value={`${Math.round(dashStats.patientsInTreatment)}%`}
                       status="good"
                       trend="up"
-                      trendValue={isDemoMode ? '+3%' : `${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`}
+                      trendValue={`${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`}
                     />
                   </ErrorBoundary>
 
                   <ErrorBoundary>
                     <MedicalFlowCard
                       title="Nouveaux patients"
-                      value={isDemoMode ? '12' : String(dashStats.newPatientsThisMonth)}
+                      value={String(dashStats.newPatientsThisMonth)}
                       status={dashStats.newPatientsThisMonthChange >= 0 ? 'good' : 'warning'}
                       trend={dashStats.newPatientsThisMonthChange >= 0 ? 'up' : 'down'}
-                      trendValue={isDemoMode ? '+18%' : `${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`}
+                      trendValue={`${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`}
                     />
                   </ErrorBoundary>
 
@@ -195,23 +177,23 @@ const ModernDashboardPageHybrid: React.FC = () => {
                   <div className="rounded-2xl theme-bg-secondary p-3 shadow-sm transition-colors duration-300">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-medium theme-text-primary">Patients aujourd'hui</span>
-                      <span className="theme-text-secondary">{isDemoMode ? '24' : dashStats.appointmentsToday} consultations</span>
+                      <span className="theme-text-secondary">{dashStats.appointmentsToday} consultations</span>
                     </div>
                   </div>
 
                   {/* Passing Rate */}
                   <ErrorBoundary>
-                    <MedicalPassingRate isDemoMode={isDemoMode} />
+                    <MedicalPassingRate />
                   </ErrorBoundary>
 
                   {/* Weekly Overview */}
                   <ErrorBoundary>
-                    <WeeklyOverviewWidget isDemoMode={isDemoMode} />
+                    <WeeklyOverviewWidget />
                   </ErrorBoundary>
 
                   {/* Notifications */}
                   <ErrorBoundary>
-                    <NotificationsWidget isDemoMode={isDemoMode} />
+                    <NotificationsWidget />
                   </ErrorBoundary>
                 </div>
               </div>
@@ -232,10 +214,10 @@ const ModernDashboardPageHybrid: React.FC = () => {
                       </h2>
                     </div>
                     <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                      <QuickStat label="Nouveaux patients" value={isDemoMode ? '12' : String(dashStats.newPatientsThisMonth)} change={isDemoMode ? '+18%' : `${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`} positive={isDemoMode ? true : dashStats.newPatientsThisMonthChange >= 0} />
-                      <QuickStat label="RDV aujourd'hui" value={isDemoMode ? '24' : String(dashStats.appointmentsToday)} change={isDemoMode ? '+5%' : `${dashStats.appointmentsTodayChange > 0 ? '+' : ''}${dashStats.appointmentsTodayChange}%`} positive={isDemoMode ? true : dashStats.appointmentsTodayChange >= 0} />
-                      <QuickStat label="Revenus" value={isDemoMode ? '45 000' : dashStats.totalRevenue.toLocaleString('fr-FR')} change={isDemoMode ? '+12%' : `${dashStats.totalRevenueChange > 0 ? '+' : ''}${dashStats.totalRevenueChange}%`} positive={isDemoMode ? true : dashStats.totalRevenueChange >= 0} suffix=" FCFA" />
-                      <QuickStat label="En traitement" value={isDemoMode ? '15%' : `${dashStats.patientsInTreatment}%`} change={isDemoMode ? '+2%' : `${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`} positive={isDemoMode ? true : dashStats.patientsInTreatmentChange >= 0} />
+                      <QuickStat label="Nouveaux patients" value={String(dashStats.newPatientsThisMonth)} change={`${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`} positive={dashStats.newPatientsThisMonthChange >= 0} />
+                      <QuickStat label="RDV aujourd'hui" value={String(dashStats.appointmentsToday)} change={`${dashStats.appointmentsTodayChange > 0 ? '+' : ''}${dashStats.appointmentsTodayChange}%`} positive={dashStats.appointmentsTodayChange >= 0} />
+                      <QuickStat label="Revenus" value={dashStats.totalRevenue.toLocaleString('fr-FR')} change={`${dashStats.totalRevenueChange > 0 ? '+' : ''}${dashStats.totalRevenueChange}%`} positive={dashStats.totalRevenueChange >= 0} suffix=" FCFA" />
+                      <QuickStat label="En traitement" value={`${dashStats.patientsInTreatment}%`} change={`${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`} positive={dashStats.patientsInTreatmentChange >= 0} />
                     </div>
                   </div>
                 </ErrorBoundary>

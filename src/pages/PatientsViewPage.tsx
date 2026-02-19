@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import { Search, Bell, Plus } from 'lucide-react';
-import { demoPatients, Patient as DemoPatient } from '../data/demoData';
-import { useDemoMode } from '../hooks/useDemoMode';
+import { supabase } from '../lib/supabase';
+import { calculateAge } from '../utils/dateHelpers';
 
 // Type simplifié pour l'affichage dans la table
 interface PatientRow {
@@ -23,18 +22,15 @@ const formatDate = (dateString: string): string => {
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-// Convertir les données démo en format pour la table
-const convertDemoToRows = (patients: DemoPatient[]): PatientRow[] => {
-  return patients.map(p => ({
-    id: p.id,
-    initials: p.initials,
-    name: p.name,
-    age: p.age,
-    gender: p.gender,
-    condition: p.condition,
-    status: p.status,
-    lastVisit: formatDate(p.lastVisit)
-  }));
+// Mapper le statut Supabase vers le format d'affichage
+const mapStatus = (status: string | null): PatientRow['status'] => {
+  if (!status) return 'Active';
+  const lower = status.toLowerCase();
+  if (lower === 'active' || lower === 'actif') return 'Active';
+  if (lower === 'recovered' || lower === 'gueri' || lower === 'guéri') return 'Recovered';
+  if (lower === 'under treatment' || lower === 'en traitement' || lower === 'treatment') return 'Under Treatment';
+  if (lower === 'inactive' || lower === 'inactif') return 'Inactive';
+  return 'Active';
 };
 
 const PatientsViewPage: React.FC = () => {
@@ -43,10 +39,52 @@ const PatientsViewPage: React.FC = () => {
     const saved = localStorage.getItem('sidebar-collapsed');
     return saved ? JSON.parse(saved) : false;
   });
-  const { isDemoMode, toggleDemoMode } = useDemoMode();
+  const [patients, setPatients] = useState<PatientRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Utiliser les données de démonstration centralisées
-  const patients: PatientRow[] = isDemoMode ? convertDemoToRows(demoPatients) : [];
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('patients')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const rows: PatientRow[] = (data || []).map((p: any) => {
+          const name = p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Inconnu';
+          const initials = name
+            .split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+          const age = p.age ?? calculateAge(p.date_of_birth) ?? 0;
+
+          return {
+            id: p.id,
+            initials,
+            name,
+            age,
+            gender: p.gender || 'Non renseigne',
+            condition: p.primary_pathology || 'Non renseigne',
+            status: mapStatus(p.status),
+            lastVisit: p.registered_at ? formatDate(p.registered_at) : 'N/A',
+          };
+        });
+
+        setPatients(rows);
+      } catch (err) {
+        console.error('Erreur lors du chargement des patients:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatients();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -92,7 +130,7 @@ const PatientsViewPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0f172a]">
+    <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
       {/* Sidebar */}
       <MedicalSidebarRefined
         activeItem={activeSection}
@@ -103,52 +141,46 @@ const PatientsViewPage: React.FC = () => {
       {/* Main Content */}
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         {/* Top Header */}
-        <header className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-4 lg:px-6 py-2 sm:py-3 sticky top-0 z-30">
+        <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-6 py-2 sm:py-3 sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1 lg:ml-0 ml-14">
-              <h1 className="text-base sm:text-lg lg:text-xl font-semibold text-white">Dossiers Patients</h1>
-              <p className="text-xs sm:text-sm text-gray-400 mt-0.5 truncate">Bienvenue, Dr. Anderson</p>
+              <h1 className="text-base sm:text-lg lg:text-xl font-semibold theme-text-primary">Dossiers Patients</h1>
+              <p className="text-xs sm:text-sm theme-text-muted mt-0.5 truncate">Bienvenue</p>
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Demo Mode Toggle */}
-              <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-
               {/* Search */}
               <div className="relative hidden md:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted" size={16} />
                 <input
                   type="text"
                   placeholder="Rechercher..."
-                  className="w-64 pl-9 pr-4 py-2 bg-[#0f172a] border border-[#334155] rounded-xl text-sm text-gray-300 placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-64 pl-9 pr-4 py-2 theme-bg-primary border theme-border rounded-xl text-sm theme-text-secondary placeholder-[var(--text-muted)] focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               {/* Notifications */}
-              <button className="relative p-2 hover:bg-[#334155] rounded-lg transition-colors">
-                <Bell size={20} className="text-gray-400" />
+              <button className="relative p-2 hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors">
+                <Bell size={20} className="theme-text-muted" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
               </button>
 
               {/* User Avatar */}
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#334155] rounded-lg">
-                <span className="text-sm font-medium text-white">DA</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 theme-bg-tertiary rounded-lg">
+                <span className="text-sm font-medium theme-text-primary">U</span>
               </div>
             </div>
           </div>
         </header>
 
-        {/* Demo Mode Banner */}
-        <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
-
         {/* Content Area */}
-        <main className="flex-1 p-6 bg-[#f5f4f0]">
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        <main className="flex-1 p-6 theme-bg-primary transition-colors duration-300">
+          <div className="theme-bg-secondary rounded-2xl border theme-border overflow-hidden shadow-sm transition-colors duration-300">
             {/* Section Header */}
-            <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-teal-50 flex items-center justify-between">
+            <div className="px-6 py-4 border-b theme-border bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-800">Dossiers Patients</h2>
-                <p className="text-sm text-gray-500 mt-0.5">Gérer et consulter les informations patients</p>
+                <h2 className="text-lg font-semibold theme-text-primary">Dossiers Patients</h2>
+                <p className="text-sm theme-text-muted mt-0.5">Gerer et consulter les informations patients</p>
               </div>
               <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-emerald-500/25">
                 <Plus size={16} />
@@ -156,59 +188,79 @@ const PatientsViewPage: React.FC = () => {
               </button>
             </div>
 
+            {/* Loading State */}
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+                <span className="ml-3 theme-text-muted text-sm">Chargement des patients...</span>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && patients.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="w-16 h-16 rounded-full theme-bg-tertiary flex items-center justify-center mb-4">
+                  <Search size={24} className="theme-text-muted" />
+                </div>
+                <p className="theme-text-secondary font-medium">Aucun patient trouve</p>
+                <p className="theme-text-muted text-sm mt-1">Les patients apparaitront ici une fois ajoutes.</p>
+              </div>
+            )}
+
             {/* Table */}
+            {!loading && patients.length > 0 && (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <tr className="theme-bg-tertiary border-b theme-border">
+                    <th className="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
                       ID Patient
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
                       Nom
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Âge
+                    <th className="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
+                      Age
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
                       Genre
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
                       Condition
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
                       Statut
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Dernière Visite
+                    <th className="px-6 py-3 text-left text-xs font-semibold theme-text-muted uppercase tracking-wider">
+                      Derniere Visite
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-[var(--border-color)]">
                   {patients.map((patient) => (
                     <tr
                       key={patient.id}
-                      className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-500">{patient.id}</span>
+                        <span className="text-sm theme-text-muted">{patient.id}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                             {patient.initials}
                           </div>
-                          <span className="text-sm font-medium text-gray-800">{patient.name}</span>
+                          <span className="text-sm font-medium theme-text-primary">{patient.name}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">{patient.age}</span>
+                        <span className="text-sm theme-text-secondary">{patient.age}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-600">{getGenderLabel(patient.gender)}</span>
+                        <span className="text-sm theme-text-secondary">{getGenderLabel(patient.gender)}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-medium text-gray-700">{patient.condition}</span>
+                        <span className="text-sm font-medium theme-text-secondary">{patient.condition}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(patient.status)}`}>
@@ -216,13 +268,14 @@ const PatientsViewPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-500">{patient.lastVisit}</span>
+                        <span className="text-sm theme-text-muted">{patient.lastVisit}</span>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         </main>
       </div>

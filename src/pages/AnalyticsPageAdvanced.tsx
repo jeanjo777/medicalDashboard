@@ -22,9 +22,6 @@ import AIAlertsTab from '../components/Analytics/AIAlertsTab';
 import ComparativeTab from '../components/Analytics/ComparativeTab';
 import ReportsTab from '../components/Analytics/ReportsTab';
 import NotificationCenter from '../components/Common/NotificationCenter';
-import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
-import { useDemoMode } from '../hooks/useDemoMode';
-import { demoAnalyticsData, demoChartData } from '../data/demoData';
 import ErrorBoundary from '../components/ErrorBoundary';
 import logger from '../utils/logger';
 import { exportData, ExportFormat, flattenData } from '../utils/exportUtils';
@@ -41,7 +38,6 @@ const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React
 
 const AnalyticsPageAdvanced: React.FC = () => {
   const location = useLocation();
-  const { isDemoMode, toggleDemoMode } = useDemoMode();
   const [showFilters, setShowFilters] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filters, setFilters] = useState({
@@ -58,8 +54,6 @@ const AnalyticsPageAdvanced: React.FC = () => {
 
   const analyticsProps = {
     filters,
-    isDemoMode,
-    demoData: isDemoMode ? { analytics: demoAnalyticsData, charts: demoChartData } : undefined
   };
 
   const currentTab = useMemo(() => {
@@ -78,7 +72,7 @@ const AnalyticsPageAdvanced: React.FC = () => {
     logger.info(`Exporting data as ${format}`);
 
     // Build a generic overview dataset from analytics data for export
-    const src = isDemoMode ? demoAnalyticsData : { totalPatients: 0, newPatientsThisMonth: 0, totalAppointments: 0, appointmentsToday: 0, completedConsultations: 0, patientSatisfaction: 0, averageWaitTime: 0, bedOccupancy: 0, emergencyCases: 0 };
+    const src = { totalPatients: 0, newPatientsThisMonth: 0, totalAppointments: 0, appointmentsToday: 0, completedConsultations: 0, patientSatisfaction: 0, averageWaitTime: 0, bedOccupancy: 0, emergencyCases: 0 };
     const overviewData = [
       { Metric: 'Total Patients', Value: src.totalPatients, Period: 'Current' },
       { Metric: 'New Patients This Month', Value: src.newPatientsThisMonth, Period: 'Current' },
@@ -151,8 +145,7 @@ const AnalyticsPageAdvanced: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 md:gap-3">
-              <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-              <NotificationCenter isDemoMode={isDemoMode} />
+              <NotificationCenter />
 
               <button
                 type="button"
@@ -203,8 +196,6 @@ const AnalyticsPageAdvanced: React.FC = () => {
             onClose={() => setShowFilters(false)}
           />
         )}
-
-        <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-[var(--bg-primary)] transition-colors duration-300">
           <ErrorBoundary>

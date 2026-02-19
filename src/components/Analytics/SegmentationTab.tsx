@@ -2,22 +2,27 @@ import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, RadialBarChart, RadialBar } from 'recharts';
 import { Users, TrendingUp, TrendingDown, Target, Filter, Sparkles, Activity, Minus, AlertCircle } from 'lucide-react';
 import ExportButton from '../Common/ExportButton';
-import { demoSegmentation } from '../../data/demoData';
 import { useDynamicAnalytics, usePathologiesDistribution } from '../../hooks/useAnalyticsData';
 
 interface SegmentationTabProps {
   filters: any;
-  isDemoMode?: boolean;
-  demoData?: any;
 }
 
-const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode = false }) => {
+const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters }) => {
   const { data: dynamicData } = useDynamicAnalytics(filters);
   const { data: pathologiesData } = usePathologiesDistribution();
 
+  const defaultSegmentation = {
+    ageGroups: [] as { range: string; patients: number; percentage: number; growth: string }[],
+    genderDistribution: [] as { name: string; value: number; count: number }[],
+    riskLevels: [] as { level: string; patients: number; percentage: number }[],
+    pathologySegments: [] as { pathology: string; patients: number; percentage: number; priority: 'Haute' | 'Moyenne' | 'Basse'; trend: 'up' | 'down' | 'stable' }[],
+    totalPatients: 0,
+    monthlyGrowth: 0,
+  };
+
   const segmentData = useMemo(() => {
-    if (isDemoMode) return demoSegmentation;
-    if (!dynamicData?.segmentation) return demoSegmentation;
+    if (!dynamicData?.segmentation) return defaultSegmentation;
 
     const seg = dynamicData.segmentation;
     const totalPatients = dynamicData.meta?.dataPoints?.totalPatients || 0;
@@ -67,7 +72,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters, isDemoMode =
       totalPatients,
       monthlyGrowth,
     };
-  }, [isDemoMode, dynamicData, pathologiesData]);
+  }, [dynamicData, pathologiesData]);
 
   const ageSegments = useMemo(() => {
     return segmentData.ageGroups.map((group, index) => ({

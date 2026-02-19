@@ -2,22 +2,26 @@ import React, { useMemo } from 'react';
 import { Brain, TrendingUp, TrendingDown, Minus, Sparkles, Target, Zap, Calendar, AlertCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, RadialBarChart, RadialBar, Legend } from 'recharts';
 import { usePredictions } from '../../hooks/useAnalyticsData';
-import { demoPredictions } from '../../data/demoData';
 
 interface PredictionsTabProps {
   filters: any;
-  isDemoMode?: boolean;
-  demoData?: any;
 }
 
-const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters, isDemoMode = false }) => {
+const defaultPredictions = {
+  forecast: [] as any[],
+  confidence: 0,
+  insights: [] as string[],
+  alerts: [] as any[],
+  trends: { direction: 'stable' as const, description: 'Aucune donnee disponible' },
+  model: { type: 'N/A', accuracy: 0, lastTrainedAt: '' },
+};
+
+const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters }) => {
   const { data: apiData } = usePredictions(3, 'consultations');
 
-  // Utiliser les données API avec fallback démo
   const data = useMemo(() => {
-    if (isDemoMode) return demoPredictions;
-    return apiData || demoPredictions;
-  }, [isDemoMode, apiData]);
+    return apiData || defaultPredictions;
+  }, [apiData]);
 
   const { forecast, confidence, insights, alerts, trends, model } = data;
 

@@ -42,59 +42,6 @@ interface Appointment {
   status: string;
 }
 
-// Demo appointments for fallback when API is unavailable
-const DEMO_APPOINTMENTS_DATA: Record<string, Appointment> = {
-  'demo-1': {
-    id: 'demo-1',
-    patient_name: 'Marie Dupont',
-    patient_email: 'marie.dupont@email.com',
-    patient_phone: '+33 6 12 34 56 78',
-    appointment_date: new Date().toISOString().split('T')[0],
-    appointment_time: '09:00',
-    message: 'Consultation de routine - Cardiologie',
-    status: 'confirmed',
-  },
-  'demo-2': {
-    id: 'demo-2',
-    patient_name: 'Jean Leroy',
-    patient_email: 'jean.leroy@email.com',
-    patient_phone: '+33 6 23 45 67 89',
-    appointment_date: new Date().toISOString().split('T')[0],
-    appointment_time: '10:30',
-    message: 'Suivi dermatologique',
-    status: 'confirmed',
-  },
-  'demo-3': {
-    id: 'demo-3',
-    patient_name: 'Sophie Martin',
-    patient_email: 'sophie.martin@email.com',
-    patient_phone: '+33 6 34 56 78 90',
-    appointment_date: new Date().toISOString().split('T')[0],
-    appointment_time: '11:00',
-    message: 'Consultation générale',
-    status: 'confirmed',
-  },
-  'demo-4': {
-    id: 'demo-4',
-    patient_name: 'Pierre Dubois',
-    patient_email: 'pierre.dubois@email.com',
-    patient_phone: '+33 6 45 67 89 01',
-    appointment_date: new Date().toISOString().split('T')[0],
-    appointment_time: '14:00',
-    message: 'Contrôle neurologique',
-    status: 'confirmed',
-  },
-  'demo-5': {
-    id: 'demo-5',
-    patient_name: 'Claire Moreau',
-    patient_email: 'claire.moreau@email.com',
-    patient_phone: '+33 6 56 78 90 12',
-    appointment_date: new Date().toISOString().split('T')[0],
-    appointment_time: '15:30',
-    message: 'Suivi pédiatrique',
-    status: 'confirmed',
-  },
-};
 
 interface AppointmentDetailModalProps {
   appointmentId: string | null;
@@ -176,23 +123,8 @@ export const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     setError(null);
 
     try {
-      // Check if it's a demo appointment (demo- prefix or non-UUID like APT-xxxx)
       if (appointmentId && !isValidUUID(appointmentId)) {
-        const demoAppointment = DEMO_APPOINTMENTS_DATA[appointmentId];
-        if (demoAppointment) {
-          setAppointment(demoAppointment);
-          setLoading(false);
-          return;
-        }
-        // Non-UUID ID with no matching demo data - show as demo
-        setAppointment({
-          id: appointmentId,
-          patient_name: 'Patient (démo)',
-          appointment_date: new Date().toISOString().split('T')[0],
-          appointment_time: '09:00',
-          message: 'Données de démonstration',
-          status: 'confirmed',
-        });
+        setError('Rendez-vous introuvable');
         setLoading(false);
         return;
       }
@@ -222,18 +154,6 @@ export const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     setError(null);
 
     try {
-      // Handle demo appointments (non-UUID IDs)
-      if (appointmentId && !isValidUUID(appointmentId)) {
-        setShowSuccess('Rendez-vous annulé avec succès (Mode démo)');
-        setTimeout(() => {
-          onUpdate?.();
-          onClose();
-        }, 1500);
-        setActionLoading(null);
-        setShowCancelConfirm(false);
-        return;
-      }
-
       const { error: updateError } = await supabase
         .from('appointments')
         .update({ status: 'cancelled' })
@@ -264,17 +184,6 @@ export const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
     setError(null);
 
     try {
-      // Handle demo appointments (non-UUID IDs)
-      if (appointmentId && !isValidUUID(appointmentId)) {
-        setShowSuccess('Rendez-vous marqué comme complété (Mode démo)');
-        setTimeout(() => {
-          onUpdate?.();
-          onClose();
-        }, 1500);
-        setActionLoading(null);
-        return;
-      }
-
       const { error: updateError } = await supabase
         .from('appointments')
         .update({ status: 'completed' })

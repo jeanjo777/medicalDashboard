@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import ErrorState from '../components/ErrorState';
 import EmptyState from '../components/EmptyState';
@@ -14,8 +13,6 @@ import ExportButton from '../components/Common/ExportButton';
 import { useToast } from '../components/Common/Toast';
 import { useAppointmentsQuery } from '../hooks/useAppointmentsQuery';
 import { usePagination } from '../hooks/usePagination';
-import { useDemoMode } from '../hooks/useDemoMode';
-import { demoAppointments as centralDemoAppointments, Appointment as DemoAppointmentType } from '../data/demoData';
 import { supabase } from '../lib/supabase';
 import {
   Calendar,
@@ -77,46 +74,6 @@ const normalizeStatus = (status: string): string => {
   return map[status] || status;
 };
 
-// Convertir les données démo centralisées au format local
-const convertCentralDemoAppointments = (demoApts: DemoAppointmentType[]): Appointment[] => {
-  const statusMap: Record<string, string> = {
-    'scheduled': 'a_venir',
-    'confirmed': 'a_venir',
-    'completed': 'termine',
-    'cancelled': 'annule',
-    'no-show': 'annule'
-  };
-
-  const typeMap: Record<string, string> = {
-    'consultation': 'consultation',
-    'follow-up': 'suivi',
-    'emergency': 'urgence',
-    'checkup': 'controle',
-    'surgery': 'chirurgie',
-    'therapy': 'therapie'
-  };
-
-  return demoApts.map(apt => ({
-    id: apt.id,
-    patient_name: apt.patientName,
-    patient_email: '',
-    patient_phone: '',
-    appointment_date: apt.date,
-    appointment_time: apt.time,
-    motif: apt.reason,
-    type_consultation: typeMap[apt.type] || apt.type,
-    notes: apt.notes,
-    status: statusMap[apt.status] || 'a_venir',
-    duration: apt.duration,
-    created_at: apt.createdAt,
-    patient_id: apt.patientId,
-    medic_id: apt.doctorId
-  }));
-};
-
-// Données démo converties depuis le système centralisé
-const demoAppointments: Appointment[] = convertCentralDemoAppointments(centralDemoAppointments);
-
 // Stat Card Component
 const StatCard: React.FC<{
   icon: React.ElementType;
@@ -162,7 +119,6 @@ const StatCard: React.FC<{
 const AppointmentsPage: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { isDemoMode, toggleDemoMode } = useDemoMode();
   const { appointments, loading, error, refetch, isRefetching } = useAppointmentsQuery();
   const [activeSection, setActiveSection] = useState('appointments');
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
@@ -185,11 +141,10 @@ const AppointmentsPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilterActive, setDateFilterActive] = useState(false);
 
-  // Données à afficher (démo ou réelles) - normaliser les statuts DB
+  // Données à afficher - normaliser les statuts DB
   const displayedAppointments = useMemo(() => {
-    if (isDemoMode) return demoAppointments;
     return appointments.map(apt => ({ ...apt, status: normalizeStatus(apt.status) }));
-  }, [appointments, isDemoMode]);
+  }, [appointments]);
 
   // Stats calculation
   const stats = useMemo(() => {
@@ -251,7 +206,7 @@ const AppointmentsPage: React.FC = () => {
   // }, [navigate]);
 
   const filterAndSortAppointments = useCallback(() => {
-    const dataSource = isDemoMode ? demoAppointments : appointments;
+    const dataSource = appointments;
     let filtered = [...dataSource];
 
     // Filtre par date sélectionnée si activé
@@ -284,7 +239,7 @@ const AppointmentsPage: React.FC = () => {
     });
 
     setFilteredAppointments(filtered);
-  }, [appointments, searchTerm, statusFilter, typeFilter, sortOrder, selectedDate, dateFilterActive, isDemoMode]);
+  }, [appointments, searchTerm, statusFilter, typeFilter, sortOrder, selectedDate, dateFilterActive]);
 
   useEffect(() => {
     filterAndSortAppointments();
@@ -311,18 +266,6 @@ const AppointmentsPage: React.FC = () => {
     setCancelLoading(true);
 
     try {
-      // In demo mode, simulate success
-      if (isDemoMode) {
-        showToast({
-          type: 'success',
-          title: 'Rendez-vous annulé',
-          message: `Le rendez-vous de ${selectedAppointment.patient_name} a été annulé (démo)`
-        });
-        setShowConfirmDialog(false);
-        setSelectedAppointment(null);
-        return;
-      }
-
       const { error: updateError } = await supabase
         .from('appointments')
         .update({
@@ -483,7 +426,7 @@ const AppointmentsPage: React.FC = () => {
     );
   }
 
-  if (error && !isDemoMode) {
+  if (error) {
     return (
       <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
         <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
@@ -509,14 +452,6 @@ const AppointmentsPage: React.FC = () => {
                 >
                   <RefreshCw size={18} />
                   Réessayer
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleDemoMode}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-200 font-medium cursor-pointer"
-                >
-                  <Eye size={18} />
-                  Mode Démo
                 </button>
               </div>
             </div>
@@ -544,14 +479,8 @@ const AppointmentsPage: React.FC = () => {
                 Gérez et planifiez vos consultations médicales
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
-            </div>
           </div>
         </header>
-
-        {/* Demo Mode Banner */}
-        <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
 
         <main className="flex-1 p-3 sm:p-4 lg:p-8 overflow-auto">
 
@@ -951,7 +880,6 @@ const AppointmentsPage: React.FC = () => {
       {showEditModal && selectedAppointment && (
         <EditAppointmentModal
           appointment={selectedAppointment}
-          isDemoMode={isDemoMode}
           onClose={() => {
             setShowEditModal(false);
             setSelectedAppointment(null);

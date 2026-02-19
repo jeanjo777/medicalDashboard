@@ -3,13 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import SearchFilters from '../components/Common/SearchFilters';
 import Pagination from '../components/Common/Pagination';
-import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import PatientDetailModal from '../components/Patients/PatientDetailModal';
 import PatientCardMobile from '../components/Patients/PatientCardMobile';
 import AddPatientModal from '../components/AddPatientModal';
 import { useAdvancedSearch } from '../hooks/useAdvancedSearch';
-import { useDemoMode } from '../hooks/useDemoMode';
-import { demoPatients as centralDemoPatients } from '../data/demoData';
 import {
   Bell, Plus, Eye, Users, Activity, Clock,
   RefreshCw, WifiOff, Download, AlertTriangle, LayoutGrid, List,
@@ -54,31 +51,6 @@ const getAvatarColor = (name: string): string => {
   return colors[index];
 };
 
-// Mapping des données de démonstration centralisées vers le format local
-const mapCentralPatientToLocal = (patient: typeof centralDemoPatients[0]): Patient => {
-  const statusMap: Record<string, string> = {
-    'Active': 'active',
-    'Recovered': 'recovered',
-    'Under Treatment': 'in-treatment',
-    'Inactive': 'inactive'
-  };
-  return {
-    id: patient.id,
-    name: patient.name,
-    email: patient.email,
-    phone: patient.phone,
-    date_of_birth: patient.dateOfBirth,
-    status: statusMap[patient.status] || 'active',
-    created_at: patient.createdAt,
-    gender: (patient as any).gender || undefined,
-    primary_pathology: (patient as any).primaryPathology || (patient as any).primary_pathology || undefined,
-    riskScore: (patient as any).riskScore || undefined,
-    address: (patient as any).address || undefined,
-  };
-};
-
-const demoPatients: Patient[] = centralDemoPatients.map(mapCentralPatientToLocal);
-
 // Risk score color helpers
 const getRiskScoreColor = (score: number | undefined | null): string => {
   if (score == null) return 'bg-[var(--bg-tertiary)] theme-text-muted border-[var(--border-color)]';
@@ -120,8 +92,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  const { isDemoMode, toggleDemoMode, enableDemoMode, disableDemoMode } = useDemoMode();
-
   const {
     results: patients,
     total,
@@ -172,11 +142,10 @@ const PatientsViewPageEnhanced: React.FC = () => {
 
   // Export CSV
   const handleExportCSV = useCallback(() => {
-    const data = isDemoMode ? demoPatients : patients;
-    if (data.length === 0) return;
+    if (patients.length === 0) return;
 
     const headers = ['Nom', 'Email', 'Téléphone', 'Genre', 'Âge', 'Pathologie', 'Score de risque', 'Statut', 'Date d\'ajout'];
-    const rows = data.map(p => [
+    const rows = patients.map(p => [
       p.name,
       p.email,
       p.phone || '',
@@ -200,66 +169,20 @@ const PatientsViewPageEnhanced: React.FC = () => {
     link.download = `patients_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-  }, [patients, isDemoMode]);
+  }, [patients]);
 
-  // Filtrage côté client pour le mode démo
-  const filteredDemoPatients = useMemo(() => {
-    if (!isDemoMode) return [];
-    let data = [...demoPatients];
-
-    // Recherche textuelle
-    if (filters.query && filters.query.trim()) {
-      const q = filters.query.toLowerCase();
-      data = data.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.email.toLowerCase().includes(q) ||
-        (p.phone && p.phone.toLowerCase().includes(q)) ||
-        (p.primary_pathology && p.primary_pathology.toLowerCase().includes(q))
-      );
-    }
-
-    // Filtre par statut
-    if (filters.status && filters.status !== 'all') {
-      data = data.filter(p => p.status === filters.status);
-    }
-
-    // Filtre par date de début
-    if (filters.dateFrom) {
-      data = data.filter(p => p.created_at >= filters.dateFrom!);
-    }
-
-    // Filtre par date de fin
-    if (filters.dateTo) {
-      data = data.filter(p => p.created_at.slice(0, 10) <= filters.dateTo!);
-    }
-
-    // Tri
-    if (filters.sortBy) {
-      data.sort((a, b) => {
-        const key = filters.sortBy as keyof Patient;
-        const valA = String(a[key] ?? '');
-        const valB = String(b[key] ?? '');
-        const cmp = valA.localeCompare(valB);
-        return filters.sortOrder === 'asc' ? cmp : -cmp;
-      });
-    }
-
-    return data;
-  }, [isDemoMode, filters]);
-
-  // Données à afficher (démo filtrées ou réelles)
-  const displayedPatients = isDemoMode ? filteredDemoPatients : patients;
-  const displayedTotal = isDemoMode ? filteredDemoPatients.length : total;
+  // Données à afficher
+  const displayedPatients = patients;
+  const displayedTotal = total;
 
   // Calcul des statistiques
   const stats = useMemo(() => {
-    const data = isDemoMode ? filteredDemoPatients : patients;
-    const activeCount = data.filter(p => p.status === 'active').length;
-    const inTreatmentCount = data.filter(p => p.status === 'in-treatment' || p.status === 'in_treatment').length;
-    const recoveredCount = data.filter(p => p.status === 'recovered').length;
-    const highRiskCount = data.filter(p => (p.riskScore ?? 0) > 60).length;
+    const activeCount = patients.filter(p => p.status === 'active').length;
+    const inTreatmentCount = patients.filter(p => p.status === 'in-treatment' || p.status === 'in_treatment').length;
+    const recoveredCount = patients.filter(p => p.status === 'recovered').length;
+    const highRiskCount = patients.filter(p => (p.riskScore ?? 0) > 60).length;
     return { activeCount, inTreatmentCount, recoveredCount, highRiskCount };
-  }, [patients, isDemoMode]);
+  }, [patients]);
 
   const statusOptions = [
     { value: 'all', label: 'Tous les statuts' },
@@ -316,12 +239,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <DemoModeToggle
-                isDemoMode={isDemoMode}
-                onToggle={toggleDemoMode}
-                size="sm"
-              />
-
               <button
                 type="button"
                 className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10 transition-colors"
@@ -382,13 +299,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Banner mode démo */}
-          <DemoModeBanner
-            isDemoMode={isDemoMode}
-            onDisable={disableDemoMode}
-            className="mb-4 rounded-2xl"
-          />
 
           <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
             <div className="w-full sm:w-auto">
@@ -460,7 +370,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
             </div>
           )}
 
-          {error && !isDemoMode && (
+          {error && (
             <div className="bg-[var(--bg-secondary)] rounded-2xl border border-red-500/20 p-8 text-center shadow-sm">
               <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <WifiOff size={32} className="text-red-500" />
@@ -477,19 +387,11 @@ const PatientsViewPageEnhanced: React.FC = () => {
                   <RefreshCw size={18} />
                   Réessayer
                 </button>
-                <button
-                  type="button"
-                  onClick={enableDemoMode}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all duration-200 font-medium cursor-pointer"
-                >
-                  <Eye size={18} />
-                  Mode Démo
-                </button>
               </div>
             </div>
           )}
 
-          {!loading && !error && !isDemoMode && patients.length === 0 && (
+          {!loading && !error && patients.length === 0 && (
             <div className="bg-[var(--bg-secondary)] rounded-2xl p-12 border border-[var(--border-color)] text-center shadow-sm">
               <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users size={32} className="text-emerald-500" />
@@ -509,7 +411,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
             </div>
           )}
 
-          {!loading && (isDemoMode || (!error && patients.length > 0)) && displayedPatients.length > 0 && (
+          {!loading && !error && patients.length > 0 && displayedPatients.length > 0 && (
             <>
               {/* Vue Desktop - Tableau */}
               {viewMode === 'table' && (
@@ -725,19 +627,17 @@ const PatientsViewPageEnhanced: React.FC = () => {
                 ))}
               </div>
 
-              {!isDemoMode && (
-                <div className="mt-4 sm:mt-6">
-                  <Pagination
-                    currentPage={page}
-                    totalPages={totalPages}
-                    totalItems={total}
-                    itemsPerPage={filters.limit || 10}
-                    onPageChange={goToPage}
-                    onPrevious={prevPage}
-                    onNext={nextPage}
-                  />
-                </div>
-              )}
+              <div className="mt-4 sm:mt-6">
+                <Pagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  totalItems={total}
+                  itemsPerPage={filters.limit || 10}
+                  onPageChange={goToPage}
+                  onPrevious={prevPage}
+                  onNext={nextPage}
+                />
+              </div>
             </>
           )}
         </main>
@@ -750,11 +650,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
           patientId={selectedPatientId}
           onPatientUpdated={handlePatientUpdated}
           onPatientDeleted={handlePatientDeleted}
-          isDemoMode={isDemoMode}
-          demoPatientData={isDemoMode ? (() => {
-            const dp = demoPatients.find(p => p.id === selectedPatientId);
-            return dp ? { ...dp, address: '', notes: '', updated_at: dp.created_at } : undefined;
-          })() : undefined}
         />
       )}
 

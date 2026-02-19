@@ -18,19 +18,17 @@ interface ReportItem {
 interface MedicalAIReportsProps {
   reports?: ReportItem[];
   onCopy?: () => void;
-  isDemoMode?: boolean;
 }
 
 const defaultReports: ReportItem[] = [
-  { icon: 'patients', label: 'Patients à risque', progress: 75 },
-  { icon: 'diagnostics', label: 'Diagnostics IA', progress: 82 },
-  { icon: 'planning', label: 'Planning optimal', progress: 68 },
+  { icon: 'patients', label: 'Patients à risque', progress: 0 },
+  { icon: 'diagnostics', label: 'Diagnostics IA', progress: 0 },
+  { icon: 'planning', label: 'Planning optimal', progress: 0 },
 ];
 
 const MedicalAIReports: React.FC<MedicalAIReportsProps> = ({
   reports: reportsProp,
   onCopy,
-  isDemoMode = true,
 }) => {
   const { data: analyticsStats } = useAnalyticsStats();
   const { stats: dashStats } = useDashboardStatsQuery();
@@ -61,8 +59,7 @@ const MedicalAIReports: React.FC<MedicalAIReportsProps> = ({
     ];
   }, [analyticsStats, dashStats]);
 
-  const reports = reportsProp
-    ?? (isDemoMode ? defaultReports : (realReports || defaultReports));
+  const reports = reportsProp ?? (realReports || defaultReports);
 
   const handleCopy = () => {
     if (onCopy) {

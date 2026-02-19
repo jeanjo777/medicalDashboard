@@ -2,16 +2,12 @@ import React from 'react';
 import { UserCheck, UserX, Clock, Users } from 'lucide-react';
 import { useTodayPatientStats } from '../../hooks/useTodayPatientStats';
 
-interface TodayPatientsWidgetProps {
-  isDemoMode?: boolean;
-}
+const emptyStats = { total: 0, seen: 0, waiting: 0, absent: 0 };
 
-const demoStats = { total: 24, seen: 16, waiting: 5, absent: 3 };
-
-const TodayPatientsWidget: React.FC<TodayPatientsWidgetProps> = ({ isDemoMode = true }) => {
+const TodayPatientsWidget: React.FC = () => {
   const { data: todayData } = useTodayPatientStats();
 
-  const s = isDemoMode ? demoStats : (todayData || demoStats);
+  const s = todayData || emptyStats;
 
   const stats = [
     { label: 'Total prévus', value: s.total, icon: <Users className="h-4 w-4" />, color: 'text-blue-500 bg-blue-500/10' },

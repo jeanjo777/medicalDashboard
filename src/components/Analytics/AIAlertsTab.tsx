@@ -21,16 +21,13 @@ import {
   EyeOff,
   Building2
 } from 'lucide-react';
-import { demoAIAlerts, AIAlert } from '../../data/demoData';
-import { useAIAlerts } from '../../hooks/useAnalyticsData';
+import { useAIAlerts, AIAlert } from '../../hooks/useAnalyticsData';
 
 interface AIAlertsTabProps {
   filters: any;
-  isDemoMode?: boolean;
-  demoData?: any;
 }
 
-const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }) => {
+const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [showReadAlerts, setShowReadAlerts] = useState(true);
   const [expandedAlert, setExpandedAlert] = useState<string | null>(null);
@@ -42,8 +39,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
 
   // Map API alerts to the AIAlert shape used by this component
   const rawAlerts: AIAlert[] = useMemo(() => {
-    if (isDemoMode) return demoAIAlerts;
-    if (!apiAlertsData?.alerts) return demoAIAlerts;
+    if (!apiAlertsData?.alerts) return [];
 
     return apiAlertsData.alerts.map((a) => {
       const categoryMap: Record<string, AIAlert['category']> = {
@@ -71,7 +67,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters, isDemoMode = false }
         } : undefined,
       };
     });
-  }, [isDemoMode, apiAlertsData]);
+  }, [apiAlertsData]);
 
   // Apply local state overrides
   const alerts = useMemo(() => {

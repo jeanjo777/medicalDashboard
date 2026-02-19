@@ -21,15 +21,12 @@ import {
   AlertCircle
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import ErrorState from '../components/ErrorState';
 import AddAppointmentModal from '../components/Appointments/AddAppointmentModal';
 import AppointmentDetailModal from '../components/Appointments/AppointmentDetailModal';
 import EditAppointmentModal from '../components/Appointments/EditAppointmentModal';
 import { useToast } from '../components/Common/Toast';
-import { useDemoMode } from '../hooks/useDemoMode';
-import { demoAppointments as centralDemoAppointments, Appointment as DemoAppointment } from '../data/demoData';
 import { supabase } from '../lib/supabase';
 import {
   format,
@@ -98,34 +95,6 @@ const normalizeStatus = (status: string): string => {
     'no_show': 'annule',
   };
   return map[status] || status;
-};
-
-// Convertir les données démo centralisées au format local
-const convertDemoAppointments = (demoApts: DemoAppointment[]): Appointment[] => {
-  const statusMap: Record<string, string> = {
-    'scheduled': 'a_venir',
-    'confirmed': 'a_venir',
-    'completed': 'termine',
-    'cancelled': 'annule',
-    'no-show': 'annule'
-  };
-
-  return demoApts.map(apt => ({
-    id: apt.id,
-    patient_name: apt.patientName,
-    patient_email: '',
-    patient_phone: '',
-    appointment_date: apt.date,
-    appointment_time: apt.time,
-    motif: apt.reason,
-    type_consultation: apt.type,
-    notes: apt.notes,
-    status: statusMap[apt.status] || 'a_venir',
-    duration: apt.duration,
-    created_at: apt.createdAt,
-    patient_id: apt.patientId,
-    medic_id: apt.doctorId
-  }));
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; border: string; gradient: string }> = {
@@ -734,7 +703,6 @@ AppointmentCard.displayName = 'AppointmentCard';
 // Main Calendar Component
 const CalendarViewPage: React.FC = () => {
   const { showToast } = useToast();
-  const { isDemoMode, toggleDemoMode } = useDemoMode();
   const [activeSection, setActiveSection] = useState('calendar');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
@@ -804,17 +772,6 @@ const CalendarViewPage: React.FC = () => {
         endDate = format(weekEnd, 'yyyy-MM-dd');
       }
 
-      if (isDemoMode) {
-        const demoData = convertDemoAppointments(centralDemoAppointments);
-        const filteredData = demoData.filter(apt =>
-          apt.appointment_date >= startDate && apt.appointment_date <= endDate
-        );
-        setAppointments(filteredData);
-        setLoading(false);
-        setRefreshing(false);
-        return;
-      }
-
       const { data, error: fetchError } = await supabase
         .from('appointments')
         .select('*')
@@ -833,7 +790,7 @@ const CalendarViewPage: React.FC = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [currentWeekStart, currentMonth, viewMode, isDemoMode]);
+  }, [currentWeekStart, currentMonth, viewMode]);
 
   useEffect(() => {
     fetchAppointments();
@@ -997,12 +954,9 @@ const CalendarViewPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
             </div>
           </div>
         </header>
-
-        <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
 
         <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto bg-[var(--bg-primary)]">
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-5">

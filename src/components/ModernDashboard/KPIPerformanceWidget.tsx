@@ -12,50 +12,11 @@ interface KPI {
   color: string;
 }
 
-interface KPIPerformanceWidgetProps {
-  isDemoMode?: boolean;
-}
-
-const demoKpis: KPI[] = [
-  {
-    label: "Taux d'occupation",
-    value: '87%',
-    change: '+4.2%',
-    trend: 'up',
-    icon: <Activity className="h-4 w-4" />,
-    color: 'bg-blue-500/10 text-blue-600',
-  },
-  {
-    label: 'Revenus du mois',
-    value: '12 450 FCFA',
-    change: '+12.5%',
-    trend: 'up',
-    icon: <DollarSign className="h-4 w-4" />,
-    color: 'bg-emerald-500/10 text-emerald-600',
-  },
-  {
-    label: 'Satisfaction patients',
-    value: '4.8/5',
-    change: '+0.3',
-    trend: 'up',
-    icon: <Star className="h-4 w-4" />,
-    color: 'bg-amber-500/10 text-amber-600',
-  },
-  {
-    label: 'Durée moy. consultation',
-    value: '22 min',
-    change: '-3 min',
-    trend: 'down',
-    icon: <Clock className="h-4 w-4" />,
-    color: 'bg-purple-500/10 text-purple-600',
-  },
-];
-
-const KPIPerformanceWidget: React.FC<KPIPerformanceWidgetProps> = ({ isDemoMode = true }) => {
+const KPIPerformanceWidget: React.FC = () => {
   const { stats, loading } = useDashboardStatsQuery();
   const { data: medecins } = useMedecinPerformance();
 
-  const realKpis: KPI[] = useMemo(() => {
+  const kpis: KPI[] = useMemo(() => {
     const avgSatisfaction = medecins?.length
       ? (medecins.reduce((s, m) => s + m.satisfaction, 0) / medecins.length).toFixed(1)
       : '0';
@@ -98,8 +59,6 @@ const KPIPerformanceWidget: React.FC<KPIPerformanceWidgetProps> = ({ isDemoMode 
       },
     ];
   }, [stats, medecins]);
-
-  const kpis = isDemoMode ? demoKpis : (loading && !stats.appointmentsToday ? demoKpis : realKpis);
 
   return (
     <div className="rounded-2xl bg-[var(--bg-secondary)] p-4 shadow-sm transition-colors duration-300">

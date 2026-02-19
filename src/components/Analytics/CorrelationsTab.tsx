@@ -2,23 +2,25 @@ import React, { useMemo, useState } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line, Area, AreaChart, ComposedChart, Bar } from 'recharts';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, Sparkles, Target, Lightbulb, GitBranch, Activity, Zap } from 'lucide-react';
 import ExportButton from '../Common/ExportButton';
-import { demoCorrelations } from '../../data/demoData';
 import { useCorrelations } from '../../hooks/useAnalyticsData';
 
 interface CorrelationsTabProps {
   filters: any;
-  isDemoMode?: boolean;
-  demoData?: any;
 }
 
-const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters, isDemoMode = false }) => {
+const defaultCorrelations = {
+  scatterData: [] as any[],
+  correlationPairs: [] as any[],
+  insights: [] as any[],
+};
+
+const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters }) => {
   const [selectedCorrelation, setSelectedCorrelation] = useState<number>(0);
   const { data: apiData } = useCorrelations();
 
   const correlationData = useMemo(() => {
-    if (isDemoMode) return demoCorrelations;
-    return apiData || demoCorrelations;
-  }, [isDemoMode, apiData]);
+    return apiData || defaultCorrelations;
+  }, [apiData]);
 
   const scatterData = useMemo(() => correlationData.scatterData, [correlationData]);
   const correlationPairs = useMemo(() => correlationData.correlationPairs, [correlationData]);

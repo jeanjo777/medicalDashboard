@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
-import DemoModeToggle, { DemoModeBanner } from '../components/Common/DemoModeToggle';
-import { useDemoMode } from '../hooks/useDemoMode';
 import {
   TrendingUp,
   TrendingDown,
@@ -52,7 +50,6 @@ type TimePeriod = 'day' | 'week' | 'month' | 'year';
 
 const AnalyticsPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('statistics');
-  const { isDemoMode, toggleDemoMode } = useDemoMode();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem('sidebar-collapsed');
     return saved ? JSON.parse(saved) : false;
@@ -204,12 +201,9 @@ const AnalyticsPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-2 sm:gap-3">
-              <DemoModeToggle isDemoMode={isDemoMode} onToggle={toggleDemoMode} size="sm" />
             </div>
           </div>
         </header>
-
-        <DemoModeBanner isDemoMode={isDemoMode} onDisable={toggleDemoMode} />
 
         <main className="flex-1 p-3 sm:p-4 lg:p-6 xl:p-8 overflow-auto">
           <div className="space-y-4 sm:space-y-5 lg:space-y-6 max-w-[1600px] mx-auto">

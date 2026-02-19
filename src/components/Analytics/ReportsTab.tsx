@@ -5,11 +5,9 @@ import { useDynamicAnalytics, usePredictions, useAIAlerts } from '../../hooks/us
 
 interface ReportsTabProps {
   filters: any;
-  isDemoMode?: boolean;
-  demoData?: any;
 }
 
-const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) => {
+const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
   const { data: dynamicData } = useDynamicAnalytics(filters);
   const { data: predictionsData } = usePredictions();
   const { data: alertsData } = useAIAlerts();
@@ -63,66 +61,12 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
     }
   ];
 
-  const demoSavedReports = [
-    {
-      id: 1,
-      name: 'Rapport Mensuel - Janvier 2026',
-      type: 'Performance',
-      date: '2026-02-01',
-      size: '2.4 MB',
-      format: 'PDF',
-      status: 'completed',
-      downloads: 12
-    },
-    {
-      id: 2,
-      name: 'Statistiques Trimestrielles Q4 2025',
-      type: 'Patients',
-      date: '2026-01-15',
-      size: '3.8 MB',
-      format: 'PDF',
-      status: 'completed',
-      downloads: 8
-    },
-    {
-      id: 3,
-      name: 'Analyse Activité - Décembre 2025',
-      type: 'Activité',
-      date: '2026-01-05',
-      size: '1.9 MB',
-      format: 'Excel',
-      status: 'completed',
-      downloads: 15
-    },
-    {
-      id: 4,
-      name: 'Rapport Analytique Q1 2026',
-      type: 'Analytique',
-      date: '2026-02-10',
-      size: '4.2 MB',
-      format: 'PDF',
-      status: 'pending',
-      downloads: 0
-    }
-  ];
-
-  const demoScheduledReports = [
-    { name: 'Rapport Mensuel Automatique', frequency: 'Mensuel', nextRun: '2026-03-01', recipients: 3 },
-    { name: 'Statistiques Hebdomadaires', frequency: 'Hebdomadaire', nextRun: '2026-02-24', recipients: 5 },
-    { name: 'Analyse Trimestrielle', frequency: 'Trimestriel', nextRun: '2026-04-01', recipients: 2 }
-  ];
-
-  const savedReports = isDemoMode ? demoSavedReports : [];
-  const scheduledReports = isDemoMode ? demoScheduledReports : [];
+  const savedReports: { id: number; name: string; type: string; date: string; size: string; format: string; status: string; downloads: number }[] = [];
+  const scheduledReports: { name: string; frequency: string; nextRun: string; recipients: number }[] = [];
 
   const reportData = useMemo(() => {
-    if (isDemoMode || !dynamicData) {
-      return [
-        { Métrique: 'Patients consultés', Valeur: 247, Évolution: '+12%' },
-        { Métrique: 'Consultations totales', Valeur: 520, Évolution: '+9.5%' },
-        { Métrique: 'Satisfaction moyenne', Valeur: '4.7/5', Évolution: '+4.4%' },
-        { Métrique: 'Taux récupération', Valeur: '85%', Évolution: '+4.9%' },
-      ];
+    if (!dynamicData) {
+      return [];
     }
     const kpis = dynamicData.kpis;
     const rows: Array<Record<string, string | number>> = [
@@ -141,7 +85,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
       rows.push({ Métrique: 'Alertes IA actives', Valeur: alertsData.alerts.length, Évolution: `${alertsData.alerts.filter(a => a.severity === 'critical').length} critiques` });
     }
     return rows;
-  }, [isDemoMode, dynamicData, predictionsData, alertsData]);
+  }, [dynamicData, predictionsData, alertsData]);
 
   const handleGenerateReport = async () => {
     setIsGenerating(true);
@@ -451,7 +395,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
           <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg w-fit mb-3">
             <FileText size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold theme-text-primary mb-1">{isDemoMode ? 24 : savedReports.length}</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">{savedReports.length}</p>
           <p className="text-sm theme-text-muted">Rapports générés ce mois</p>
         </div>
 
@@ -459,7 +403,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
           <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg w-fit mb-3">
             <Download size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold theme-text-primary mb-1">{isDemoMode ? 156 : savedReports.reduce((sum, r) => sum + r.downloads, 0)}</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">{savedReports.reduce((sum, r) => sum + r.downloads, 0)}</p>
           <p className="text-sm theme-text-muted">Téléchargements totaux</p>
         </div>
 
@@ -467,7 +411,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters, isDemoMode = false }) 
           <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg w-fit mb-3">
             <Clock size={24} className="text-white" />
           </div>
-          <p className="text-2xl font-bold theme-text-primary mb-1">{scheduledReports.length || (isDemoMode ? 3 : 0)}</p>
+          <p className="text-2xl font-bold theme-text-primary mb-1">{scheduledReports.length}</p>
           <p className="text-sm theme-text-muted">Rapports planifiés actifs</p>
         </div>
       </div>

@@ -1,34 +1,23 @@
 import React from 'react';
 import { Users, TrendingUp, Calendar, AlertTriangle, ArrowUp, ArrowDown, Brain } from 'lucide-react';
 import { useAnalyticsStats } from '../../hooks/useAnalyticsData';
-import { demoKPIStats } from '../../data/demoData';
 import ChartLoader from './ChartLoader';
 import ChartError from './ChartError';
 
-interface KPICardsProps {
-  isDemoMode?: boolean;
-  demoData?: typeof demoKPIStats;
-}
+interface KPICardsProps {}
 
-const KPICards: React.FC<KPICardsProps> = ({ isDemoMode = false, demoData }) => {
+const KPICards: React.FC<KPICardsProps> = () => {
   const { data: stats, isLoading, isError, refetch } = useAnalyticsStats();
 
-  // Utiliser les données démo si le mode démo est actif
-  const displayStats = isDemoMode
-    ? (demoData || demoKPIStats)
-    : stats;
-
-  if (!isDemoMode && isLoading) {
+  if (isLoading) {
     return <ChartLoader />;
   }
 
-  if (!isDemoMode && (isError || !stats)) {
+  if (isError || !stats) {
     return <ChartError message="Erreur lors du chargement des statistiques" onRetry={() => refetch()} />;
   }
 
-  if (!displayStats) {
-    return <ChartLoader />;
-  }
+  const displayStats = stats;
 
   const kpis = [
     {

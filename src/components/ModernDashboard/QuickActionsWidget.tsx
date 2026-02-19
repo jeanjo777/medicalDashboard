@@ -8,7 +8,7 @@ const QuickActionsWidget: React.FC = () => {
   const actions = [
     { label: 'Nouveau patient', icon: <UserPlus className="h-4 w-4" />, color: 'bg-blue-500', route: '/patients-enhanced' },
     { label: 'Rendez-vous', icon: <CalendarPlus className="h-4 w-4" />, color: 'bg-emerald-500', route: '/appointments' },
-    { label: 'Consultation', icon: <Stethoscope className="h-4 w-4" />, color: 'bg-purple-500', route: '/consultation' },
+    // { label: 'Consultation', icon: <Stethoscope className="h-4 w-4" />, color: 'bg-purple-500', route: '/consultation' }, // Hidden for now
     { label: 'Rapport', icon: <FileText className="h-4 w-4" />, color: 'bg-orange-500', route: '/reports' },
     { label: 'Assistant IA', icon: <Brain className="h-4 w-4" />, color: 'bg-pink-500', route: '/ai-assistant' },
     { label: 'Statistiques', icon: <BarChart3 className="h-4 w-4" />, color: 'bg-cyan-500', route: '/analytics-advanced' },

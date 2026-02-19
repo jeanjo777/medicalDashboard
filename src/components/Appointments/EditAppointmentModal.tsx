@@ -20,14 +20,12 @@ interface Appointment {
 
 interface EditAppointmentModalProps {
   appointment: Appointment;
-  isDemoMode?: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
   appointment,
-  isDemoMode = false,
   onClose,
   onSuccess
 }) => {
@@ -91,14 +89,6 @@ const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     setError(null);
 
     try {
-      // In demo mode, simulate success without hitting database
-      if (isDemoMode) {
-        logger.info('[EditAppointmentModal] Demo mode - simulating update');
-        await new Promise(resolve => setTimeout(resolve, 300));
-        onSuccess();
-        return;
-      }
-
       const updateData: Record<string, unknown> = {
         appointment_date: formData.appointment_date,
         appointment_time: formData.appointment_time,

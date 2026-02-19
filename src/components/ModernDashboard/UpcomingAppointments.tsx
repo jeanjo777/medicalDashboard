@@ -19,8 +19,6 @@ import { supabase } from '../../lib/supabase';
 import EmptyState from '../EmptyState';
 import AppointmentDetailModal from '../AppointmentDetailModal';
 import logger from '../../utils/logger';
-import { useDemoMode } from '../../hooks/useDemoMode';
-import { demoAppointments as centralDemoAppointments } from '../../data/demoData';
 
 interface Appointment {
   id: string;
@@ -34,67 +32,8 @@ interface Appointment {
   email: string;
 }
 
-const DEMO_APPOINTMENTS: Appointment[] = [
-  {
-    id: 'demo-1',
-    initials: 'MD',
-    name: 'Marie Dupont',
-    department: 'Cardiologie',
-    time: '09:00',
-    type: 'Consultation',
-    bgColor: 'bg-blue-500',
-    phone: '+33 6 12 34 56 78',
-    email: 'marie.dupont@email.com',
-  },
-  {
-    id: 'demo-2',
-    initials: 'JL',
-    name: 'Jean Leroy',
-    department: 'Dermatologie',
-    time: '10:30',
-    type: 'Suivi',
-    bgColor: 'bg-emerald-500',
-    phone: '+33 6 23 45 67 89',
-    email: 'jean.leroy@email.com',
-  },
-  {
-    id: 'demo-3',
-    initials: 'SM',
-    name: 'Sophie Martin',
-    department: 'Consultation Générale',
-    time: '11:00',
-    type: 'Consultation',
-    bgColor: 'bg-purple-500',
-    phone: '+33 6 34 56 78 90',
-    email: 'sophie.martin@email.com',
-  },
-  {
-    id: 'demo-4',
-    initials: 'PD',
-    name: 'Pierre Dubois',
-    department: 'Neurologie',
-    time: '14:00',
-    type: 'Contrôle',
-    bgColor: 'bg-orange-500',
-    phone: '+33 6 45 67 89 01',
-    email: 'pierre.dubois@email.com',
-  },
-  {
-    id: 'demo-5',
-    initials: 'CM',
-    name: 'Claire Moreau',
-    department: 'Pédiatrie',
-    time: '15:30',
-    type: 'Suivi',
-    bgColor: 'bg-pink-500',
-    phone: '+33 6 56 78 90 12',
-    email: 'claire.moreau@email.com',
-  },
-];
-
 const UpcomingAppointments: React.FC = () => {
   const navigate = useNavigate();
-  const { isDemoMode } = useDemoMode();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,36 +41,9 @@ const UpcomingAppointments: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const getTodayDemoAppointments = (): Appointment[] => {
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-    const todayApts = centralDemoAppointments.filter(apt => apt.date === todayStr);
-
-    if (todayApts.length > 0) {
-      return todayApts.slice(0, 6).map((apt, index) => ({
-        id: apt.id,
-        initials: apt.patientInitials,
-        name: apt.patientName,
-        department: apt.department,
-        time: apt.time,
-        type: apt.type === 'follow-up' ? 'Suivi' : apt.type === 'checkup' ? 'Contrôle' : apt.type === 'emergency' ? 'Urgence' : apt.type === 'therapy' ? 'Thérapie' : 'Consultation',
-        bgColor: getColorForIndex(index),
-        phone: '',
-        email: '',
-      }));
-    }
-    return DEMO_APPOINTMENTS;
-  };
-
   useEffect(() => {
-    if (isDemoMode) {
-      setAppointments(getTodayDemoAppointments());
-      setLoading(false);
-      setError(null);
-    } else {
-      fetchTodayAppointments();
-    }
-  }, [isDemoMode]);
+    fetchTodayAppointments();
+  }, []);
 
   const fetchTodayAppointments = async () => {
     setLoading(true);
@@ -176,14 +88,12 @@ const UpcomingAppointments: React.FC = () => {
 
         setAppointments(formattedAppointments);
       } else {
-        logger.info('[UpcomingAppointments] No data from Supabase, using demo fallback');
-        setAppointments(getTodayDemoAppointments());
+        logger.info('[UpcomingAppointments] No appointments found for today');
+        setAppointments([]);
       }
     } catch (err: any) {
       logger.error('[UpcomingAppointments] Error:', err);
-      logger.info('[UpcomingAppointments] Using demo data as fallback');
-      setAppointments(DEMO_APPOINTMENTS);
-      setError(null);
+      setError('Erreur lors du chargement des rendez-vous');
     } finally {
       setLoading(false);
     }
