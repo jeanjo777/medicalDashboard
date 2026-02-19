@@ -85,7 +85,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   const { appointments } = useAppointmentsQuery();
 
   const departmentData = useMemo(() => {
-    const data = isDemoMode ? demoDepartementStats : (departements?.length ? departements : demoDepartementStats);
+    const data = isDemoMode ? demoDepartementStats : (departements ?? []);
     return data?.map((dept, index) => ({
       name: dept.departement,
       patients: dept.patients_count,
@@ -96,7 +96,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, departements]);
 
   const medicPerformance = useMemo(() => {
-    const data = isDemoMode ? demoMedecinPerformance : (medecins?.length ? medecins : demoMedecinPerformance);
+    const data = isDemoMode ? demoMedecinPerformance : (medecins ?? []);
     return data?.map((med) => ({
       name: med.medecin_name,
       consultations: med.consultations,
@@ -106,7 +106,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, medecins]);
 
   const patientFlowData = useMemo(() => {
-    const data = isDemoMode ? demoFluxPatients : (flux?.length ? flux : demoFluxPatients);
+    const data = isDemoMode ? demoFluxPatients : (flux ?? []);
     const mapped = data?.map((f) => ({
       month: f.mois,
       consultations: f.consultations,
@@ -119,7 +119,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, flux, flowPeriod]);
 
   const pathologyData = useMemo(() => {
-    const data = isDemoMode ? demoPathologiesDistribution : (pathologies?.length ? pathologies : demoPathologiesDistribution);
+    const data = isDemoMode ? demoPathologiesDistribution : (pathologies ?? []);
     return data?.map((path, index) => ({
       name: path.pathologie,
       value: path.pourcentage,
@@ -128,7 +128,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, pathologies]);
 
   const recoveryData = useMemo(() => {
-    const data = isDemoMode ? demoTauxRecuperation : (recuperation?.length ? recuperation : demoTauxRecuperation);
+    const data = isDemoMode ? demoTauxRecuperation : (recuperation ?? []);
     return data?.map((rec) => ({
       week: `S${rec.semaine}`,
       objectif: rec.objectif,
@@ -137,7 +137,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   }, [isDemoMode, recuperation]);
 
   const radarData = useMemo(() => {
-    const data = isDemoMode ? demoSystemesSante : (systemes?.length ? systemes : demoSystemesSante);
+    const data = isDemoMode ? demoSystemesSante : (systemes ?? []);
     return data?.map((sys) => ({
       system: sys.systeme,
       value: sys.score
@@ -146,7 +146,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
 
   // Compute weekly data from real appointments
   const weeklyData = useMemo(() => {
-    if (isDemoMode || !appointments.length) return demoChartData.weeklyAppointments;
+    if (isDemoMode) return demoChartData.weeklyAppointments;
+    if (!appointments.length) return ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map(day => ({ day, appointments: 0, completed: 0 }));
     const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
     const now = new Date();
     const startOfWeek = new Date(now);
@@ -169,7 +170,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
 
   // Compute appointment types from real data
   const appointmentTypeData = useMemo(() => {
-    if (isDemoMode || !appointments.length) return demoChartData.appointmentsByType;
+    if (isDemoMode) return demoChartData.appointmentsByType;
+    if (!appointments.length) return [];
     const typeMap: Record<string, number> = {};
     appointments.forEach(apt => {
       const type = apt.type_consultation || 'Consultation';
@@ -197,9 +199,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
 
   // Generate sparklines from real flow data
   const sparklines = useMemo(() => {
-    if (isDemoMode || !flux?.length) return demoChartData.sparklines;
+    if (isDemoMode) return demoChartData.sparklines;
+    if (!flux?.length) return { patients: [{ value: 0 }], consultations: [{ value: 0 }], satisfaction: [{ value: 0 }], risk: [{ value: 0 }] };
     const pts = flux.filter(f => f.consultations > 0).slice(-7);
-    if (pts.length < 2) return demoChartData.sparklines;
+    if (pts.length < 2) return { patients: [{ value: 0 }], consultations: [{ value: 0 }], satisfaction: [{ value: 0 }], risk: [{ value: 0 }] };
     return {
       patients: pts.map(f => ({ value: f.consultations + f.suivis })),
       consultations: pts.map(f => ({ value: f.consultations })),
@@ -216,10 +219,10 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
   const totalAppointments = appointmentTypeData.reduce((sum, a) => sum + a.count, 0);
   const globalScore = radarData.length > 0 ? Math.round(radarData.reduce((sum, r) => sum + r.value, 0) / radarData.length) : 0;
 
-  const casRisque = kpiStats?.cas_risque ?? 23;
-  const casRisqueEvol = kpiStats?.cas_risque_evolution ?? -8.0;
-  const patientsConsultesEvol = kpiStats?.patients_consultes_evolution ?? 12.5;
-  const rdvHonoresEvol = kpiStats?.rdv_honores_evolution ?? 8.3;
+  const casRisque = kpiStats?.cas_risque ?? (isDemoMode ? 23 : 0);
+  const casRisqueEvol = kpiStats?.cas_risque_evolution ?? (isDemoMode ? -8.0 : 0);
+  const patientsConsultesEvol = kpiStats?.patients_consultes_evolution ?? (isDemoMode ? 12.5 : 0);
+  const rdvHonoresEvol = kpiStats?.rdv_honores_evolution ?? (isDemoMode ? 8.3 : 0);
 
   const kpiCards = [
     {
@@ -496,7 +499,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
             <li className="flex items-start gap-2.5">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 flex-shrink-0" />
               <p className="text-sm text-white/90 leading-relaxed">
-                <strong>{totalAppointments.toLocaleString()} rendez-vous</strong> enregistres - taux d'honoration a <strong>{kpiStats?.rdv_honores ?? 89}%</strong>
+                <strong>{totalAppointments.toLocaleString()} rendez-vous</strong> enregistres - taux d'honoration a <strong>{kpiStats?.rdv_honores ?? (isDemoMode ? 89 : 0)}%</strong>
               </p>
             </li>
             <li className="flex items-start gap-2.5">
@@ -704,11 +707,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
             </div>
             <div className="flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-400">RDV Honorés</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{kpiStats?.rdv_honores ?? 89}%</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{kpiStats?.rdv_honores ?? (isDemoMode ? 89 : 0)}%</p>
             </div>
-            <span className={`text-xs font-semibold flex items-center gap-0.5 ${(kpiStats?.rdv_honores_evolution ?? 3.8) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-              {(kpiStats?.rdv_honores_evolution ?? 3.8) >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-              {(kpiStats?.rdv_honores_evolution ?? 3.8) > 0 ? '+' : ''}{kpiStats?.rdv_honores_evolution ?? 3.8}%
+            <span className={`text-xs font-semibold flex items-center gap-0.5 ${(kpiStats?.rdv_honores_evolution ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+              {(kpiStats?.rdv_honores_evolution ?? 0) >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+              {(kpiStats?.rdv_honores_evolution ?? 0) > 0 ? '+' : ''}{kpiStats?.rdv_honores_evolution ?? 0}%
             </span>
           </div>
         </div>
@@ -721,11 +724,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters, isDemoMode = false }
             </div>
             <div className="flex-1">
               <p className="text-xs text-gray-500 dark:text-gray-400">Cas Urgences</p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white">{kpiStats?.rdv_exceptionnels ?? 23}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{kpiStats?.rdv_exceptionnels ?? (isDemoMode ? 23 : 0)}</p>
             </div>
-            <span className={`text-xs font-semibold flex items-center gap-0.5 ${(kpiStats?.rdv_exceptionnels_evolution ?? -5.2) <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-              {(kpiStats?.rdv_exceptionnels_evolution ?? -5.2) <= 0 ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
-              {(kpiStats?.rdv_exceptionnels_evolution ?? -5.2) > 0 ? '+' : ''}{kpiStats?.rdv_exceptionnels_evolution ?? -5.2}%
+            <span className={`text-xs font-semibold flex items-center gap-0.5 ${(kpiStats?.rdv_exceptionnels_evolution ?? 0) <= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+              {(kpiStats?.rdv_exceptionnels_evolution ?? 0) <= 0 ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
+              {(kpiStats?.rdv_exceptionnels_evolution ?? 0) > 0 ? '+' : ''}{kpiStats?.rdv_exceptionnels_evolution ?? 0}%
             </span>
           </div>
         </div>
