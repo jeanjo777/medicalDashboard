@@ -734,7 +734,7 @@ const SettingsPage: React.FC = () => {
 
       {/* Modals */}
       {showPasswordModal && (
-        <PasswordModal onClose={() => setShowPasswordModal(false)} onSave={handlePasswordChange} />
+        <PasswordModal onClose={() => setShowPasswordModal(false)} onSave={handlePasswordChange} onError={(msg) => showToast(msg, 'error')} />
       )}
       {showDeleteConfirm && (
         <ConfirmModal
