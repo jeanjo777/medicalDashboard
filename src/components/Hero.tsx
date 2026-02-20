@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { ArrowRight, Play, Sparkles, Heart, Shield } from 'lucide-react';
+import { ArrowRight, Play, Sparkles, Heart, Shield, Phone, Star, Activity, Stethoscope } from 'lucide-react';
 
 const Hero: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -10,7 +10,7 @@ const Hero: React.FC = () => {
       const headerOffset = 80;
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      
+
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
@@ -37,142 +37,173 @@ const Hero: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
-  const floatingElements = [
-    { icon: Heart, delay: '0s', position: 'top-20 left-10' },
-    { icon: Shield, delay: '2s', position: 'top-40 right-20' },
-    { icon: Sparkles, delay: '4s', position: 'bottom-40 left-20' },
-  ];
-
   return (
-    <section 
-      id="accueil" 
+    <section
+      id="accueil"
       ref={heroRef}
       className="pt-20 sm:pt-24 lg:pt-0 relative min-h-screen flex items-center overflow-hidden fade-in-section"
     >
-      {/* Dynamic gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-100 animate-gradient"></div>
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-teal-50/30"></div>
 
-      {/* Background image with proper mobile handling */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
-        style={{
-          backgroundImage: "url('https://images.pexels.com/photos/5327656/pexels-photo-5327656.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop')",
-          backgroundAttachment: window.innerWidth > 768 ? 'fixed' : 'scroll'
-        }}
-      />
+      {/* Subtle pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, #0E7490 1px, transparent 0)`,
+        backgroundSize: '40px 40px'
+      }}></div>
 
-      {/* Enhanced background overlay with glassmorphism effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/60 to-transparent backdrop-blur-sm"></div>
-      
-      {/* Floating decorative elements - Hidden on mobile */}
-      {floatingElements.map((element, index) => (
-        <div
-          key={index}
-          className={`absolute ${element.position} floating-element opacity-30 hidden xl:block`}
-          style={{ animationDelay: element.delay }}
-        >
-          <div className="relative">
-            <element.icon size={48} className="text-primary drop-shadow-lg" />
-            <div className="absolute inset-0 blur-xl bg-primary/20"></div>
-          </div>
-        </div>
-      ))}
+      {/* Decorative gradient blobs */}
+      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-gradient-to-br from-teal-200/30 to-blue-200/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-100/40 to-transparent rounded-full blur-3xl"></div>
 
-      {/* Animated background particles - Reduced on mobile */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(window.innerWidth > 768 ? 8 : 4)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full animate-float"
-            style={{
-              width: `${Math.random() * 6 + 4}px`,
-              height: `${Math.random() * 6 + 4}px`,
-              background: `radial-gradient(circle, rgba(79, 147, 206, ${Math.random() * 0.3 + 0.2}), transparent)`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${4 + i}s`,
-              boxShadow: `0 0 20px rgba(79, 147, 206, ${Math.random() * 0.3 + 0.2})`
-            }}
-          />
-        ))}
-      </div>
-      
-      {/* Main content container with proper mobile constraints */}
+      {/* Main content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 lg:py-16 xl:py-20 relative z-10 w-full max-w-7xl">
-        <div className="w-full lg:w-1/2 xl:w-3/5 hero-content text-center lg:text-left">
-          <div className="animate-fade-in-up">
-            <h1 className="text-3xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-3 sm:mb-4 font-heading leading-tight">
-              <span className="text-gradient">Ake Achi Simplice</span>
-            </h1>
-          </div>
-          
-          <div className="animate-fade-in-up delay-200">
-            <h2 className="text-xl sm:text-xl md:text-2xl lg:text-3xl font-semibold text-primary mb-4 sm:mb-6 font-heading">
-              Infirmier Diplômé d'État
-            </h2>
-          </div>
-          
-          <div className="animate-fade-in-up delay-300">
-            <p className="text-base sm:text-base lg:text-lg text-gray-700 mb-6 sm:mb-8 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-              Des soins professionnels et attentionnés, avec plus de 20 ans d'expérience 
-              dans le domaine de la santé en Côte d'Ivoire.
-            </p>
-          </div>
-          
-          {/* Buttons with proper mobile layout */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-up delay-400 justify-center lg:justify-start max-w-md sm:max-w-none mx-auto lg:mx-0">
-            <button
-              onClick={() => scrollToSection('rendez-vous')}
-              className="btn-primary group relative overflow-hidden w-full sm:w-auto flex-shrink-0 shadow-xl hover:shadow-2xl"
-            >
-              <span className="relative z-10 flex items-center justify-center">
-                Prendre rendez-vous
-                <ArrowRight size={18} className="ml-2 group-hover:translate-x-2 transition-transform duration-300" />
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
+
+          {/* Left side - Text content */}
+          <div className="w-full lg:w-1/2 text-center lg:text-left">
+            <div className="animate-fade-in-up">
+              <span className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-200/60 text-teal-700 rounded-full text-sm font-medium mb-6">
+                <span className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></span>
+                Disponible 7j/7 à Abidjan
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 transform -skew-x-12 group-hover:animate-shimmer"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </button>
+            </div>
 
-            <button
-              onClick={() => scrollToSection('services')}
-              className="btn-secondary group w-full sm:w-auto flex-shrink-0 shadow-lg hover:shadow-xl"
-            >
-              <Play size={16} className="mr-2 group-hover:scale-125 group-hover:rotate-12 transition-all duration-300" />
-              Découvrir mes services
-            </button>
+            <div className="animate-fade-in-up delay-100">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-gray-900 mb-4 font-heading leading-tight">
+                <span className="text-gradient">Ake Achi Simplice</span>
+              </h1>
+            </div>
+
+            <div className="animate-fade-in-up delay-200">
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-teal-700 mb-5 font-heading">
+                Infirmier Diplômé d'État
+              </h2>
+            </div>
+
+            <div className="animate-fade-in-up delay-300">
+              <p className="text-base sm:text-lg text-gray-600 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                Des soins professionnels et attentionnés, avec plus de 20 ans d'expérience
+                dans le domaine de la santé en Côte d'Ivoire.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-up delay-400 justify-center lg:justify-start">
+              <button
+                onClick={() => scrollToSection('rendez-vous')}
+                className="btn-primary group relative overflow-hidden w-full sm:w-auto shadow-lg hover:shadow-xl px-8 py-4 text-base font-semibold rounded-xl"
+              >
+                <span className="relative z-10 flex items-center justify-center">
+                  Prendre rendez-vous
+                  <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform duration-300" />
+                </span>
+              </button>
+
+              <button
+                onClick={() => scrollToSection('services')}
+                className="btn-secondary group w-full sm:w-auto px-8 py-4 text-base rounded-xl flex items-center justify-center"
+              >
+                <Play size={16} className="mr-2 group-hover:scale-110 transition-transform duration-300" />
+                Découvrir mes services
+              </button>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="mt-10 animate-fade-in-up delay-500">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 text-sm text-gray-600">
+                <div className="flex items-center gap-2 group">
+                  <div className="w-10 h-10 bg-green-50 border border-green-200/50 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Shield size={18} className="text-green-600" />
+                  </div>
+                  <span className="font-medium">Diplômé d'État</span>
+                </div>
+                <div className="flex items-center gap-2 group">
+                  <div className="w-10 h-10 bg-blue-50 border border-blue-200/50 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Heart size={18} className="text-blue-600" />
+                  </div>
+                  <span className="font-medium">20+ ans d'expérience</span>
+                </div>
+                <div className="flex items-center gap-2 group">
+                  <div className="w-10 h-10 bg-amber-50 border border-amber-200/50 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Star size={18} className="text-amber-500" />
+                  </div>
+                  <span className="font-medium">98% satisfaction</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Trust indicators with mobile optimization */}
-          <div className="mt-8 sm:mt-8 lg:mt-12 animate-fade-in-up delay-500">
-            <div className="grid grid-cols-1 sm:flex sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-4 lg:gap-6 text-sm sm:text-sm text-gray-600">
-              <div className="flex items-center justify-center sm:justify-start group cursor-default">
-                <div className="w-10 h-10 sm:w-10 sm:h-10 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mr-3 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
-                  <Shield size={18} className="text-green-600 group-hover:scale-110 transition-transform duration-300" />
+          {/* Right side - Visual card */}
+          <div className="w-full lg:w-1/2 animate-fade-in-up delay-300 hidden md:block">
+            <div className="relative max-w-lg mx-auto">
+              {/* Main photo card */}
+              <div className="relative bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+                <div className="aspect-[4/5] relative">
+                  <img
+                    src="/p17.png"
+                    alt="Ake Achi Simplice - Infirmier Diplômé d'État"
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Gradient overlay at bottom */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                  {/* Name overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                        <Stethoscope size={24} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-lg">Ake Achi Simplice</p>
+                        <p className="text-white/80 text-sm">INFAS Bouaké · Promotion 2003</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <span className="font-medium">Diplômé d'État</span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start group cursor-default">
-                <div className="w-10 h-10 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mr-3 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
-                  <Heart size={18} className="text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+
+              {/* Floating card - Phone */}
+              <div className="absolute -left-6 top-16 bg-white rounded-2xl shadow-xl p-4 border border-gray-100 animate-float hidden lg:flex items-center gap-3">
+                <div className="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center">
+                  <Phone size={18} className="text-teal-600" />
                 </div>
-                <span className="font-medium">20+ ans d'expérience</span>
+                <div>
+                  <p className="text-xs text-gray-500">Appelez-moi</p>
+                  <p className="text-sm font-bold text-gray-900">05 05 83 11 46</p>
+                </div>
               </div>
-              <div className="flex items-center justify-center sm:justify-start group cursor-default">
-                <div className="w-10 h-10 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center mr-3 group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
-                  <Sparkles size={18} className="text-amber-600 group-hover:scale-110 transition-transform duration-300" />
+
+              {/* Floating card - Rating */}
+              <div className="absolute -right-4 top-1/3 bg-white rounded-2xl shadow-xl p-4 border border-gray-100 animate-float hidden lg:flex items-center gap-3" style={{ animationDelay: '1s' }}>
+                <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                  <Star size={18} className="text-amber-500 fill-amber-500" />
                 </div>
-                <span className="font-medium">Expertise reconnue</span>
+                <div>
+                  <p className="text-xs text-gray-500">Satisfaction</p>
+                  <p className="text-sm font-bold text-gray-900">4.9/5 <span className="text-amber-500">★★★★★</span></p>
+                </div>
+              </div>
+
+              {/* Floating card - Experience */}
+              <div className="absolute -left-4 bottom-24 bg-white rounded-2xl shadow-xl p-4 border border-gray-100 animate-float hidden lg:flex items-center gap-3" style={{ animationDelay: '2s' }}>
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                  <Activity size={18} className="text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">Expérience</p>
+                  <p className="text-sm font-bold text-gray-900">+22 années</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Scroll indicator - Hidden on mobile */}
+      {/* Scroll indicator */}
       <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce hidden sm:block">
-        <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-primary rounded-full flex justify-center">
-          <div className="w-1 h-2 sm:h-3 bg-primary rounded-full mt-2 animate-pulse"></div>
+        <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-teal-400 rounded-full flex justify-center">
+          <div className="w-1 h-2 sm:h-3 bg-teal-400 rounded-full mt-2 animate-pulse"></div>
         </div>
       </div>
     </section>

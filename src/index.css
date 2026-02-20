@@ -311,23 +311,24 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-secondary {
   border: 2px solid #0E7490;
-  color: white;
+  color: #0E7490;
   padding: 0.75rem 1rem;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 0.875rem;
   line-height: 1.25rem;
-  transition: all 0.2s;
-  background: var(--bg-secondary, #1e293b);
+  transition: all 0.3s;
+  background: white;
   border-radius: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   cursor: pointer;
 }
 
 .btn-secondary:hover {
   background: #0E7490;
-  border-color: #0891B2;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  color: white;
+  border-color: #0E7490;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(14, 116, 144, 0.3);
 }
 
 .btn-secondary:active {
