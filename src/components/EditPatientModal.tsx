@@ -16,6 +16,7 @@ interface EditPatientModalProps {
     phone?: string;
     email?: string;
     address?: string;
+    gender?: string;
     primary_pathology?: string;
     status?: string;
     notes?: string;
@@ -30,6 +31,7 @@ interface FormData {
   phone: string;
   email: string;
   address: string;
+  gender: string;
   primary_pathology: string;
   status: string;
   notes: string;
@@ -59,6 +61,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
     phone: '',
     email: '',
     address: '',
+    gender: '',
     primary_pathology: '',
     status: 'active',
     notes: '',
@@ -80,6 +83,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
         phone: patient.phone || '',
         email: patient.email || '',
         address: patient.address || '',
+        gender: patient.gender || '',
         primary_pathology: patient.primary_pathology || '',
         status: patient.status || 'active',
         notes: patient.notes || '',
@@ -157,6 +161,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
           date_of_birth: formData.date_of_birth,
           phone: formData.phone.trim(),
           address: formData.address.trim() || null,
+          gender: formData.gender || null,
           primary_pathology: formData.primary_pathology.trim() || null,
           status: formData.status,
           notes: formData.notes.trim() || null,
@@ -346,6 +351,28 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                     {fieldErrors.phone}
                   </p>
                 )}
+              </div>
+            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="gender" className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                    <User size={16} className="text-indigo-400" />
+                    Genre
+                  </label>
+                  <select
+                    id="gender"
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Non renseigné</option>
+                    <option value="Homme">Homme</option>
+                    <option value="Femme">Femme</option>
+                    <option value="Autre">Autre</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>

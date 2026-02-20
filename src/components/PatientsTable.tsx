@@ -98,21 +98,27 @@ const PatientsTable: React.FC = () => {
 
       if (error) throw error;
 
-      const patientsWithLastVisit = await Promise.all(
-        (data || []).map(async (patient) => {
-          const { data: consultations } = await supabase
+      const patientIds = (data || []).map(p => p.id);
+      const { data: allConsultations } = patientIds.length > 0
+        ? await supabase
             .from('consultations')
-            .select('created_at')
-            .eq('patient_id', patient.id)
+            .select('patient_id, created_at')
+            .in('patient_id', patientIds)
             .order('created_at', { ascending: false })
-            .limit(1);
+        : { data: [] };
 
-          return {
-            ...patient,
-            last_visit: consultations?.[0]?.created_at || patient.created_at
-          };
-        })
-      );
+      // Build a map of patient_id -> latest consultation date
+      const lastVisitMap: Record<string, string> = {};
+      (allConsultations || []).forEach(c => {
+        if (!lastVisitMap[c.patient_id]) {
+          lastVisitMap[c.patient_id] = c.created_at;
+        }
+      });
+
+      const patientsWithLastVisit = (data || []).map(patient => ({
+        ...patient,
+        last_visit: lastVisitMap[patient.id] || patient.created_at
+      }));
 
       setPatients(patientsWithLastVisit);
     } catch (error: any) {

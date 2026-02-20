@@ -243,14 +243,18 @@ const AppointmentsPage: React.FC = () => {
     setShowEditModal(true);
   };
 
+  const [cancelReason, setCancelReason] = useState('');
+
   const handleCancelClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
+    setCancelReason('');
     setShowConfirmDialog(true);
   };
 
   const handleConfirmCancel = async () => {
     if (!selectedAppointment) return;
 
+    const reason = cancelReason.trim() || 'Annulé par le médecin';
     setCancelLoading(true);
 
     try {
@@ -259,7 +263,7 @@ const AppointmentsPage: React.FC = () => {
         .update({
           status: 'annule',
           cancelled_at: new Date().toISOString(),
-          cancelled_reason: 'Annulé par le médecin'
+          cancelled_reason: reason
         })
         .eq('id', selectedAppointment.id);
 
@@ -901,7 +905,18 @@ const AppointmentsPage: React.FC = () => {
         cancelText="Non, conserver"
         variant="danger"
         loading={cancelLoading}
-      />
+      >
+        <div>
+          <label className="block text-sm theme-text-secondary mb-1">Raison de l'annulation (optionnel)</label>
+          <input
+            type="text"
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            placeholder="Ex: Patient indisponible, urgence..."
+            className="w-full px-3 py-2 text-sm theme-bg-input border theme-border rounded-lg theme-text-primary focus:border-primary focus:outline-none"
+          />
+        </div>
+      </ConfirmDialog>
     </div>
   );
 };

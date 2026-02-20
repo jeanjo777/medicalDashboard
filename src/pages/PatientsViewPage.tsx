@@ -3,6 +3,7 @@ import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { Search, Bell, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { calculateAge } from '../utils/dateHelpers';
+import AddPatientModal from '../components/AddPatientModal';
 
 // Type simplifié pour l'affichage dans la table
 interface PatientRow {
@@ -41,6 +42,7 @@ const PatientsViewPage: React.FC = () => {
   });
   const [patients, setPatients] = useState<PatientRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -182,7 +184,10 @@ const PatientsViewPage: React.FC = () => {
                 <h2 className="text-lg font-semibold theme-text-primary">Dossiers Patients</h2>
                 <p className="text-sm theme-text-muted mt-0.5">Gerer et consulter les informations patients</p>
               </div>
-              <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-emerald-500/25">
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-emerald-500/25"
+              >
                 <Plus size={16} />
                 Nouveau Patient
               </button>
@@ -279,6 +284,37 @@ const PatientsViewPage: React.FC = () => {
           </div>
         </main>
       </div>
+
+      <AddPatientModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onPatientAdded={() => {
+          setShowAddModal(false);
+          // Re-fetch patients
+          const fetchPatients = async () => {
+            try {
+              setLoading(true);
+              const { data, error } = await supabase
+                .from('patients')
+                .select('*')
+                .order('created_at', { ascending: false });
+              if (error) throw error;
+              const rows: PatientRow[] = (data || []).map((p: any) => {
+                const name = p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Inconnu';
+                const initials = name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+                const age = p.age ?? calculateAge(p.date_of_birth) ?? 0;
+                return { id: p.id, initials, name, age, gender: p.gender || 'Non renseigne', condition: p.primary_pathology || 'Non renseigne', status: mapStatus(p.status), lastVisit: p.registered_at ? formatDate(p.registered_at) : 'N/A' };
+              });
+              setPatients(rows);
+            } catch (err) {
+              console.error('Erreur:', err);
+            } finally {
+              setLoading(false);
+            }
+          };
+          fetchPatients();
+        }}
+      />
     </div>
   );
 };

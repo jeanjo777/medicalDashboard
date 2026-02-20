@@ -193,11 +193,11 @@ const SettingsPage: React.FC = () => {
     const saved = localStorage.getItem('app-profile');
     if (saved) return JSON.parse(saved);
     return {
-      prenom: user?.prenom || 'John',
-      nom: user?.nom || 'Doe',
-      email: user?.email || 'simpliceake1975@gmail.com',
-      telephone: '+33 6 12 34 56 78',
-      specialite: 'Médecine générale'
+      prenom: user?.prenom || '',
+      nom: user?.nom || '',
+      email: user?.email || '',
+      telephone: user?.telephone || '',
+      specialite: user?.specialite || 'Médecine générale'
     };
   });
 
@@ -522,7 +522,7 @@ const SettingsPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="theme-text-primary font-medium">Mot de passe</p>
-                    <p className="text-sm theme-text-secondary">Dernière modification il y a 30 jours</p>
+                    <p className="text-sm theme-text-secondary">Gérez votre mot de passe de connexion</p>
                   </div>
                   <button
                     type="button"
@@ -566,24 +566,11 @@ const SettingsPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <Laptop size={20} className="theme-text-muted" />
                       <div>
-                        <p className="text-sm theme-text-primary font-medium">Windows - Chrome</p>
+                        <p className="text-sm theme-text-primary font-medium">{navigator.platform} - {navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'Navigateur'}</p>
                         <p className="text-xs theme-text-muted">Session actuelle</p>
                       </div>
                     </div>
                     <span className="text-xs text-emerald-400 bg-emerald-500/20 px-2 py-1 rounded">Actif</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-primary)]">
-                    <div className="flex items-center gap-3">
-                      <Smartphone size={20} className="theme-text-muted" />
-                      <div>
-                        <p className="text-sm theme-text-primary font-medium">iPhone - Safari</p>
-                        <p className="text-xs theme-text-muted">Il y a 2 heures</p>
-                      </div>
-                    </div>
-                    <button type="button" className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 cursor-pointer">
-                      <LogOut size={14} />
-                      Déconnecter
-                    </button>
                   </div>
                 </div>
               </div>

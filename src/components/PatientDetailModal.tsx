@@ -683,8 +683,9 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({ patient, isOpen
               </h2>
               <div className="flex flex-wrap gap-2 text-xs md:text-sm">
                 <span className="px-2 md:px-3 py-1 bg-white/10 rounded-full text-white/90">{age} ans</span>
-                <span className="px-2 md:px-3 py-1 bg-white/10 rounded-full text-white/90">Femelle</span>
-                <span className="px-2 md:px-3 py-1 bg-emerald-500/20 text-emerald-200 rounded-full">Active</span>
+                <span className="px-2 md:px-3 py-1 bg-white/10 rounded-full text-white/90">
+                  {patient.status === 'active' ? 'Actif' : patient.status === 'in_treatment' ? 'En traitement' : patient.status === 'recovered' ? 'Guéri' : 'Inactif'}
+                </span>
               </div>
             </div>
           </div>

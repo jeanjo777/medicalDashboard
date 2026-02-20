@@ -11,6 +11,7 @@ interface ConfirmDialogProps {
   cancelText?: string;
   variant?: 'danger' | 'warning' | 'info';
   loading?: boolean;
+  children?: React.ReactNode;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -23,6 +24,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelText = 'Annuler',
   variant = 'warning',
   loading = false,
+  children,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
@@ -112,6 +114,8 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <X size={20} />
           </button>
         </div>
+
+        {children && <div className="mt-4">{children}</div>}
 
         <div className="flex items-center gap-3 justify-end mt-6">
           <button
