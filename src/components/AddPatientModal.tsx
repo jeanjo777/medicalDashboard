@@ -51,8 +51,8 @@ interface FormErrors {
 }
 
 const statusOptions = [
-  { value: 'active', label: 'Actif' },
-  { value: 'inactive', label: 'Inactif' },
+  { value: 'active', label: 'En consultation' },
+  { value: 'inactive', label: 'Sorti' },
   { value: 'in_treatment', label: 'En traitement' },
   { value: 'recovered', label: 'Guéri' }
 ];

@@ -20,8 +20,8 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   onReset,
   statusOptions = [
     { value: 'all', label: 'Tous' },
-    { value: 'active', label: 'Actif' },
-    { value: 'inactive', label: 'Inactif' },
+    { value: 'active', label: 'En consultation' },
+    { value: 'inactive', label: 'Sorti' },
   ],
   sortOptions = [
     { value: 'created_at', label: 'Date de création' },

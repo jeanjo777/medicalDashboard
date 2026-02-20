@@ -230,7 +230,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { label: string; classes: string; icon: React.ElementType }> = {
       active: {
-        label: 'Actif',
+        label: 'En consultation',
         classes: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
         icon: Heart,
       },
@@ -245,7 +245,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
         icon: Shield,
       },
       inactive: {
-        label: 'Inactif',
+        label: 'Sorti',
         classes: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
         icon: Clock,
       },
@@ -449,10 +449,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                         title="Statut du patient"
                         className="w-full bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
                       >
-                        <option value="active">Actif</option>
+                        <option value="active">En consultation</option>
                         <option value="in_treatment">En traitement</option>
                         <option value="recovered">Rétabli</option>
-                        <option value="inactive">Inactif</option>
+                        <option value="inactive">Sorti</option>
                       </select>
                     </div>
                   )}

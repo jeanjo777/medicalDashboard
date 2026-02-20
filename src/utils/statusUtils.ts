@@ -54,8 +54,8 @@ export const normalizePatientStatus = (status: string): string => {
 export const getPatientStatusLabel = (status: string): string => {
   const normalized = normalizePatientStatus(status);
   const labels: Record<string, string> = {
-    'active': 'Actif',
-    'inactive': 'Inactif',
+    'active': 'En consultation',
+    'inactive': 'Sorti',
     'in_treatment': 'En traitement',
     'recovered': 'Rétabli',
     'archived': 'Archivé',

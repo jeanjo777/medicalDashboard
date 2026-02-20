@@ -194,10 +194,10 @@ const PatientsViewPageEnhanced: React.FC = () => {
 
   const statusOptions = [
     { value: 'all', label: 'Tous les statuts' },
-    { value: 'active', label: 'Actif' },
+    { value: 'active', label: 'En consultation' },
     { value: 'in_treatment', label: 'En traitement' },
     { value: 'recovered', label: 'Rétabli' },
-    { value: 'inactive', label: 'Inactif' },
+    { value: 'inactive', label: 'Sorti' },
   ];
 
   const sortOptions = [
@@ -220,10 +220,10 @@ const PatientsViewPageEnhanced: React.FC = () => {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      active: 'Actif',
+      active: 'En consultation',
       'in_treatment': 'En traitement',
       recovered: 'Rétabli',
-      inactive: 'Inactif',
+      inactive: 'Sorti',
     };
     return labels[status] || status;
   };

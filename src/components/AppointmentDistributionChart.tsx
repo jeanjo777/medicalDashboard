@@ -184,10 +184,10 @@ const AppointmentDistributionChart: React.FC = () => {
    */
   const processStatusData = (patients: any[]): StatusData[] => {
     const statusMap: { [key: string]: { label: string; color: string } } = {
-      'active': { label: 'Actif', color: '#3b82f6' },
+      'active': { label: 'En consultation', color: '#3b82f6' },
       'in_treatment': { label: 'En Traitement', color: '#8b5cf6' },
       'recovered': { label: 'Guéri', color: '#10b981' },
-      'inactive': { label: 'Inactif', color: '#6b7280' }
+      'inactive': { label: 'Sorti', color: '#6b7280' }
     };
 
     const counts: { [key: string]: number } = {
@@ -258,7 +258,7 @@ const AppointmentDistributionChart: React.FC = () => {
    * Mock data fallback
    */
   const getMockStatusData = (): StatusData[] => [
-    { name: 'Actif', value: 245, color: '#3b82f6' },
+    { name: 'En consultation', value: 245, color: '#3b82f6' },
     { name: 'En Traitement', value: 168, color: '#8b5cf6' },
     { name: 'Guéri', value: 89, color: '#10b981' }
   ];

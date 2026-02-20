@@ -107,13 +107,13 @@ const PatientsViewPage: React.FC = () => {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'Active':
-        return 'Actif';
+        return 'En consultation';
       case 'Recovered':
         return 'Guéri';
       case 'Under Treatment':
         return 'En traitement';
       case 'Inactive':
-        return 'Inactif';
+        return 'Sorti';
       default:
         return status;
     }
