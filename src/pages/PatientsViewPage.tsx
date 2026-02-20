@@ -127,8 +127,10 @@ const PatientsViewPage: React.FC = () => {
       case 'Female':
       case 'female':
         return 'Femme';
-      case 'child':
-        return 'Enfant';
+      case 'child_boy':
+        return 'Enfant (Garçon)';
+      case 'child_girl':
+        return 'Enfant (Fille)';
       case 'Other':
       case 'other':
         return 'Autre';

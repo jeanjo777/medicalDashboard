@@ -171,7 +171,7 @@ const PatientDetailPanel: React.FC<PatientDetailPanelProps> = ({
               <div className="bg-white/50 dark:bg-gray-700/50 rounded-lg p-3">
                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Sexe</p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
-                  {patient.gender === 'male' ? 'Homme' : patient.gender === 'female' ? 'Femme' : patient.gender === 'child' ? 'Enfant' : 'Autre'}
+                  {patient.gender === 'male' ? 'Homme' : patient.gender === 'female' ? 'Femme' : patient.gender === 'child_boy' ? 'Enfant (Garçon)' : patient.gender === 'child_girl' ? 'Enfant (Fille)' : 'Autre'}
                 </p>
               </div>
             </div>

@@ -448,7 +448,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                     <option value="">Non renseigné</option>
                     <option value="male">Homme</option>
                     <option value="female">Femme</option>
-                    <option value="child">Enfant</option>
+                    <option value="child_boy">Enfant (Garçon)</option>
+                    <option value="child_girl">Enfant (Fille)</option>
                     <option value="other">Autre</option>
                   </select>
                 </div>

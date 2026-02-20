@@ -15,7 +15,8 @@ const PatientsStats: React.FC<PatientsStatsProps> = ({ patients }) => {
   const genderData = [
     { name: 'Hommes', value: patients.filter(p => p.gender === 'male').length, color: '#3b82f6' },
     { name: 'Femmes', value: patients.filter(p => p.gender === 'female').length, color: '#ec4899' },
-    { name: 'Enfants', value: patients.filter(p => p.gender === 'child').length, color: '#f59e0b' },
+    { name: 'Garçons', value: patients.filter(p => p.gender === 'child_boy').length, color: '#f59e0b' },
+    { name: 'Filles', value: patients.filter(p => p.gender === 'child_girl').length, color: '#f97316' },
     { name: 'Autres', value: patients.filter(p => p.gender === 'other' || !p.gender).length, color: '#8b5cf6' },
   ].filter(item => item.value > 0);
 

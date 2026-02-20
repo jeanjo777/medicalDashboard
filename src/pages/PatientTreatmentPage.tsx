@@ -245,7 +245,7 @@ const PatientTreatmentPage = () => {
                 <div className="flex items-center gap-2 text-gray-700">
                   <User size={18} className="text-primary" />
                   <span className="text-sm">
-                    <strong>Sexe:</strong> {patient.gender === 'male' ? 'Homme' : patient.gender === 'female' ? 'Femme' : patient.gender === 'child' ? 'Enfant' : 'Autre'}
+                    <strong>Sexe:</strong> {patient.gender === 'male' ? 'Homme' : patient.gender === 'female' ? 'Femme' : patient.gender === 'child_boy' ? 'Enfant (Garçon)' : patient.gender === 'child_girl' ? 'Enfant (Fille)' : 'Autre'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
