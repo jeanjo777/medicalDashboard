@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useNavigate } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import LoadingSkeleton from '../components/LoadingSkeleton';
@@ -458,6 +459,7 @@ const AppointmentsPage: React.FC = () => {
     <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
       <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
 
+      <ErrorBoundary>
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30 transition-colors duration-300">
           <div className="flex items-center justify-between">
@@ -920,6 +922,7 @@ const AppointmentsPage: React.FC = () => {
           />
         </div>
       </ConfirmDialog>
+      </ErrorBoundary>
     </div>
   );
 };

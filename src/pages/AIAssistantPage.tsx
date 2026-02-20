@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import ErrorBoundary from '../components/ErrorBoundary';
 import {
   Send,
   Bot,
@@ -1342,6 +1343,7 @@ const AIAssistantPage: React.FC = () => {
     <div className="flex h-screen bg-[var(--bg-primary)] overflow-hidden">
       <MedicalSidebarRefined activeItem="ai-assistant" onCollapsedChange={setSidebarCollapsed} />
 
+      <ErrorBoundary>
       <div
         className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}
         onDragOver={handleDragOver}
@@ -1808,6 +1810,7 @@ const AIAssistantPage: React.FC = () => {
           </div>
         </div>
       </div>
+      </ErrorBoundary>
     </div>
   );
 };

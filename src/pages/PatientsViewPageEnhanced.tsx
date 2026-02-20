@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import SearchFilters from '../components/Common/SearchFilters';
@@ -231,6 +232,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
     <div className="flex min-h-screen bg-[var(--bg-primary)]">
       <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
 
+      <ErrorBoundary>
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <header className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)] px-4 lg:px-6 py-3 sticky top-0 z-30">
           <div className="flex items-center justify-between">
@@ -683,6 +685,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         onPatientAdded={handlePatientAdded}
       />
+      </ErrorBoundary>
     </div>
   );
 };

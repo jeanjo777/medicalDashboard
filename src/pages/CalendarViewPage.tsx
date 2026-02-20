@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import ErrorBoundary from '../components/ErrorBoundary';
 import {
   ChevronLeft,
   ChevronRight,
@@ -927,6 +928,7 @@ const CalendarViewPage: React.FC = () => {
     <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
       <MedicalSidebarRefined activeItem={activeSection} onItemClick={setActiveSection} onCollapsedChange={setSidebarCollapsed} />
 
+      <ErrorBoundary>
       <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         {/* Header */}
         <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 lg:px-8 py-3 sm:py-4 sticky top-0 z-30">
@@ -1268,6 +1270,7 @@ const CalendarViewPage: React.FC = () => {
           }}
         />
       )}
+      </ErrorBoundary>
     </div>
   );
 };
