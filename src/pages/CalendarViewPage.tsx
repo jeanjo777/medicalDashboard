@@ -21,6 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
+import ErrorBoundary from '../components/ErrorBoundary';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import ErrorState from '../components/ErrorState';
 import AddAppointmentModal from '../components/Appointments/AddAppointmentModal';
@@ -947,6 +948,7 @@ const CalendarViewPage: React.FC = () => {
         </header>
 
         <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto bg-[var(--bg-primary)]">
+          <ErrorBoundary>
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-5">
             {/* Sidebar */}
             <div className="lg:w-[260px] flex-shrink-0 space-y-3">
@@ -1208,6 +1210,7 @@ const CalendarViewPage: React.FC = () => {
               )}
             </div>
           </div>
+          </ErrorBoundary>
         </main>
       </div>
 

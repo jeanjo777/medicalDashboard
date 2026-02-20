@@ -21,12 +21,12 @@ const UserMenu: React.FC<UserMenuProps> = ({
     const name = propUserName
       || (user?.prenom && user?.nom ? `${user.prenom} ${user.nom}` : null)
       || (user?.username ? user.username : null)
-      || 'Simplice Achi AKE';
+      || 'Médecin';
     const initials = propUserInitials
       || (user?.prenom && user?.nom ? `${user.prenom[0]}${user.nom[0]}`.toUpperCase() : null)
       || (user?.username ? user.username.slice(0, 2).toUpperCase() : null)
-      || 'SA';
-    const email = user?.email || 'simpliceake1975@gmail.com';
+      || 'MD';
+    const email = user?.email || '';
     return { userName: name, userInitials: initials, userEmail: email };
   }, [propUserName, propUserInitials]);
 

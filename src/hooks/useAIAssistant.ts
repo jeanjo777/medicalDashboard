@@ -450,7 +450,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
       const userData = JSON.parse(localStorage.getItem('user') || '{}');
       const doctorName = userData?.prenom && userData?.nom
         ? `Dr. ${userData.prenom} ${userData.nom}`
-        : userData?.username ? `Dr. ${userData.username}` : 'Dr. Simplice Achi AKE';
+        : userData?.username ? `Dr. ${userData.username}` : 'Médecin';
 
       const body: Record<string, unknown> = {
         message: message.trim(),

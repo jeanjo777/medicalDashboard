@@ -30,12 +30,11 @@ const PatientDashboardPage = () => {
   useEffect(() => {
     const fetchSummary = async () => {
       try {
-        // TEMP: Auth check disabled for testing
-        const token = localStorage.getItem('auth_token') || 'mock-token-for-testing';
-        // if (!token) {
-        //   window.location.href = '/login';
-        //   return;
-        // }
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          window.location.href = '/login';
+          return;
+        }
 
         const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-patient-summary`;
 

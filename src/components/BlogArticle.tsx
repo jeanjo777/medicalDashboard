@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ArrowLeft, Calendar, Clock, Eye, User, Share2, Heart, Shield, Thermometer, Stethoscope } from 'lucide-react';
+import { sanitizeHtml } from '../utils/sanitize';
 
 interface BlogArticleProps {
   articleId: string;
@@ -690,10 +691,10 @@ const BlogArticle: React.FC<BlogArticleProps> = ({ articleId, onBack }) => {
             </div>
           </div>
 
-          {/* Article body */}
-          <div 
+          {/* Article body - sanitized to prevent XSS */}
+          <div
             className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
           />
 
           {/* Related articles CTA */}

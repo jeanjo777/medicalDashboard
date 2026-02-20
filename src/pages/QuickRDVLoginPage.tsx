@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Lock, Calendar, Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
 
 const QuickRDVLoginPage: React.FC = () => {
@@ -17,41 +16,28 @@ const QuickRDVLoginPage: React.FC = () => {
     setError('');
 
     try {
-      // Query the medics table to find user
-      const { data: medic, error: medicError } = await supabase
-        .from('medics')
-        .select('*')
-        .eq('username', username)
-        .maybeSingle();
+      // Authenticate via server-side Edge Function to avoid client-side password handling
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-login`;
 
-      if (medicError) {
-        throw new Error('Erreur lors de la connexion');
-      }
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-      if (!medic) {
-        setError('Identifiant ou mot de passe incorrect');
+      const data = await response.json();
+
+      if (!response.ok || !data.user) {
+        setError(data.error || 'Identifiant ou mot de passe incorrect');
         return;
       }
 
-      // Verify password (basic comparison - in production use bcrypt)
-      if (medic.password !== password) {
-        setError('Identifiant ou mot de passe incorrect');
-        return;
-      }
-
-      // Store user data in localStorage
-      const userData = {
-        id: medic.id,
-        username: medic.username,
-        nom: medic.nom,
-        prenom: medic.prenom,
-        email: medic.email,
-        specialite: medic.specialite,
-        role: 'medic'
-      };
-
-      localStorage.setItem('auth_token', `medic_${medic.id}_${Date.now()}`);
-      localStorage.setItem('user', JSON.stringify(userData));
+      // Store user data returned by the server
+      localStorage.setItem('auth_token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
 
       // Redirect to appointments
       navigate('/appointments', { replace: true });

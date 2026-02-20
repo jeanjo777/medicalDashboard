@@ -35,6 +35,7 @@ import {
   MicOff,
 } from 'lucide-react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext, type ConversationSummary, type ThinkingBlock as ThinkingBlockType, type ToolExecution } from '../hooks/useAIAssistant';
 import { supabase } from '../lib/supabase';
 
@@ -1524,6 +1525,7 @@ const AIAssistantPage: React.FC = () => {
 
         {/* Chat Area */}
         <main className="flex-1 overflow-y-auto">
+          <ErrorBoundary>
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center px-4 py-8">
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br ${currentModeConfig.gradient} shadow-2xl mb-6`}>
@@ -1636,6 +1638,7 @@ const AIAssistantPage: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
           )}
+          </ErrorBoundary>
         </main>
 
         {/* Input Area - Modern Design */}

@@ -109,9 +109,9 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
     // Stats des patients
     const totalPatients = patients.length;
-    const patientsInTreatment = patients.filter(p => p.status === 'in_treatment' || p.status === 'in-treatment').length;
+    const patientsInTreatment = patients.filter(p => p.status === 'in_treatment').length;
     const patientsInTreatmentLastWeek = patients.filter(
-      p => (p.status === 'in_treatment' || p.status === 'in-treatment') && new Date(p.updated_at) <= new Date(lastWeek)
+      p => p.status === 'in_treatment' && new Date(p.updated_at) <= new Date(lastWeek)
     ).length;
 
     const newPatientsThisMonth = patients.filter(

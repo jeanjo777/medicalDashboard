@@ -234,7 +234,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
         classes: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
         icon: Heart,
       },
-      'in-treatment': {
+      'in_treatment': {
         label: 'En traitement',
         classes: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
         icon: Activity,
@@ -450,7 +450,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                         className="w-full bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors cursor-pointer"
                       >
                         <option value="active">Actif</option>
-                        <option value="in-treatment">En traitement</option>
+                        <option value="in_treatment">En traitement</option>
                         <option value="recovered">Rétabli</option>
                         <option value="inactive">Inactif</option>
                       </select>

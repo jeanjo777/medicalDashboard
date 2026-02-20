@@ -13,6 +13,7 @@ import {
   Phone, Calendar,
 } from 'lucide-react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { formatAge } from '../utils/dateHelpers';
 
 export interface Patient {
@@ -183,7 +184,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
   // Calcul des statistiques
   const stats = useMemo(() => {
     const activeCount = patients.filter(p => p.status === 'active').length;
-    const inTreatmentCount = patients.filter(p => p.status === 'in-treatment' || p.status === 'in_treatment').length;
+    const inTreatmentCount = patients.filter(p => p.status === 'in_treatment').length;
     const recoveredCount = patients.filter(p => p.status === 'recovered').length;
     const highRiskCount = patients.filter(p => (p.riskScore ?? 0) > 60).length;
     return { activeCount, inTreatmentCount, recoveredCount, highRiskCount };
@@ -192,8 +193,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const statusOptions = [
     { value: 'all', label: 'Tous les statuts' },
     { value: 'active', label: 'Actif' },
-    { value: 'in-treatment', label: 'En traitement' },
-    { value: 'in_treatment', label: 'En traitement (alt)' },
+    { value: 'in_treatment', label: 'En traitement' },
     { value: 'recovered', label: 'Rétabli' },
     { value: 'inactive', label: 'Inactif' },
   ];
@@ -209,7 +209,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
       active: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-      'in-treatment': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
       'in_treatment': 'bg-blue-500/10 text-blue-500 border-blue-500/20',
       recovered: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
       inactive: 'bg-[var(--bg-tertiary)] theme-text-muted border-[var(--border-color)]',
@@ -220,7 +219,6 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
       active: 'Actif',
-      'in-treatment': 'En traitement',
       'in_treatment': 'En traitement',
       recovered: 'Rétabli',
       inactive: 'Inactif',
@@ -257,6 +255,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
         </header>
 
         <main className="flex-1 p-3 sm:p-4 lg:p-8 overflow-auto bg-[var(--bg-primary)]">
+          <ErrorBoundary>
           {/* Cartes statistiques */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-blue-500/10 rounded-2xl p-4 border border-blue-500/20 hover:shadow-md transition-all cursor-pointer">
@@ -665,6 +664,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
               </div>
             </>
           )}
+          </ErrorBoundary>
         </main>
       </div>
 

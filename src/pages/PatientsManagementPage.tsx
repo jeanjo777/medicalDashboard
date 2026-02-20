@@ -74,12 +74,11 @@ const PatientsManagementPage = () => {
 
   const fetchPatients = async () => {
     try {
-      // TEMP: Auth check disabled for testing
-      const token = localStorage.getItem('auth_token') || 'mock-token-for-testing';
-      // if (!token) {
-      //   window.location.href = '/login';
-      //   return;
-      // }
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
 
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-patients`;
 
@@ -131,8 +130,11 @@ const PatientsManagementPage = () => {
     setLoading(true);
 
     try {
-      // TEMP: Auth check disabled for testing
-      const token = localStorage.getItem('auth_token') || 'mock-token-for-testing';
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-patients`;
 
       const body = {
@@ -173,8 +175,11 @@ const PatientsManagementPage = () => {
     }
 
     try {
-      // TEMP: Auth check disabled for testing
-      const token = localStorage.getItem('auth_token') || 'mock-token-for-testing';
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-patients?patientId=${encodeURIComponent(patientId)}`;
 
       const response = await fetch(apiUrl, {

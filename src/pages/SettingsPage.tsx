@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useTheme } from '../contexts/ThemeContext';
 import {
   Settings,
@@ -658,6 +659,7 @@ const SettingsPage: React.FC = () => {
         </header>
 
         <main className="flex-1 p-3 sm:p-4 lg:p-8">
+          <ErrorBoundary>
           <div className="max-w-5xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Sidebar Navigation */}
@@ -716,6 +718,7 @@ const SettingsPage: React.FC = () => {
               </div>
             </div>
           </div>
+          </ErrorBoundary>
         </main>
       </div>
 

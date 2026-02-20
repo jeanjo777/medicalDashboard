@@ -10,6 +10,7 @@ import AddAppointmentModal from '../components/Appointments/AddAppointmentModal'
 import AppointmentDetailModal from '../components/Appointments/AppointmentDetailModal';
 import EditAppointmentModal from '../components/Appointments/EditAppointmentModal';
 import ExportButton from '../components/Common/ExportButton';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { useToast } from '../components/Common/Toast';
 import { useAppointmentsQuery } from '../hooks/useAppointmentsQuery';
 import { usePagination } from '../hooks/usePagination';
@@ -475,6 +476,7 @@ const AppointmentsPage: React.FC = () => {
         </header>
 
         <main className="flex-1 p-3 sm:p-4 lg:p-8 overflow-auto">
+          <ErrorBoundary>
 
           {/* Stats Cards - Cliquables pour filtrer */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
@@ -837,6 +839,7 @@ const AppointmentsPage: React.FC = () => {
               </div>
             )}
           </div>
+          </ErrorBoundary>
         </main>
       </div>
 
