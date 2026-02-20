@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Phone, Mail, MapPin, Printer, Download, Activity, Heart, Droplet, Weight, Ruler, Calendar, User, AlertCircle, Pill, FileText, TrendingUp, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import logger from '../utils/logger';
 
 interface PatientDetailModalProps {
   isOpen: boolean;
@@ -38,7 +39,7 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
           .order('created_at', { ascending: false });
         if (data) setConsultations(data);
       } catch (err) {
-        console.error('Error fetching consultations:', err);
+        logger.error('Error fetching consultations:', err);
       } finally {
         setLoadingData(false);
       }

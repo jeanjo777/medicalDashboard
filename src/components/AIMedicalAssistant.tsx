@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, Brain, TrendingUp, FileText, AlertCircle, Minimize2, Maximize2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import logger from '../utils/logger';
 
 interface Message {
   id: string;
@@ -139,7 +140,7 @@ const AIMedicalAssistant: React.FC = () => {
 
       return "🤖 Comment puis-je vous aider ? Vous pouvez me demander une analyse de risques, un rapport d'activité ou une analyse de tendances.";
     } catch (error) {
-      console.error('AI Assistant error:', error);
+      logger.error('AI Assistant error:', error);
       return "⚠️ Erreur lors de la récupération des données. Veuillez réessayer.";
     }
   };

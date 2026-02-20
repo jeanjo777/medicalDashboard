@@ -226,7 +226,7 @@ const PatientTreatmentPage = () => {
         <div className="glass backdrop-blur-xl bg-white/60 rounded-2xl shadow-xl border border-white/50 p-6 mb-6">
           <div className="flex items-start gap-6">
             <img
-              src={patient.profile_pic || 'https://via.placeholder.com/100'}
+              src={patient.profile_pic || `https://ui-avatars.com/api/?name=${encodeURIComponent(patient.name)}&size=100&background=3b82f6&color=fff`}
               alt={patient.name}
               className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
             />

@@ -3,6 +3,7 @@ import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { Search, Bell, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { calculateAge } from '../utils/dateHelpers';
+import logger from '../utils/logger';
 import AddPatientModal from '../components/AddPatientModal';
 
 // Type simplifié pour l'affichage dans la table
@@ -79,7 +80,7 @@ const PatientsViewPage: React.FC = () => {
 
         setPatients(rows);
       } catch (err) {
-        console.error('Erreur lors du chargement des patients:', err);
+        logger.error('Erreur lors du chargement des patients:', err);
       } finally {
         setLoading(false);
       }
@@ -307,7 +308,7 @@ const PatientsViewPage: React.FC = () => {
               });
               setPatients(rows);
             } catch (err) {
-              console.error('Erreur:', err);
+              logger.error('Erreur:', err);
             } finally {
               setLoading(false);
             }

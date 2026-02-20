@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { Search, Bell, Moon, Plus, Calendar as CalendarIcon, Clock, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import logger from '../utils/logger';
 
 interface Appointment {
   id: string;
@@ -40,7 +41,7 @@ const AppointmentsViewPage: React.FC = () => {
         .limit(50);
 
       if (fetchError) {
-        console.error('Error fetching appointments:', fetchError);
+        logger.error('Error fetching appointments:', fetchError);
         setError('Erreur lors du chargement des rendez-vous.');
       } else if (data) {
         setAppointments(data);
