@@ -37,6 +37,7 @@ const getGenderLabel = (gender: string | undefined): string => {
   const labels: Record<string, string> = {
     male: 'Homme',
     female: 'Femme',
+    child: 'Enfant',
     M: 'Homme',
     F: 'Femme',
     other: 'Autre',

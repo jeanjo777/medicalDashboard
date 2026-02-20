@@ -122,10 +122,15 @@ const PatientsViewPage: React.FC = () => {
   const getGenderLabel = (gender: string) => {
     switch (gender) {
       case 'Male':
+      case 'male':
         return 'Homme';
       case 'Female':
+      case 'female':
         return 'Femme';
+      case 'child':
+        return 'Enfant';
       case 'Other':
+      case 'other':
         return 'Autre';
       default:
         return gender;

@@ -90,6 +90,7 @@ const PatientFilters: React.FC<PatientFiltersProps> = ({
               <option value="">Tous</option>
               <option value="male">Homme</option>
               <option value="female">Femme</option>
+              <option value="child">Enfant</option>
               <option value="other">Autre</option>
             </select>
           </div>

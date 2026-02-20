@@ -125,7 +125,7 @@ const PatientDashboardPage = () => {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
                   <User size={16} className="text-primary" />
-                  <span>{summary.age} ans • {summary.gender === 'male' ? 'Homme' : summary.gender === 'female' ? 'Femme' : 'Autre'}</span>
+                  <span>{summary.age} ans • {summary.gender === 'male' ? 'Homme' : summary.gender === 'female' ? 'Femme' : summary.gender === 'child' ? 'Enfant' : 'Autre'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar size={16} className="text-primary" />

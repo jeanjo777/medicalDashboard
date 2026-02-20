@@ -368,9 +368,10 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                     className="w-full px-4 py-2.5 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Non renseigné</option>
-                    <option value="Homme">Homme</option>
-                    <option value="Femme">Femme</option>
-                    <option value="Autre">Autre</option>
+                    <option value="male">Homme</option>
+                    <option value="female">Femme</option>
+                    <option value="child">Enfant</option>
+                    <option value="other">Autre</option>
                   </select>
                 </div>
               </div>

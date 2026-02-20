@@ -264,7 +264,7 @@ const PatientsManagementPage = () => {
     Nom: p.name,
     Email: p.email,
     Âge: p.age || 'N/A',
-    Sexe: p.gender === 'male' ? 'Homme' : p.gender === 'female' ? 'Femme' : 'Autre',
+    Sexe: p.gender === 'male' ? 'Homme' : p.gender === 'female' ? 'Femme' : p.gender === 'child' ? 'Enfant' : 'Autre',
     'Date inscription': new Date(p.registered_at).toLocaleDateString('fr-FR'),
     'Consultations totales': p.totalConsultations || 0,
     'En attente': p.pendingConsultations || 0,
@@ -474,6 +474,7 @@ const PatientsManagementPage = () => {
                     >
                       <option value="male">Homme</option>
                       <option value="female">Femme</option>
+                      <option value="child">Enfant</option>
                       <option value="other">Autre</option>
                     </select>
                   </div>
