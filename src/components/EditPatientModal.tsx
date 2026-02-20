@@ -19,6 +19,7 @@ interface EditPatientModalProps {
     primary_pathology?: string;
     status?: string;
     notes?: string;
+    emergency_contact?: string;
   };
 }
 
@@ -32,6 +33,7 @@ interface FormData {
   primary_pathology: string;
   status: string;
   notes: string;
+  emergency_contact: string;
 }
 
 interface FormErrors {
@@ -59,7 +61,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
     address: '',
     primary_pathology: '',
     status: 'active',
-    notes: ''
+    notes: '',
+    emergency_contact: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
@@ -79,7 +82,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
         address: patient.address || '',
         primary_pathology: patient.primary_pathology || '',
         status: patient.status || 'active',
-        notes: patient.notes || ''
+        notes: patient.notes || '',
+        emergency_contact: patient.emergency_contact || ''
       });
       setFieldErrors({});
       setError(null);
@@ -155,7 +159,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
           address: formData.address.trim() || null,
           primary_pathology: formData.primary_pathology.trim() || null,
           status: formData.status,
-          notes: formData.notes.trim() || null
+          notes: formData.notes.trim() || null,
+          emergency_contact: formData.emergency_contact.trim() || null
         })
         .eq('id', patient.id);
 
@@ -443,6 +448,19 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Contact d'urgence
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_contact}
+                  onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
+                  placeholder="Nom et numéro du contact d'urgence"
+                  className="w-full px-4 py-3 bg-[#1e293b] border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                />
               </div>
 
               <div>

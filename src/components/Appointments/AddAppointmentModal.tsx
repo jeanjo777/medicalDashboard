@@ -139,7 +139,7 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
           appointment_time: formData.appointment_time,
           motif: formData.motif,
           type_consultation: formData.type_consultation,
-          message: formData.notes,
+          notes: formData.notes,
           duration: formData.duration,
           status: formData.status
         }]);

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, Brain, TrendingUp, FileText, AlertCircle, Minimize2, Maximize2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface Message {
   id: string;
@@ -66,43 +67,91 @@ const AIMedicalAssistant: React.FC = () => {
     }
   }, [isOpen, isMinimized]);
 
-  const generateAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
+  const generateAIResponse = async (action: string): Promise<string> => {
+    try {
+      if (action === 'risk' || action.includes('risque')) {
+        const { data } = await supabase
+          .from('patients')
+          .select('name, first_name, last_name, riskScore, primary_pathology, status')
+          .gte('riskScore', 70)
+          .order('riskScore', { ascending: false })
+          .limit(5);
 
-    if (lowerMessage.includes('risque') || lowerMessage.includes('cas à risque')) {
-      return `📊 Analyse des patients à risque détectée:\n\n✅ 3 patients nécessitent une attention immédiate:\n- Patient #1245: Score de risque 85% (hypertension non contrôlée)\n- Patient #1189: Score de risque 72% (diabète type 2, suivi irrégulier)\n- Patient #1067: Score de risque 68% (insuffisance cardiaque)\n\n💡 Recommandations:\n1. Programmer consultations de suivi cette semaine\n2. Vérifier l'observance des traitements\n3. Envisager ajustements thérapeutiques`;
+        if (!data || data.length === 0) {
+          return "✅ Aucun patient à risque élevé détecté actuellement. Tous les scores de risque sont inférieurs à 70.";
+        }
+
+        let response = `🔴 **${data.length} patient(s) à risque élevé détecté(s) :**\n\n`;
+        data.forEach((p, i) => {
+          const name = p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : p.name;
+          response += `${i + 1}. **${name}** - Score: ${p.riskScore}/100 - ${p.primary_pathology || 'Pathologie non spécifiée'} (${p.status})\n`;
+        });
+        response += "\n💡 **Recommandation :** Planifier des consultations de suivi prioritaires pour ces patients.";
+        return response;
+      }
+
+      if (action === 'report' || action.includes('rapport')) {
+        const { data: stats } = await supabase
+          .from('analytics_stats')
+          .select('*')
+          .order('date', { ascending: false })
+          .limit(1);
+
+        const { count: totalPatients } = await supabase
+          .from('patients')
+          .select('id', { count: 'exact', head: true });
+
+        const { count: totalAppointments } = await supabase
+          .from('appointments')
+          .select('id', { count: 'exact', head: true });
+
+        const stat = stats?.[0];
+        let response = `📊 **Rapport d'activité :**\n\n`;
+        response += `- Patients totaux : **${totalPatients || 0}**\n`;
+        response += `- Rendez-vous totaux : **${totalAppointments || 0}**\n`;
+        if (stat) {
+          response += `- Patients consultés : **${stat.patients_consultes || 0}**\n`;
+          response += `- Taux RDV honorés : **${stat.rdv_honores || 0}%**\n`;
+          response += `- Cas à risque : **${stat.cas_risque || 0}**\n`;
+        }
+        response += "\n✅ Rapport généré avec succès.";
+        return response;
+      }
+
+      if (action === 'trends' || action.includes('tendance')) {
+        const { data: flux } = await supabase
+          .from('analytics_flux_patients')
+          .select('*')
+          .order('annee', { ascending: false })
+          .limit(6);
+
+        if (!flux || flux.length === 0) {
+          return "📈 Aucune donnée de tendance disponible. Les données seront générées au fil de l'activité.";
+        }
+
+        let response = `📈 **Analyse des tendances récentes :**\n\n`;
+        flux.forEach(f => {
+          response += `- **${f.mois}** : ${f.consultations} consultations, ${f.urgences} urgences, ${f.suivis} suivis\n`;
+        });
+        response += "\n💡 **Tendance :** Analyse basée sur les données réelles de votre activité.";
+        return response;
+      }
+
+      return "🤖 Comment puis-je vous aider ? Vous pouvez me demander une analyse de risques, un rapport d'activité ou une analyse de tendances.";
+    } catch (error) {
+      console.error('AI Assistant error:', error);
+      return "⚠️ Erreur lors de la récupération des données. Veuillez réessayer.";
     }
-
-    if (lowerMessage.includes('rapport') || lowerMessage.includes('compte-rendu')) {
-      return `📋 Compte-rendu médical généré:\n\n📅 Date: ${new Date().toLocaleDateString('fr-FR')}\n\n👥 Activité:\n- 28 consultations réalisées\n- 12 nouveaux patients enregistrés\n- 45 prescriptions émises\n\n🎯 Points clés:\n- Pic d'activité: 10h-12h (15 consultations)\n- Pathologies principales: Infections respiratoires (35%)\n- Taux de suivi: 92%\n\n✅ Recommandations: Planifier 8 consultations de suivi pour la semaine prochaine`;
-    }
-
-    if (lowerMessage.includes('tendance') || lowerMessage.includes('statistique')) {
-      return `📈 Analyse des tendances:\n\n🔹 Consultations:\n- +15% vs hier\n- +22% vs semaine dernière\n- Moyenne quotidienne: 25 patients\n\n🔹 Cas urgents:\n- 4 patients vus en urgence\n- Temps d'attente moyen: 12 min\n\n🔹 Prescriptions:\n- Antibiotiques: 18%\n- Antalgiques: 25%\n- Traitements chroniques: 40%\n\n💡 Insight: Augmentation notable des infections saisonnières, prévoir stock médicaments`;
-    }
-
-    if (lowerMessage.includes('patient') && (lowerMessage.includes('1245') || lowerMessage.includes('dupont'))) {
-      return `👤 Fiche patient Jean Dupont (#1245):\n\n⚠️ Alertes actives:\n- Score de risque: 85% (Critique)\n- Hypertension non contrôlée\n- 2 consultations manquées\n\n📊 Signes vitaux récents:\n- TA: 165/95 mmHg (élevée)\n- Pouls: 88 bpm\n- Poids: 92 kg (+3kg/mois)\n\n💊 Traitement actuel:\n- Ramipril 10mg/j\n- Amlodipine 5mg/j\n\n🎯 Actions recommandées:\n1. Consultation urgente cette semaine\n2. Ajustement posologie\n3. Suivi tensionnel quotidien`;
-    }
-
-    if (lowerMessage.includes('bonjour') || lowerMessage.includes('salut') || lowerMessage.includes('hello')) {
-      return `Bonjour ! 👋\n\nJe suis votre assistant médical intelligent. Je peux vous aider à:\n\n🔍 Analyser les patients à risque\n📊 Générer des rapports et statistiques\n💊 Interpréter des résultats d'examens\n📅 Optimiser la planification des consultations\n🎯 Fournir des recommandations cliniques\n\nQue souhaitez-vous que j'analyse pour vous ?`;
-    }
-
-    if (lowerMessage.includes('aide') || lowerMessage.includes('help') || lowerMessage.includes('que peux-tu faire')) {
-      return `🤖 Mes capacités:\n\n✅ Analyse prédictive:\n- Identification patients à risque\n- Détection patterns anormaux\n- Alertes préventives\n\n✅ Rapports automatisés:\n- Comptes-rendus quotidiens\n- Statistiques d'activité\n- Export de données\n\n✅ Support décisionnel:\n- Suggestions thérapeutiques\n- Interprétation résultats\n- Recommandations de suivi\n\n✅ Optimisation workflow:\n- Priorisation des cas\n- Gestion des rendez-vous\n- Alertes échéances\n\nUtilisez les boutons d'action rapide ou posez-moi directement vos questions !`;
-    }
-
-    return `J'ai bien reçu votre message: "${userMessage}"\n\n🤖 Je peux vous aider avec:\n- Analyse des patients à risque\n- Génération de rapports médicaux\n- Statistiques et tendances\n- Interprétation de résultats\n- Recommandations cliniques\n\nPouvez-vous préciser votre demande ou utiliser les actions rapides ci-dessus ?`;
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
+    const userInput = inputValue;
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: inputValue,
+      content: userInput,
       timestamp: new Date(),
     };
 
@@ -110,19 +159,29 @@ const AIMedicalAssistant: React.FC = () => {
     setInputValue('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const responseContent = await generateAIResponse(userInput);
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: generateAIResponse(inputValue),
+        content: responseContent,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "⚠️ Erreur lors de la récupération des données. Veuillez réessayer.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
-  const handleQuickAction = (action: QuickAction) => {
+  const handleQuickAction = async (action: QuickAction) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -133,16 +192,26 @@ const AIMedicalAssistant: React.FC = () => {
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const responseContent = await generateAIResponse(action.prompt);
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: generateAIResponse(action.prompt),
+        content: responseContent,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "⚠️ Erreur lors de la récupération des données. Veuillez réessayer.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const formatTimestamp = (date: Date) => {

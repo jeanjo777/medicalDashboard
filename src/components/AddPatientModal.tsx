@@ -67,7 +67,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
     address: '',
     primary_pathology: '',
     status: 'active' as 'active' | 'in_treatment' | 'recovered' | 'inactive',
-    notes: ''
+    notes: '',
+    emergency_contact: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -168,7 +169,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
             address: formData.address.trim() || null,
             primary_pathology: formData.primary_pathology.trim() || null,
             status: formData.status,
-            notes: formData.notes.trim() || null
+            notes: formData.notes.trim() || null,
+            emergency_contact: formData.emergency_contact.trim() || null
           }
         ]);
 
@@ -185,7 +187,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
         address: '',
         primary_pathology: '',
         status: 'active',
-        notes: ''
+        notes: '',
+        emergency_contact: ''
       });
       setFieldErrors({});
 
@@ -508,6 +511,19 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                     ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Contact d'urgence
+                </label>
+                <input
+                  type="text"
+                  value={formData.emergency_contact}
+                  onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
+                  placeholder="Nom et numéro du contact d'urgence"
+                  className="w-full px-4 py-3 bg-[#1e293b] border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                />
               </div>
 
               <div className="mt-4">

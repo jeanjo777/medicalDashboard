@@ -15,6 +15,7 @@ import {
   Shield,
   Clock,
   Heart,
+  AlertTriangle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../Common/Toast';
@@ -33,6 +34,8 @@ interface Patient {
   notes: string;
   created_at: string;
   updated_at: string;
+  emergency_contact?: string;
+  last_visit?: string;
 }
 
 interface PatientDetailModalProps {
@@ -130,6 +133,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           address: editedPatient.address,
           status: editedPatient.status,
           notes: editedPatient.notes,
+          emergency_contact: (editedPatient as any).emergency_contact || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', patient.id);
@@ -477,6 +481,47 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </p>
                   )}
                 </div>
+
+                {/* Emergency Contact */}
+                {(patient.emergency_contact || isEditing) && (
+                  <div className="group bg-[#0f172a] rounded-xl border border-[#334155] p-3 sm:p-3.5 hover:border-red-500/30 transition-colors">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle size={14} className="text-red-400 sm:w-4 sm:h-4" />
+                      </div>
+                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Contact d'urgence</span>
+                    </div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={(editedPatient as any).emergency_contact || ''}
+                        onChange={(e) => setEditedPatient({ ...editedPatient, emergency_contact: e.target.value } as any)}
+                        aria-label="Contact d'urgence"
+                        placeholder="Nom et numéro du contact d'urgence"
+                        className="w-full bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                      />
+                    ) : (
+                      <p className="text-white text-sm sm:text-base font-medium pl-9 sm:pl-10">
+                        {patient.emergency_contact || 'Non renseigné'}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Last Visit */}
+                {patient.last_visit && (
+                  <div className="group bg-[#0f172a] rounded-xl border border-[#334155] p-3 sm:p-3.5 hover:border-green-500/30 transition-colors">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                        <Calendar size={14} className="text-green-400 sm:w-4 sm:h-4" />
+                      </div>
+                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Dernière visite</span>
+                    </div>
+                    <p className="text-white text-sm sm:text-base font-medium pl-9 sm:pl-10">
+                      {new Date(patient.last_visit).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
+                  </div>
+                )}
 
                 {/* Notes */}
                 <div className="group bg-[#0f172a] rounded-xl border border-[#334155] p-3 sm:p-3.5 hover:border-cyan-500/30 transition-colors">

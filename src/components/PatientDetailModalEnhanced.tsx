@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X, Phone, Mail, MapPin, Printer, Download, Activity, Heart, Droplet, Weight, Ruler, Calendar, User, AlertCircle, Pill, FileText, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Phone, Mail, MapPin, Printer, Download, Activity, Heart, Droplet, Weight, Ruler, Calendar, User, AlertCircle, Pill, FileText, TrendingUp, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface PatientDetailModalProps {
   isOpen: boolean;
@@ -23,6 +24,27 @@ type TabType = 'overview' | 'history' | 'prescriptions' | 'lab-results';
 
 const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen, onClose, patient }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [consultations, setConsultations] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoadingData(true);
+      try {
+        const { data } = await supabase
+          .from('consultations')
+          .select('*')
+          .eq('patient_id', patient.id)
+          .order('created_at', { ascending: false });
+        if (data) setConsultations(data);
+      } catch (err) {
+        console.error('Error fetching consultations:', err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    if (patient?.id) fetchData();
+  }, [patient?.id]);
 
   if (!isOpen) return null;
 
@@ -40,78 +62,27 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
 
   const age = calculateAge(patient.date_of_birth);
 
+  // Vital signs with N/A placeholders (no hardcoded mock data)
   const vitalSigns = [
-    { icon: Heart, label: 'Pulse', value: '78 bpm', color: 'text-pink-400', bg: 'bg-pink-500/10' },
-    { icon: Activity, label: 'BP', value: '145/92 mmHg', color: 'text-red-400', bg: 'bg-red-500/10' },
-    { icon: Droplet, label: 'SpO2', value: '98%', color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-    { icon: Weight, label: 'Poids', value: '82 kg', color: 'text-green-400', bg: 'bg-green-500/10' },
-    { icon: Ruler, label: 'Taille', value: '175 cm', color: 'text-blue-400', bg: 'bg-blue-500/10' }
+    { icon: Heart, label: 'Pulse', value: 'N/A', color: 'text-pink-400', bg: 'bg-pink-500/10' },
+    { icon: Activity, label: 'BP', value: 'N/A', color: 'text-red-400', bg: 'bg-red-500/10' },
+    { icon: Droplet, label: 'SpO2', value: 'N/A', color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+    { icon: Weight, label: 'Poids', value: 'N/A', color: 'text-green-400', bg: 'bg-green-500/10' },
+    { icon: Ruler, label: 'Taille', value: 'N/A', color: 'text-blue-400', bg: 'bg-blue-500/10' }
   ];
 
-  const historyEntries = [
-    {
-      id: 1,
-      type: 'Consultation',
-      title: 'Suivi hypertension',
-      description: 'TA: 145/92 mmHg, traitement ajusté',
-      date: '31 Oct 2025',
-      doctor: 'Dr. Martin'
-    },
-    {
-      id: 2,
-      type: 'Examen',
-      title: 'Bilan sanguin',
-      description: 'Résultats normaux, cholestérol légèrement élevé',
-      date: '15 Sep 2025',
-      doctor: 'Dr. Chen'
-    },
-    {
-      id: 3,
-      type: 'Consultation',
-      title: 'Contrôle routine',
-      description: 'État général satisfaisant',
-      date: '20 Oct 2025',
-      doctor: 'Dr. Anderson'
-    }
-  ];
+  // Derive prescriptions from consultation recommendations
+  const prescriptionsFromConsultations = consultations
+    .filter((c) => c.recommendations)
+    .map((c, index) => ({
+      id: index + 1,
+      name: c.recommendations,
+      date: new Date(c.created_at).toLocaleDateString('fr-FR'),
+      consultation_id: c.id
+    }));
 
-  const prescriptions = [
-    {
-      id: 1,
-      name: 'Ramipril',
-      dosage: '10mg',
-      frequency: '1 comprimé/jour',
-      duration: '3 mois',
-      startDate: '28 Oct 2025',
-      active: true
-    },
-    {
-      id: 2,
-      name: 'Aspirine',
-      dosage: '100mg',
-      frequency: '1 comprimé/jour',
-      duration: 'En continu',
-      startDate: '15 Sep 2025',
-      active: true
-    },
-    {
-      id: 3,
-      name: 'Atorvastatine',
-      dosage: '20mg',
-      frequency: '1 comprimé le soir',
-      duration: '6 mois',
-      startDate: '15 Sep 2025',
-      active: true
-    }
-  ];
-
-  const labResults = [
-    { name: 'Glycémie à jeun', value: '5,8 mmol/L', range: '3,9-6,1', status: 'normal' },
-    { name: 'Cholestérol total', value: '5,4 mmol/L', range: '< 5,2', status: 'high' },
-    { name: 'HDL', value: '1,2 mmol/L', range: '> 1,0', status: 'normal' },
-    { name: 'LDL', value: '3,5 mmol/L', range: '< 3,4', status: 'high' },
-    { name: 'Créatinine', value: '88 μmol/L', range: '62-106', status: 'normal' }
-  ];
+  // Latest consultation for diagnostic info
+  const latestConsultation = consultations.length > 0 ? consultations[0] : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -180,7 +151,17 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
               <button
                 type="button"
                 onClick={() => {
-                  const content = `DOSSIER PATIENT\n${'='.repeat(40)}\nNom: ${patient.name}\nEmail: ${patient.email}\nTéléphone: ${patient.phone}\nÂge: ${age} ans\nGenre: ${patient.gender || 'Non spécifié'}\nStatut: ${patient.status}\nPathologie: ${patient.primary_pathology || 'Non spécifiée'}\n\nDate d'export: ${new Date().toLocaleDateString('fr-FR')}`;
+                  const consultationsText = consultations.length > 0
+                    ? `\n\nCONSULTATIONS (${consultations.length})\n${'-'.repeat(30)}\n` +
+                      consultations.map((c, i) =>
+                        `${i + 1}. ${new Date(c.created_at).toLocaleDateString('fr-FR')}\n` +
+                        `   Motif: ${c.reason || 'Non spécifié'}\n` +
+                        `   Diagnostic: ${c.diagnosis || 'Non spécifié'}\n` +
+                        `   Recommandations: ${c.recommendations || 'Aucune'}\n` +
+                        `   Notes: ${c.notes || 'Aucune'}`
+                      ).join('\n\n')
+                    : '\n\nCONSULTATIONS\nAucune consultation enregistrée.';
+                  const content = `DOSSIER PATIENT\n${'='.repeat(40)}\nNom: ${patient.name}\nEmail: ${patient.email}\nTéléphone: ${patient.phone}\nÂge: ${age} ans\nGenre: ${patient.gender || 'Non spécifié'}\nStatut: ${patient.status}\nPathologie: ${patient.primary_pathology || 'Non spécifiée'}${consultationsText}\n\nDate d'export: ${new Date().toLocaleDateString('fr-FR')}`;
                   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
@@ -215,7 +196,7 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
                     key={tab.id}
                     type="button"
                     role="tab"
-                    aria-selected={isActive}
+                    aria-selected={isActive ? "true" : "false"}
                     aria-controls={`panel-${tab.id}`}
                     onClick={() => setActiveTab(tab.id as TabType)}
                     className={`
@@ -270,13 +251,22 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
                   Diagnostic principal
                 </h3>
                 <div className="mb-4">
-                  <div className="text-2xl font-bold text-white mb-2">{patient.primary_pathology || 'Hypertension'}</div>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    Hypertension artérielle grade 1, diagnostiquée en septembre 2025. Contrôle régulier nécessaire avec
-                    ajustement du traitement selon les mesures tensionnelles.
-                  </p>
+                  <div className="text-2xl font-bold text-white mb-2">{patient.primary_pathology || 'Non spécifié'}</div>
+                  {latestConsultation ? (
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      {latestConsultation.diagnosis || latestConsultation.notes || 'Aucun diagnostic détaillé disponible.'}
+                    </p>
+                  ) : (
+                    <p className="text-slate-400 text-sm leading-relaxed">
+                      Aucune consultation enregistrée pour ce patient.
+                    </p>
+                  )}
                 </div>
-                <div className="text-xs text-slate-500">Dernière mise à jour: 31 Oct 2025</div>
+                <div className="text-xs text-slate-500">
+                  Dernière mise à jour: {latestConsultation
+                    ? new Date(latestConsultation.created_at).toLocaleDateString('fr-FR')
+                    : 'N/A'}
+                </div>
               </div>
 
               <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
@@ -285,11 +275,8 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
                   Allergies connues
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-2 bg-red-500/20 text-red-300 rounded-lg text-sm border border-red-500/30">
-                    Pénicilline
-                  </span>
-                  <span className="px-3 py-2 bg-red-500/20 text-red-300 rounded-lg text-sm border border-red-500/30">
-                    Aucune autre allergie
+                  <span className="px-3 py-2 bg-slate-700/50 text-slate-400 rounded-lg text-sm border border-slate-600/30">
+                    Aucune allergie enregistrée
                   </span>
                 </div>
               </div>
@@ -302,48 +289,70 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
                 <Calendar className="text-blue-400" size={20} />
                 Historique des consultations
               </h3>
-              {historyEntries.map((entry) => (
-                <div key={entry.id} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 hover:border-blue-500/50 transition-all">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                      <FileText className="text-blue-400" size={20} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="text-white font-semibold mb-1">{entry.title}</h4>
-                          <span className="inline-block px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
-                            {entry.type}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const el = document.getElementById(`history-detail-${entry.id}`);
-                            if (el) {
-                              el.classList.toggle('hidden');
-                            }
-                          }}
-                          className="text-blue-400 hover:text-blue-300 text-sm font-medium cursor-pointer hover:underline"
-                        >
-                          Voir détails
-                        </button>
+              {loadingData ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin text-blue-400 mr-3" size={24} />
+                  <span className="text-slate-400">Chargement de l'historique...</span>
+                </div>
+              ) : consultations.length === 0 ? (
+                <div className="bg-slate-800/50 rounded-xl p-8 border border-slate-700/50 text-center">
+                  <Calendar className="text-slate-500 mx-auto mb-3" size={32} />
+                  <p className="text-slate-400">Aucune consultation enregistrée pour ce patient.</p>
+                </div>
+              ) : (
+                consultations.map((entry) => (
+                  <div key={entry.id} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 hover:border-blue-500/50 transition-all">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <FileText className="text-blue-400" size={20} />
                       </div>
-                      <p className="text-slate-400 text-sm mb-3">{entry.description}</p>
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar size={14} />
-                          {entry.date}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="text-white font-semibold mb-1">{entry.reason || 'Consultation'}</h4>
+                            <span className="inline-block px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
+                              {entry.status || 'Consultation'}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const el = document.getElementById(`history-detail-${entry.id}`);
+                              if (el) {
+                                el.classList.toggle('hidden');
+                              }
+                            }}
+                            className="text-blue-400 hover:text-blue-300 text-sm font-medium cursor-pointer hover:underline"
+                          >
+                            Voir détails
+                          </button>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <User size={14} />
-                          {entry.doctor}
+                        <p className="text-slate-400 text-sm mb-2">{entry.diagnosis || 'Aucun diagnostic'}</p>
+                        {entry.notes && (
+                          <div id={`history-detail-${entry.id}`} className="hidden mb-2 p-3 bg-slate-900/50 rounded-lg border border-slate-700/30">
+                            <p className="text-slate-400 text-sm">{entry.notes}</p>
+                            {entry.recommendations && (
+                              <p className="text-slate-300 text-sm mt-2">
+                                <span className="font-medium text-blue-300">Recommandations:</span> {entry.recommendations}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-slate-500">
+                          <div className="flex items-center gap-1">
+                            <Calendar size={14} />
+                            {new Date(entry.created_at).toLocaleDateString('fr-FR')}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <User size={14} />
+                            {entry.doctor_name || 'Médecin'}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
 
@@ -352,45 +361,47 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                   <Pill className="text-green-400" size={20} />
-                  Prescriptions actives
+                  Prescriptions / Recommandations
                 </h3>
                 <button type="button" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all cursor-pointer">
                   + Ajouter prescription
                 </button>
               </div>
-              {prescriptions.map((prescription) => (
-                <div key={prescription.id} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 hover:border-green-500/50 transition-all">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                      <Pill className="text-green-400" size={20} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="text-white font-semibold text-lg mb-1">{prescription.name} {prescription.dosage}</h4>
-                          <span className="inline-block px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs">
-                            Actif
-                          </span>
-                        </div>
+              {loadingData ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="animate-spin text-green-400 mr-3" size={24} />
+                  <span className="text-slate-400">Chargement des prescriptions...</span>
+                </div>
+              ) : prescriptionsFromConsultations.length === 0 ? (
+                <div className="bg-slate-800/50 rounded-xl p-8 border border-slate-700/50 text-center">
+                  <Pill className="text-slate-500 mx-auto mb-3" size={32} />
+                  <p className="text-slate-400">Aucune prescription ou recommandation enregistrée.</p>
+                </div>
+              ) : (
+                prescriptionsFromConsultations.map((prescription) => (
+                  <div key={prescription.id} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 hover:border-green-500/50 transition-all">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                        <Pill className="text-green-400" size={20} />
                       </div>
-                      <div className="grid grid-cols-3 gap-4 mt-3">
-                        <div>
-                          <div className="text-xs text-slate-500 mb-1">Fréquence</div>
-                          <div className="text-sm text-slate-300">{prescription.frequency}</div>
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <h4 className="text-white font-semibold text-lg mb-1">{prescription.name}</h4>
+                            <span className="inline-block px-2 py-1 bg-green-500/20 text-green-300 rounded text-xs">
+                              Recommandation
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <div className="text-xs text-slate-500 mb-1">Durée</div>
-                          <div className="text-sm text-slate-300">{prescription.duration}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-slate-500 mb-1">Début</div>
-                          <div className="text-sm text-slate-300">{prescription.startDate}</div>
+                        <div className="mt-3">
+                          <div className="text-xs text-slate-500 mb-1">Date de consultation</div>
+                          <div className="text-sm text-slate-300">{prescription.date}</div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
 
@@ -399,35 +410,14 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white flex items-center gap-2">
                   <TrendingUp className="text-cyan-400" size={20} />
-                  Résultats du 15 octobre 2025
+                  Résultats de laboratoire
                 </h3>
-                <button type="button" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-all cursor-pointer">
-                  Télécharger rapport
-                </button>
               </div>
-              {labResults.map((result, index) => (
-                <div key={index} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-white font-semibold">{result.name}</h4>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      result.status === 'normal'
-                        ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                        : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                    }`}>
-                      {result.status === 'normal' ? 'Normal' : 'Élevé'}
-                    </span>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <div className="text-2xl font-bold text-white mb-1">{result.value}</div>
-                      <div className="text-xs text-slate-500">Référence: {result.range}</div>
-                    </div>
-                    {result.status !== 'normal' && (
-                      <AlertCircle className="text-red-400" size={20} />
-                    )}
-                  </div>
-                </div>
-              ))}
+              <div className="bg-slate-800/50 rounded-xl p-8 border border-slate-700/50 text-center">
+                <TrendingUp className="text-slate-500 mx-auto mb-3" size={32} />
+                <p className="text-slate-400 text-lg mb-2">Aucun résultat disponible</p>
+                <p className="text-slate-500 text-sm">Les résultats de laboratoire apparaitront ici lorsqu'ils seront ajoutés au dossier du patient.</p>
+              </div>
             </div>
           )}
         </div>

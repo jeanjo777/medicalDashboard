@@ -14,6 +14,7 @@ import { useToast } from '../components/Common/Toast';
 import { useAppointmentsQuery } from '../hooks/useAppointmentsQuery';
 import { usePagination } from '../hooks/usePagination';
 import { supabase } from '../lib/supabase';
+import { normalizeAppointmentStatus } from '../utils/statusUtils';
 import {
   Calendar,
   Clock,
@@ -60,19 +61,6 @@ interface Appointment {
   patient_id?: string;
   medic_id?: string;
 }
-
-// Normaliser les statuts DB (anglais) vers les statuts UI (français)
-const normalizeStatus = (status: string): string => {
-  const map: Record<string, string> = {
-    'scheduled': 'a_venir',
-    'confirmed': 'a_venir',
-    'completed': 'termine',
-    'cancelled': 'annule',
-    'no-show': 'annule',
-    'no_show': 'annule',
-  };
-  return map[status] || status;
-};
 
 // Stat Card Component
 const StatCard: React.FC<{
@@ -143,7 +131,7 @@ const AppointmentsPage: React.FC = () => {
 
   // Données à afficher - normaliser les statuts DB
   const displayedAppointments = useMemo(() => {
-    return appointments.map(apt => ({ ...apt, status: normalizeStatus(apt.status) }));
+    return appointments.map(apt => ({ ...apt, status: normalizeAppointmentStatus(apt.status) }));
   }, [appointments]);
 
   // Stats calculation
@@ -305,7 +293,7 @@ const AppointmentsPage: React.FC = () => {
   };
 
   const getStatusBadge = (rawStatus: string) => {
-    const status = normalizeStatus(rawStatus);
+    const status = normalizeAppointmentStatus(rawStatus);
     const badges: Record<string, { label: string; classes: string; icon: React.ElementType }> = {
       a_venir: {
         label: 'À venir',

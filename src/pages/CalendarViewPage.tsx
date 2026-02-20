@@ -28,6 +28,7 @@ import AppointmentDetailModal from '../components/Appointments/AppointmentDetail
 import EditAppointmentModal from '../components/Appointments/EditAppointmentModal';
 import { useToast } from '../components/Common/Toast';
 import { supabase } from '../lib/supabase';
+import { normalizeAppointmentStatus } from '../utils/statusUtils';
 import {
   format,
   startOfWeek,
@@ -83,19 +84,6 @@ interface FilterState {
   status: string[];
   type: string[];
 }
-
-// Normaliser les statuts DB (anglais) vers les statuts UI (français)
-const normalizeStatus = (status: string): string => {
-  const map: Record<string, string> = {
-    'scheduled': 'a_venir',
-    'confirmed': 'a_venir',
-    'completed': 'termine',
-    'cancelled': 'annule',
-    'no-show': 'annule',
-    'no_show': 'annule',
-  };
-  return map[status] || status;
-};
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; border: string; gradient: string }> = {
   a_venir: { label: 'À venir', color: 'text-blue-500', bg: 'bg-blue-500/10', dot: 'bg-blue-500', border: 'border-blue-500/20', gradient: 'from-blue-500 to-blue-600' },
@@ -782,7 +770,7 @@ const CalendarViewPage: React.FC = () => {
 
       if (fetchError) throw fetchError;
 
-      setAppointments((data || []).map(apt => ({ ...apt, status: normalizeStatus(apt.status) })));
+      setAppointments((data || []).map(apt => ({ ...apt, status: normalizeAppointmentStatus(apt.status) })));
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement';
       setError(errorMessage);

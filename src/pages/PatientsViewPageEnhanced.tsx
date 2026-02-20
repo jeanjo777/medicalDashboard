@@ -10,6 +10,7 @@ import { useAdvancedSearch } from '../hooks/useAdvancedSearch';
 import {
   Bell, Plus, Eye, Users, Activity, Clock,
   RefreshCw, WifiOff, Download, AlertTriangle, LayoutGrid, List,
+  Phone, Calendar,
 } from 'lucide-react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import { formatAge } from '../utils/dateHelpers';
@@ -33,6 +34,8 @@ export interface Patient {
   profile_pic?: string;
   updated_at?: string;
   registered_at?: string;
+  emergency_contact?: string;
+  last_visit?: string;
 }
 
 // Couleurs d'avatar dynamiques basées sur le nom
@@ -144,16 +147,18 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const handleExportCSV = useCallback(() => {
     if (patients.length === 0) return;
 
-    const headers = ['Nom', 'Email', 'Téléphone', 'Genre', 'Âge', 'Pathologie', 'Score de risque', 'Statut', 'Date d\'ajout'];
+    const headers = ['Nom', 'Email', 'Téléphone', 'Contact d\'urgence', 'Genre', 'Âge', 'Pathologie', 'Score de risque', 'Statut', 'Dernière visite', 'Date d\'ajout'];
     const rows = patients.map(p => [
       p.name,
       p.email,
       p.phone || '',
+      p.emergency_contact || '',
       getGenderLabel(p.gender),
       p.date_of_birth ? formatAge(p.date_of_birth, '') : (p.age?.toString() || ''),
       p.primary_pathology || '',
       p.riskScore?.toString() || '',
       getStatusLabel(p.status),
+      p.last_visit ? new Date(p.last_visit).toLocaleDateString('fr-FR') : '',
       new Date(p.created_at).toLocaleDateString('fr-FR'),
     ]);
 
@@ -489,6 +494,12 @@ const PatientsViewPageEnhanced: React.FC = () => {
                             <td className="hidden lg:table-cell px-4 md:px-6 py-3 md:py-4">
                               <div className="theme-text-secondary text-sm truncate max-w-[200px]">{patient.email}</div>
                               <div className="theme-text-muted text-xs">{patient.phone || '—'}</div>
+                              {patient.emergency_contact && (
+                                <div className="flex items-center gap-1 text-xs mt-1">
+                                  <Phone size={10} className="text-red-400" />
+                                  <span className="text-red-300 truncate max-w-[180px]">{patient.emergency_contact}</span>
+                                </div>
+                              )}
                             </td>
                             <td className="hidden xl:table-cell px-4 md:px-6 py-3 md:py-4">
                               <span className="theme-text-secondary text-sm">
@@ -594,6 +605,20 @@ const PatientsViewPageEnhanced: React.FC = () => {
                           <span className="theme-text-muted">Téléphone</span>
                           <span className="theme-text-secondary">{patient.phone || '—'}</span>
                         </div>
+                        {patient.emergency_contact && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Phone size={14} className="text-red-400" />
+                            <span className="text-gray-400">Urgence:</span>
+                            <span className="text-gray-200">{patient.emergency_contact}</span>
+                          </div>
+                        )}
+                        {patient.last_visit && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar size={14} className="text-green-400" />
+                            <span className="text-gray-400">Dernière visite:</span>
+                            <span className="text-gray-200">{new Date(patient.last_visit).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="mt-4 pt-3 border-t border-[var(--border-color)] flex items-center justify-between">
