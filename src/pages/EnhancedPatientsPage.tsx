@@ -108,7 +108,7 @@ const EnhancedPatientsPage: React.FC = () => {
       setPatients(formattedData);
     } catch (error) {
       logger.error('Error fetching patients:', error);
-      setPatients(mockPatients);
+      setPatients([]);
     } finally {
       setLoading(false);
     }
@@ -151,17 +151,6 @@ const EnhancedPatientsPage: React.FC = () => {
     setShowDeleteConfirm(false);
     setPatientToDelete(null);
   };
-
-  const mockPatients: Patient[] = [
-    { id: '00000000-0000-0000-0000-000000000001', patient_id: 'PT-001', name: 'Sarah Johnson', age: 34, gender: 'Female', condition: 'Hypertension', status: 'active', last_visit: '2025-10-25', created_at: '2025-10-25' },
-    { id: '00000000-0000-0000-0000-000000000002', patient_id: 'PT-002', name: 'Michael Chen', age: 45, gender: 'Male', condition: 'Diabetes Type 2', status: 'active', last_visit: '2025-10-27', created_at: '2025-10-27' },
-    { id: '00000000-0000-0000-0000-000000000003', patient_id: 'PT-003', name: 'Emma Davis', age: 28, gender: 'Female', condition: 'Asthma', status: 'recovered', last_visit: '2025-10-20', created_at: '2025-10-20' },
-    { id: '00000000-0000-0000-0000-000000000004', patient_id: 'PT-004', name: 'James Wilson', age: 52, gender: 'Male', condition: 'Arthritis', status: 'active', last_visit: '2025-10-26', created_at: '2025-10-26' },
-    { id: '00000000-0000-0000-0000-000000000005', patient_id: 'PT-005', name: 'Olivia Martinez', age: 31, gender: 'Female', condition: 'Migraine', status: 'in_treatment', last_visit: '2025-10-28', created_at: '2025-10-28' },
-    { id: '00000000-0000-0000-0000-000000000006', patient_id: 'PT-006', name: 'William Brown', age: 67, gender: 'Male', condition: 'Heart Disease', status: 'active', last_visit: '2025-10-24', created_at: '2025-10-24' },
-    { id: '00000000-0000-0000-0000-000000000007', patient_id: 'PT-007', name: 'Sophia Taylor', age: 29, gender: 'Female', condition: 'Allergies', status: 'recovered', last_visit: '2025-10-15', created_at: '2025-10-15' },
-    { id: '00000000-0000-0000-0000-000000000008', patient_id: 'PT-008', name: 'Daniel Anderson', age: 41, gender: 'Male', condition: 'Back Pain', status: 'in_treatment', last_visit: '2025-10-27', created_at: '2025-10-27' },
-  ];
 
   const filteredAndSortedPatients = useMemo(() => {
     let filtered = patients;
