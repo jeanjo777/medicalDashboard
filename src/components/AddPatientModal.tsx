@@ -31,7 +31,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, User, Calendar, Activity, FileText, Phone, Mail, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, User, Calendar, Activity, FileText, Phone, Mail, MapPin, AlertCircle, CheckCircle, Heart, Thermometer } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
 
@@ -69,7 +69,14 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
     primary_pathology: '',
     status: 'active' as 'active' | 'in_treatment' | 'recovered' | 'inactive',
     notes: '',
-    emergency_contact: ''
+    emergency_contact: '',
+    temperature: '',
+    poids: '',
+    taille: '',
+    tension_arterielle: '',
+    test_palu: '',
+    glycemie: '',
+    pouls: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -133,9 +140,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
       errors.phone = 'Le numéro de téléphone doit contenir au moins 10 chiffres';
     }
 
-    if (!formData.email.trim()) {
-      errors.email = 'L\'email est requis';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Format email invalide';
     }
 
@@ -172,7 +177,14 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
             primary_pathology: formData.primary_pathology.trim() || null,
             status: formData.status,
             notes: formData.notes.trim() || null,
-            emergency_contact: formData.emergency_contact.trim() || null
+            emergency_contact: formData.emergency_contact.trim() || null,
+            temperature: formData.temperature ? parseFloat(formData.temperature) : null,
+            poids: formData.poids ? parseFloat(formData.poids) : null,
+            taille: formData.taille ? parseFloat(formData.taille) : null,
+            tension_arterielle: formData.tension_arterielle.trim() || null,
+            test_palu: formData.test_palu || null,
+            glycemie: formData.glycemie ? parseFloat(formData.glycemie) : null,
+            pouls: formData.pouls ? parseInt(formData.pouls) : null
           }
         ]);
 
@@ -191,7 +203,14 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
         primary_pathology: '',
         status: 'active',
         notes: '',
-        emergency_contact: ''
+        emergency_contact: '',
+        temperature: '',
+        poids: '',
+        taille: '',
+        tension_arterielle: '',
+        test_palu: '',
+        glycemie: '',
+        pouls: ''
       });
       setFieldErrors({});
 
@@ -446,7 +465,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                 <div>
                   <label htmlFor="email" className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
                     <Mail size={16} className="text-cyan-400" />
-                    Email <span className="text-red-400">*</span>
+                    Email
                   </label>
                   <input
                     type="email"
@@ -454,13 +473,11 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    required
                     disabled={loading}
                     className={`w-full px-4 py-2.5 bg-[#1e293b] border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                       fieldErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-[#334155]'
                     }`}
                     placeholder="jean.dupont@email.com"
-                    aria-required="true"
                     aria-invalid={!!fieldErrors.email}
                     aria-describedby={fieldErrors.email ? 'email-error' : undefined}
                   />
@@ -550,6 +567,142 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                   placeholder="Nom et numéro du contact d'urgence"
                   className="w-full px-4 py-3 bg-[#1e293b] border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                 />
+              </div>
+
+              <div className="mt-5 pt-4 border-t border-[#334155]">
+                <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                  <Heart size={16} className="text-red-400" />
+                  Signes vitaux
+                </h4>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label htmlFor="temperature" className="block text-xs font-medium text-gray-400 mb-1">
+                      Température (°C)
+                    </label>
+                    <input
+                      type="number"
+                      id="temperature"
+                      name="temperature"
+                      value={formData.temperature}
+                      onChange={handleChange}
+                      disabled={loading}
+                      step="0.1"
+                      min="30"
+                      max="45"
+                      placeholder="37.0"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="poids" className="block text-xs font-medium text-gray-400 mb-1">
+                      Poids (kg)
+                    </label>
+                    <input
+                      type="number"
+                      id="poids"
+                      name="poids"
+                      value={formData.poids}
+                      onChange={handleChange}
+                      disabled={loading}
+                      step="0.1"
+                      min="0"
+                      placeholder="70"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="taille" className="block text-xs font-medium text-gray-400 mb-1">
+                      Taille (cm)
+                    </label>
+                    <input
+                      type="number"
+                      id="taille"
+                      name="taille"
+                      value={formData.taille}
+                      onChange={handleChange}
+                      disabled={loading}
+                      min="0"
+                      max="300"
+                      placeholder="170"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="pouls" className="block text-xs font-medium text-gray-400 mb-1">
+                      Pouls (bpm)
+                    </label>
+                    <input
+                      type="number"
+                      id="pouls"
+                      name="pouls"
+                      value={formData.pouls}
+                      onChange={handleChange}
+                      disabled={loading}
+                      min="0"
+                      max="300"
+                      placeholder="72"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                  <div>
+                    <label htmlFor="tension_arterielle" className="block text-xs font-medium text-gray-400 mb-1">
+                      Tension artérielle
+                    </label>
+                    <input
+                      type="text"
+                      id="tension_arterielle"
+                      name="tension_arterielle"
+                      value={formData.tension_arterielle}
+                      onChange={handleChange}
+                      disabled={loading}
+                      placeholder="12/8"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="glycemie" className="block text-xs font-medium text-gray-400 mb-1">
+                      Glycémie (g/L)
+                    </label>
+                    <input
+                      type="number"
+                      id="glycemie"
+                      name="glycemie"
+                      value={formData.glycemie}
+                      onChange={handleChange}
+                      disabled={loading}
+                      step="0.01"
+                      min="0"
+                      placeholder="1.0"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="test_palu" className="block text-xs font-medium text-gray-400 mb-1">
+                      Test Palu rapide
+                    </label>
+                    <select
+                      id="test_palu"
+                      name="test_palu"
+                      value={formData.test_palu}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="">Non testé</option>
+                      <option value="positive">+ Positif</option>
+                      <option value="negative">- Négatif</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-4">

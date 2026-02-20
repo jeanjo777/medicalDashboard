@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Calendar, Phone, Mail, MapPin, Activity, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, User, Calendar, Phone, Mail, MapPin, Activity, AlertCircle, CheckCircle, Heart } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
 
@@ -21,6 +21,13 @@ interface EditPatientModalProps {
     status?: string;
     notes?: string;
     emergency_contact?: string;
+    temperature?: number;
+    poids?: number;
+    taille?: number;
+    tension_arterielle?: string;
+    test_palu?: string;
+    glycemie?: number;
+    pouls?: number;
   };
 }
 
@@ -36,6 +43,13 @@ interface FormData {
   status: string;
   notes: string;
   emergency_contact: string;
+  temperature: string;
+  poids: string;
+  taille: string;
+  tension_arterielle: string;
+  test_palu: string;
+  glycemie: string;
+  pouls: string;
 }
 
 interface FormErrors {
@@ -65,7 +79,14 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
     primary_pathology: '',
     status: 'active',
     notes: '',
-    emergency_contact: ''
+    emergency_contact: '',
+    temperature: '',
+    poids: '',
+    taille: '',
+    tension_arterielle: '',
+    test_palu: '',
+    glycemie: '',
+    pouls: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
@@ -87,7 +108,14 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
         primary_pathology: patient.primary_pathology || '',
         status: patient.status || 'active',
         notes: patient.notes || '',
-        emergency_contact: patient.emergency_contact || ''
+        emergency_contact: patient.emergency_contact || '',
+        temperature: patient.temperature?.toString() || '',
+        poids: patient.poids?.toString() || '',
+        taille: patient.taille?.toString() || '',
+        tension_arterielle: patient.tension_arterielle || '',
+        test_palu: patient.test_palu || '',
+        glycemie: patient.glycemie?.toString() || '',
+        pouls: patient.pouls?.toString() || ''
       });
       setFieldErrors({});
       setError(null);
@@ -122,9 +150,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
       errors.phone = 'Le numéro de téléphone doit contenir au moins 10 chiffres';
     }
 
-    if (!formData.email.trim()) {
-      errors.email = 'L\'email est requis';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Format email invalide';
     }
 
@@ -165,7 +191,14 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
           primary_pathology: formData.primary_pathology.trim() || null,
           status: formData.status,
           notes: formData.notes.trim() || null,
-          emergency_contact: formData.emergency_contact.trim() || null
+          emergency_contact: formData.emergency_contact.trim() || null,
+          temperature: formData.temperature ? parseFloat(formData.temperature) : null,
+          poids: formData.poids ? parseFloat(formData.poids) : null,
+          taille: formData.taille ? parseInt(formData.taille) : null,
+          tension_arterielle: formData.tension_arterielle.trim() || null,
+          test_palu: formData.test_palu || null,
+          glycemie: formData.glycemie ? parseFloat(formData.glycemie) : null,
+          pouls: formData.pouls ? parseInt(formData.pouls) : null
         })
         .eq('id', patient.id);
 
@@ -388,7 +421,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
               <div>
                 <label htmlFor="email" className="text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
                   <Mail size={16} className="text-cyan-400" />
-                  Email <span className="text-red-400">*</span>
+                  Email
                 </label>
                 <input
                   type="email"
@@ -396,7 +429,6 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
                   disabled={loading}
                   className={`w-full px-4 py-2.5 bg-[#1e293b] border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     fieldErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-[#334155]'
@@ -489,6 +521,142 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                   placeholder="Nom et numéro du contact d'urgence"
                   className="w-full px-4 py-3 bg-[#1e293b] border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                 />
+              </div>
+
+              <div className="mt-5 pt-4 border-t border-[#334155]">
+                <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                  <Heart size={16} className="text-red-400" />
+                  Signes vitaux
+                </h4>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div>
+                    <label htmlFor="temperature" className="block text-xs font-medium text-gray-400 mb-1">
+                      Température (°C)
+                    </label>
+                    <input
+                      type="number"
+                      id="temperature"
+                      name="temperature"
+                      value={formData.temperature}
+                      onChange={handleChange}
+                      disabled={loading}
+                      step="0.1"
+                      min="30"
+                      max="45"
+                      placeholder="37.0"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="poids" className="block text-xs font-medium text-gray-400 mb-1">
+                      Poids (kg)
+                    </label>
+                    <input
+                      type="number"
+                      id="poids"
+                      name="poids"
+                      value={formData.poids}
+                      onChange={handleChange}
+                      disabled={loading}
+                      step="0.1"
+                      min="0"
+                      placeholder="70"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="taille" className="block text-xs font-medium text-gray-400 mb-1">
+                      Taille (cm)
+                    </label>
+                    <input
+                      type="number"
+                      id="taille"
+                      name="taille"
+                      value={formData.taille}
+                      onChange={handleChange}
+                      disabled={loading}
+                      min="0"
+                      max="300"
+                      placeholder="170"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="pouls" className="block text-xs font-medium text-gray-400 mb-1">
+                      Pouls (bpm)
+                    </label>
+                    <input
+                      type="number"
+                      id="pouls"
+                      name="pouls"
+                      value={formData.pouls}
+                      onChange={handleChange}
+                      disabled={loading}
+                      min="0"
+                      max="300"
+                      placeholder="72"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+                  <div>
+                    <label htmlFor="tension_arterielle" className="block text-xs font-medium text-gray-400 mb-1">
+                      Tension artérielle
+                    </label>
+                    <input
+                      type="text"
+                      id="tension_arterielle"
+                      name="tension_arterielle"
+                      value={formData.tension_arterielle}
+                      onChange={handleChange}
+                      disabled={loading}
+                      placeholder="12/8"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="glycemie" className="block text-xs font-medium text-gray-400 mb-1">
+                      Glycémie (g/L)
+                    </label>
+                    <input
+                      type="number"
+                      id="glycemie"
+                      name="glycemie"
+                      value={formData.glycemie}
+                      onChange={handleChange}
+                      disabled={loading}
+                      step="0.01"
+                      min="0"
+                      placeholder="1.0"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="test_palu" className="block text-xs font-medium text-gray-400 mb-1">
+                      Test Palu rapide
+                    </label>
+                    <select
+                      id="test_palu"
+                      name="test_palu"
+                      value={formData.test_palu}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="">Non testé</option>
+                      <option value="positive">+ Positif</option>
+                      <option value="negative">- Négatif</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div>
