@@ -416,7 +416,7 @@ export function usePredictions(horizonMonths: number = 3, metric: string = 'cons
       const values = historicalData.map((f: any) => f.consultations);
       const n = values.length;
       const avgGrowth = n > 1 ? (values[n - 1] - values[0]) / (n - 1) : 0;
-      const lastValue = values[n - 1] || 150;
+      const lastValue = values[n - 1] || 0;
 
       // Build forecast: historical + predicted
       const forecast: PredictionPoint[] = [];
@@ -690,7 +690,7 @@ export function useCorrelations() {
       const urgWaitCorr = flux.length > 1 ? computeCorrelation(
         flux.map((f: any) => f.urgences),
         flux.map((f: any) => f.consultations)
-      ) : -0.62;
+      ) : 0;
 
       const correlationPairs: CorrelationPair[] = [
         {
@@ -722,10 +722,10 @@ export function useCorrelations() {
         },
         {
           metric1: 'Suivi regulier', metric2: 'Readmission',
-          coefficient: -0.71,
+          coefficient: 0,
           type: 'negative',
           description: 'Un meilleur suivi reduit les readmissions',
-          insight: 'Les patients avec un suivi regulier ont 40% moins de readmissions',
+          insight: 'Accumulez des données pour mesurer l\'impact du suivi sur les readmissions',
         },
       ];
 

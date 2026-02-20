@@ -169,7 +169,7 @@ const SegmentationTab: React.FC<SegmentationTabProps> = ({ filters }) => {
             </div>
             <h3 className="theme-text-secondary text-sm font-medium">Segments Actifs</h3>
           </div>
-          <p className="text-3xl font-bold theme-text-primary">12</p>
+          <p className="text-3xl font-bold theme-text-primary">{segmentation.ageDistribution?.length || 0}</p>
           <p className="text-sm theme-text-muted mt-1">Groupes démographiques</p>
         </div>
 

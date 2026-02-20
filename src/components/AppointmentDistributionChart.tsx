@@ -144,18 +144,16 @@ const AppointmentDistributionChart: React.FC = () => {
 
       logger.info(`[AppointmentDistribution] Fetched ${patients?.length || 0} patients, ${appointments?.length || 0} appointments`);
 
-      // Process data or fallback to mock
+      // Process data or use empty arrays
       if (!patients || patients.length === 0) {
-        logger.warn('[AppointmentDistribution] No patient data, using mock');
-        setStatusData(getMockStatusData());
+        setStatusData([]);
       } else {
         const statusCounts = processStatusData(patients);
         setStatusData(statusCounts);
       }
 
       if (!appointments || appointments.length === 0) {
-        logger.warn('[AppointmentDistribution] No appointment data, using mock');
-        setSpecialtyData(getMockSpecialtyData());
+        setSpecialtyData([]);
       } else {
         const specialtyCounts = processSpecialtyData(appointments);
         setSpecialtyData(specialtyCounts);
@@ -164,8 +162,8 @@ const AppointmentDistributionChart: React.FC = () => {
     } catch (err: any) {
       logger.error('[AppointmentDistribution] Error:', err);
       setError(err.message || 'Failed to load distribution data');
-      setStatusData(getMockStatusData());
-      setSpecialtyData(getMockSpecialtyData());
+      setStatusData([]);
+      setSpecialtyData([]);
     } finally {
       setLoading(false);
     }

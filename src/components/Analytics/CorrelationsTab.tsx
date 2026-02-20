@@ -120,7 +120,7 @@ const CorrelationsTab: React.FC<CorrelationsTabProps> = ({ filters }) => {
       <div className="bg-[var(--bg-secondary)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
         <div className="p-5 border-b border-[var(--border-color)] bg-[var(--bg-primary)]">
           <h3 className="text-lg font-semibold theme-text-primary mb-1">Corrélation: Consultations vs Satisfaction</h3>
-          <p className="text-sm theme-text-muted">Coefficient de corrélation: 0.78 (forte corrélation positive)</p>
+          <p className="text-sm theme-text-muted">Coefficient de corrélation: {stats.avgCoefficient} ({Number(stats.avgCoefficient) >= 0.5 ? 'forte' : Number(stats.avgCoefficient) >= 0.3 ? 'modérée' : 'faible'} corrélation {Number(stats.avgCoefficient) >= 0 ? 'positive' : 'négative'})</p>
         </div>
 
         <div className="p-5">

@@ -143,9 +143,8 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
       : 0;
 
     // Calculer les revenus (150 FCFA par consultation)
-    const baseRevenue = 45000;
-    const revenueThisWeek = baseRevenue + (consultationsThisWeek * 150);
-    const revenueLastWeek = baseRevenue + (consultationsLastWeek * 150);
+    const revenueThisWeek = consultationsThisWeek * 150;
+    const revenueLastWeek = consultationsLastWeek * 150;
 
     return {
       appointmentsToday,

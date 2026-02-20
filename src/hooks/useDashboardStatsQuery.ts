@@ -125,9 +125,8 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
     ? Number(((patientsInTreatmentLastWeek / totalPatients) * 100).toFixed(1))
     : 0;
 
-  const baseRevenue = 45000;
-  const revenueThisWeek = baseRevenue + (consultationsThisWeek * 150);
-  const revenueLastWeek = baseRevenue + (consultationsLastWeek * 150);
+  const revenueThisWeek = consultationsThisWeek * 150;
+  const revenueLastWeek = consultationsLastWeek * 150;
 
   logger.info('[useDashboardStatsQuery] Stats calculated:', {
     appointmentsToday,
