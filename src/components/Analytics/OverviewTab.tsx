@@ -191,7 +191,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters }) => {
     return {
       patients: pts.map(f => ({ value: f.consultations + f.suivis })),
       consultations: pts.map(f => ({ value: f.consultations })),
-      satisfaction: pts.map((_, i) => ({ value: 4.2 + (i * 0.08) })),
+      satisfaction: pts.map(f => ({ value: f.suivis > 0 ? Math.round((f.consultations / (f.consultations + f.urgences)) * 5 * 10) / 10 : 0 })),
       risk: pts.map(f => ({ value: Math.round(f.urgences * 0.6) }))
     };
   }, [flux]);

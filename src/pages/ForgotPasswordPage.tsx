@@ -6,8 +6,7 @@ const ForgotPasswordPage = () => {
   const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  const doctorEmail = 'simpliceake1975@gmail.com';
+  const [doctorEmail, setDoctorEmail] = useState('');
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,13 +92,14 @@ const ForgotPasswordPage = () => {
                       id="email"
                       type="email"
                       value={doctorEmail}
-                      className="w-full pl-12 pr-4 py-3.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-700 cursor-not-allowed"
-                      disabled
-                      readOnly
+                      onChange={(e) => setDoctorEmail(e.target.value)}
+                      placeholder="Entrez votre adresse email"
+                      className="w-full pl-12 pr-4 py-3.5 bg-white/80 border border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                      required
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Cette adresse est pré-configurée pour le compte médecin
+                    Entrez l'adresse email associée à votre compte médecin
                   </p>
                 </div>
 

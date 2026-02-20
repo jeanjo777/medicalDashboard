@@ -83,7 +83,7 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters }) => {
             </div>
             <div>
               <p className="text-xs theme-text-muted">Modèle IA</p>
-              <p className="text-sm font-semibold theme-text-primary">ARIMA + RF</p>
+              <p className="text-sm font-semibold theme-text-primary">Extrapolation + Saisonnalité</p>
             </div>
           </div>
         </div>
@@ -397,11 +397,11 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ filters }) => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
             <p className="text-xs text-indigo-200 mb-1">Type</p>
-            <p className="text-sm font-medium">Ensemble ML</p>
+            <p className="text-sm font-medium">Tendanciel</p>
           </div>
           <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
             <p className="text-xs text-indigo-200 mb-1">Algorithmes</p>
-            <p className="text-sm font-medium">ARIMA + RF</p>
+            <p className="text-sm font-medium">Extrapolation + Saisonnalité</p>
           </div>
           <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
             <p className="text-xs text-indigo-200 mb-1">Accuracy</p>

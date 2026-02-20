@@ -25,6 +25,7 @@ import NotificationCenter from '../components/Common/NotificationCenter';
 import ErrorBoundary from '../components/ErrorBoundary';
 import logger from '../utils/logger';
 import { exportData, ExportFormat, flattenData } from '../utils/exportUtils';
+import { supabase } from '../lib/supabase';
 
 const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React.ElementType; sidebarId: string }> = {
   '/analytics-advanced': { title: 'Analytics & Statistiques', subtitle: "Vue d'ensemble de l'activité et rapports détaillés", icon: BarChart3, sidebarId: 'statistics' },
@@ -71,18 +72,46 @@ const AnalyticsPageAdvanced: React.FC = () => {
   const handleExport = async (format: string) => {
     logger.info(`Exporting data as ${format}`);
 
-    // Build a generic overview dataset from analytics data for export
-    const src = { totalPatients: 0, newPatientsThisMonth: 0, totalAppointments: 0, appointmentsToday: 0, completedConsultations: 0, patientSatisfaction: 0, averageWaitTime: 0, bedOccupancy: 0, emergencyCases: 0 };
+    // Build overview dataset from real Supabase data
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const todayStr = now.toISOString().split('T')[0]; // yyyy-MM-dd
+
+    const [
+      patientsRes,
+      newPatientsRes,
+      appointmentsRes,
+      todayAppointmentsRes,
+      completedConsultationsRes,
+      analyticsStatsRes,
+    ] = await Promise.all([
+      supabase.from('patients').select('id', { count: 'exact', head: true }),
+      supabase.from('patients').select('id', { count: 'exact', head: true }).gte('created_at', startOfThisMonth),
+      supabase.from('appointments').select('id', { count: 'exact', head: true }),
+      supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('appointment_date', todayStr),
+      supabase.from('consultations').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+      supabase.from('analytics_stats').select('cas_risque, rdv_honores').order('created_at', { ascending: false }).limit(1),
+    ]);
+
+    const totalPatients = patientsRes.count || 0;
+    const newPatientsThisMonth = newPatientsRes.count || 0;
+    const totalAppointments = appointmentsRes.count || 0;
+    const todayAppointments = todayAppointmentsRes.count || 0;
+    const completedConsultations = completedConsultationsRes.count || 0;
+    const latestStats = analyticsStatsRes.data?.[0];
+    const casRisque = latestStats?.cas_risque ?? 0;
+    const rdvHonores = latestStats?.rdv_honores ?? 0;
+
     const overviewData = [
-      { Metric: 'Total Patients', Value: src.totalPatients, Period: 'Current' },
-      { Metric: 'New Patients This Month', Value: src.newPatientsThisMonth, Period: 'Current' },
-      { Metric: 'Total Appointments', Value: src.totalAppointments, Period: 'Current' },
-      { Metric: 'Appointments Today', Value: src.appointmentsToday, Period: 'Current' },
-      { Metric: 'Completed Consultations', Value: src.completedConsultations, Period: 'Current' },
-      { Metric: 'Patient Satisfaction', Value: src.patientSatisfaction, Period: 'Current' },
-      { Metric: 'Average Wait Time (min)', Value: src.averageWaitTime, Period: 'Current' },
-      { Metric: 'Bed Occupancy (%)', Value: src.bedOccupancy, Period: 'Current' },
-      { Metric: 'Emergency Cases', Value: src.emergencyCases, Period: 'Current' },
+      { Metric: 'Total Patients', Value: totalPatients, Period: 'Actuel' },
+      { Metric: 'Nouveaux patients (ce mois)', Value: newPatientsThisMonth, Period: 'Ce mois' },
+      { Metric: 'Total Rendez-vous', Value: totalAppointments, Period: 'Actuel' },
+      { Metric: "Rendez-vous aujourd'hui", Value: todayAppointments, Period: "Aujourd'hui" },
+      { Metric: 'Consultations terminées', Value: completedConsultations, Period: 'Actuel' },
+      { Metric: 'Cas à risque', Value: casRisque, Period: 'Dernier relevé' },
+      { Metric: 'RDV honorés', Value: rdvHonores, Period: 'Dernier relevé' },
+      { Metric: 'Onglet actif', Value: currentTab, Period: 'Actuel' },
+      { Metric: 'Date export', Value: new Date().toLocaleDateString('fr-FR'), Period: 'Actuel' },
     ];
 
     const exportFormat = format as ExportFormat;

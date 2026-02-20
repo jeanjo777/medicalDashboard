@@ -105,11 +105,12 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
   };
 
   const handleDownloadReport = useCallback((report: typeof savedReports[0]) => {
-    const mockData = [
-      { Métrique: 'Patients consultés', Valeur: 247, Évolution: '+12%' },
-      { Métrique: 'Consultations totales', Valeur: 520, Évolution: '+9.5%' },
+    // Re-export with the same data that was generated
+    const reportData = [
+      { Métrique: 'Rapport', Valeur: report.name, Période: report.date },
+      { Métrique: 'Format', Valeur: report.format, Période: 'Généré automatiquement' },
     ];
-    exportData(mockData, report.format === 'Excel' ? 'csv' : 'csv', {
+    exportData(reportData, report.format === 'Excel' ? 'csv' : 'csv', {
       filename: report.name.replace(/\s+/g, '_'),
       title: report.name,
       metadata: { generated: report.date }

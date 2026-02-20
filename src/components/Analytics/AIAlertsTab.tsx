@@ -573,7 +573,7 @@ const AIAlertsTab: React.FC<AIAlertsTabProps> = ({ filters }) => {
           </div>
           <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
             <p className="text-xs text-indigo-200 mb-1">Précision</p>
-            <p className="text-sm font-medium text-emerald-300">94.2%</p>
+            <p className="text-sm font-medium text-emerald-300">{alerts.length > 0 ? Math.round((alerts.filter(a => a.severity !== 'critical').length / alerts.length) * 100) : 0}%</p>
           </div>
           <div className="bg-white/15 rounded-xl p-4 backdrop-blur-sm">
             <p className="text-xs text-indigo-200 mb-1">Sources analysées</p>

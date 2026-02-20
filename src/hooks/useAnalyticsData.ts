@@ -846,11 +846,11 @@ export function useComparative(comparisonType: 'month' | 'quarter' | 'year' = 'm
       const prevUrgences = prevFlux?.urgences || 0;
       const urgencesChange = prevUrgences > 0 ? Math.round(((totalUrgences - prevUrgences) / prevUrgences) * 1000) / 10 : 0;
 
-      // Estimate previous values for medecin metrics
-      const satisfPrevious = avgSatisfaction > 0 ? Math.round((avgSatisfaction - 0.3) * 10) / 10 : 0;
-      const satisfChange = satisfPrevious > 0 ? Math.round(((avgSatisfaction - satisfPrevious) / satisfPrevious) * 1000) / 10 : 0;
-      const timePrevious = avgMinutes > 0 ? avgMinutes + 3 : 0;
-      const timeChange = timePrevious > 0 ? Math.round(((avgMinutes - timePrevious) / timePrevious) * 1000) / 10 : 0;
+      // Use actual previous period data when available, otherwise show 0 change
+      const satisfPrevious = prevFlux ? avgSatisfaction : 0;
+      const satisfChange = 0; // No historical satisfaction tracking yet
+      const timePrevious = avgMinutes;
+      const timeChange = 0; // No historical time tracking yet
 
       const kpiComparison: ComparativeKPI[] = [
         {
@@ -903,11 +903,11 @@ export function useComparative(comparisonType: 'month' | 'quarter' | 'year' = 'm
         },
       ];
 
-      const timeSeriesComparison: ComparativeTimeSeries[] = allFlux.slice(-6).map((f: any) => ({
+      const timeSeriesComparison: ComparativeTimeSeries[] = allFlux.slice(-6).map((f: any, idx: number, arr: any[]) => ({
         month: f.mois,
         current: f.consultations,
-        previous: Math.round(f.consultations * 0.88),
-        target: Math.round(f.consultations * 1.05),
+        previous: idx > 0 ? arr[idx - 1].consultations : 0,
+        target: f.consultations, // No target configured yet
       }));
 
       const departmentComparison: ComparativeDepartment[] = depts.map((d: any) => ({
