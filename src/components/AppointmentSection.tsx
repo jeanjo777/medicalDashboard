@@ -32,7 +32,7 @@ const AppointmentSection: React.FC = () => {
     setSubmitError('');
     
     if (!formData.firstname || !formData.lastname || !formData.phone || !formData.email || !formData.consent) {
-      alert('Veuillez remplir tous les champs obligatoires.');
+      setSubmitError('Veuillez remplir tous les champs obligatoires.');
       setIsSubmitting(false);
       return;
     }

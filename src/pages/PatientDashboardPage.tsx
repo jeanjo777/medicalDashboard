@@ -32,7 +32,7 @@ const PatientDashboardPage = () => {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          window.location.href = '/login';
+          window.location.replace('/login');
           return;
         }
 

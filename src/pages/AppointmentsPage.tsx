@@ -186,14 +186,6 @@ const AppointmentsPage: React.FC = () => {
     pagination.goToPage(1);
   }, [searchTerm, statusFilter, typeFilter]);
 
-  // TEMP: Auth check disabled for testing
-  // useEffect(() => {
-  //   const token = localStorage.getItem('auth_token');
-  //   if (!token) {
-  //     navigate('/login');
-  //     return;
-  //   }
-  // }, [navigate]);
 
   const filterAndSortAppointments = useCallback(() => {
     const dataSource = appointments;

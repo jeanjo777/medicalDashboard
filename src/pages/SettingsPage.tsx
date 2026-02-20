@@ -105,9 +105,6 @@ const PasswordModal: React.FC<{ onClose: () => void; onSave: () => void; onError
       return;
     }
 
-    // TODO: Call Supabase Edge Function for password change when available.
-    // For now, validation passes but no backend call is made.
-    // TODO: Call Supabase Edge Function for password change when available.
     onError('Changement de mot de passe non disponible pour le moment.');
   };
 
@@ -243,10 +240,7 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleToggle2FA = () => {
-    const newValue = !twoFactorEnabled;
-    setTwoFactorEnabled(newValue);
-    localStorage.setItem('2fa-enabled', String(newValue));
-    showToast(newValue ? 'Authentification à deux facteurs activée' : 'Authentification à deux facteurs désactivée');
+    showToast('Authentification à deux facteurs non disponible pour le moment.', 'info');
   };
 
   const handleExportData = () => {
@@ -279,7 +273,7 @@ const SettingsPage: React.FC = () => {
 
   const handleDeleteAccount = () => {
     setShowDeleteConfirm(false);
-    showToast('Demande de suppression envoyée. Vous serez contacté par email.', 'info');
+    showToast('Suppression de compte non disponible pour le moment. Contactez l\'administrateur.', 'info');
   };
 
   const renderContent = () => {
@@ -567,7 +561,7 @@ const SettingsPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <Laptop size={20} className="theme-text-muted" />
                       <div>
-                        <p className="text-sm theme-text-primary font-medium">{navigator.platform} - {navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'Navigateur'}</p>
+                        <p className="text-sm theme-text-primary font-medium">{navigator.userAgent.includes('Win') ? 'Windows' : navigator.userAgent.includes('Mac') ? 'macOS' : navigator.userAgent.includes('Linux') ? 'Linux' : 'Appareil'} - {navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'Navigateur'}</p>
                         <p className="text-xs theme-text-muted">Session actuelle</p>
                       </div>
                     </div>

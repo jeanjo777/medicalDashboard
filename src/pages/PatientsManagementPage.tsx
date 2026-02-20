@@ -21,6 +21,8 @@ import PatientDetailPanel from '../components/Patients/PatientDetailPanel';
 import PatientsStats from '../components/Patients/PatientsStats';
 import NotificationBell from '../components/Common/NotificationBell';
 import ExportButton from '../components/Common/ExportButton';
+import ConfirmDialog from '../components/Common/ConfirmDialog';
+import { useToast } from '../components/Common/ToastNotification';
 import logger from '../utils/logger';
 
 interface Patient {
@@ -71,12 +73,15 @@ const PatientsManagementPage = () => {
     gender: 'male',
     profilePic: '',
   });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   const fetchPatients = async () => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        window.location.href = '/login';
+        navigate('/login');
         return;
       }
 
@@ -132,7 +137,7 @@ const PatientsManagementPage = () => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        window.location.href = '/login';
+        navigate('/login');
         return;
       }
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-patients`;
@@ -163,24 +168,28 @@ const PatientsManagementPage = () => {
       setShowModal(false);
       await fetchPatients();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Une erreur est survenue');
+      showToast(err instanceof Error ? err.message : 'Une erreur est survenue', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (patientId: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce patient ?')) {
-      return;
-    }
+  const handleDeleteRequest = (patientId: string) => {
+    setDeleteTargetId(patientId);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTargetId) return;
+    setShowDeleteConfirm(false);
 
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
-        window.location.href = '/login';
+        navigate('/login');
         return;
       }
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-patients?patientId=${encodeURIComponent(patientId)}`;
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-patients?patientId=${encodeURIComponent(deleteTargetId)}`;
 
       const response = await fetch(apiUrl, {
         method: 'DELETE',
@@ -194,10 +203,13 @@ const PatientsManagementPage = () => {
         throw new Error('Failed to delete patient');
       }
 
+      showToast('Patient supprimé avec succès');
       await fetchPatients();
     } catch (err) {
       logger.error('Error:', err);
-      alert('Erreur lors de la suppression');
+      showToast('Erreur lors de la suppression', 'error');
+    } finally {
+      setDeleteTargetId(null);
     }
   };
 
@@ -384,7 +396,7 @@ const PatientsManagementPage = () => {
                 patient={patient}
                 onView={(id) => setSelectedPatientId(id)}
                 onEdit={openEditModal}
-                onDelete={handleDelete}
+                onDelete={handleDeleteRequest}
               />
             ))}
           </div>
@@ -507,6 +519,16 @@ const PatientsManagementPage = () => {
             onClose={() => setSelectedPatientId(null)}
           />
         )}
+
+        <ConfirmDialog
+          isOpen={showDeleteConfirm}
+          onClose={() => { setShowDeleteConfirm(false); setDeleteTargetId(null); }}
+          onConfirm={handleDeleteConfirm}
+          title="Supprimer le patient"
+          message="Êtes-vous sûr de vouloir supprimer ce patient ? Cette action est irréversible."
+          confirmText="Supprimer"
+          variant="danger"
+        />
       </div>
     </div>
   );

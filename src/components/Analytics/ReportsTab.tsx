@@ -12,7 +12,10 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
   const { data: predictionsData } = usePredictions();
   const { data: alertsData } = useAIAlerts();
   const [selectedReportType, setSelectedReportType] = useState('monthly');
-  const [selectedPeriod, setSelectedPeriod] = useState('2026-02');
+  const [selectedPeriod, setSelectedPeriod] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [selectedFormat, setSelectedFormat] = useState('csv');
   const [isGenerating, setIsGenerating] = useState(false);
   const generateFormRef = useRef<HTMLDivElement>(null);

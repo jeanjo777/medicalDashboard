@@ -66,7 +66,7 @@ export const useActivityLog = (
     } catch (err) {
       logger.error('Error fetching activities:', err);
       setActivities([]);
-      setError(null);
+      setError(err instanceof Error ? err : new Error('Erreur inconnue'));
     } finally {
       setLoading(false);
     }

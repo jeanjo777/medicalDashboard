@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, Activity, FileText, Clock, AlertCircle, Save, Pill, Stethoscope } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../components/Common/ToastNotification';
 import logger from '../utils/logger';
 
 interface Patient {
@@ -56,6 +57,7 @@ const isValidUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-
 const PatientTreatmentPage = () => {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
@@ -148,11 +150,11 @@ const PatientTreatmentPage = () => {
 
       if (error) throw error;
 
-      alert('Traitement enregistré avec succès');
+      showToast('Traitement enregistré avec succès');
       fetchPatientData();
     } catch (err: unknown) {
       logger.error('Error:', err instanceof Error ? err : undefined);
-      alert('Erreur lors de la sauvegarde du traitement');
+      showToast('Erreur lors de la sauvegarde du traitement', 'error');
     }
   };
 
