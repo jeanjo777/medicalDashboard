@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import ErrorBoundary from '../components/ErrorBoundary';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import SearchFilters from '../components/Common/SearchFilters';

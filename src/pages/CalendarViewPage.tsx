@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import ErrorBoundary from '../components/ErrorBoundary';
 import {
   ChevronLeft,
   ChevronRight,

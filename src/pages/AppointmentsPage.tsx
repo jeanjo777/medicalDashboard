@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import ErrorBoundary from '../components/ErrorBoundary';
 import { useNavigate } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import LoadingSkeleton from '../components/LoadingSkeleton';

@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import ErrorBoundary from '../components/ErrorBoundary';
 import {
   Send,
   Bot,
