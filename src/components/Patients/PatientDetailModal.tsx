@@ -842,16 +842,19 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-teal-400/20' : 'bg-[#1e293b]'}`}>
                       <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide mb-2">Albumine</p>
                       {isEditing ? (
-                        <input
-                          type="text"
+                        <select
                           value={editedPatient.urines_albumine || ''}
                           onChange={(e) => setEditedPatient({ ...editedPatient, urines_albumine: e.target.value })}
-                          placeholder="Absent / Présent"
-                          className="w-full bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 transition-colors placeholder-gray-600"
-                        />
+                          aria-label="Résultat albumine"
+                          className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 transition-all duration-150 cursor-pointer"
+                        >
+                          <option value="">— Non fait</option>
+                          <option value="negatif">Négatif</option>
+                          <option value="positif">Positif</option>
+                        </select>
                       ) : (
-                        <p className={`text-sm font-semibold ${patient.urines_albumine ? 'text-white' : 'text-gray-600'}`}>
-                          {patient.urines_albumine || '—'}
+                        <p className={`text-sm font-semibold ${patient.urines_albumine === 'positif' ? 'text-red-400' : patient.urines_albumine === 'negatif' ? 'text-green-400' : 'text-gray-600'}`}>
+                          {patient.urines_albumine === 'positif' ? '+ Positif' : patient.urines_albumine === 'negatif' ? '- Négatif' : '—'}
                         </p>
                       )}
                     </div>
@@ -859,16 +862,19 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-teal-400/20' : 'bg-[#1e293b]'}`}>
                       <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide mb-2">Sucre</p>
                       {isEditing ? (
-                        <input
-                          type="text"
+                        <select
                           value={editedPatient.urines_sucre || ''}
                           onChange={(e) => setEditedPatient({ ...editedPatient, urines_sucre: e.target.value })}
-                          placeholder="Absent / Présent"
-                          className="w-full bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 transition-colors placeholder-gray-600"
-                        />
+                          aria-label="Résultat sucre"
+                          className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 transition-all duration-150 cursor-pointer"
+                        >
+                          <option value="">— Non fait</option>
+                          <option value="negatif">Négatif</option>
+                          <option value="positif">Positif</option>
+                        </select>
                       ) : (
-                        <p className={`text-sm font-semibold ${patient.urines_sucre ? 'text-white' : 'text-gray-600'}`}>
-                          {patient.urines_sucre || '—'}
+                        <p className={`text-sm font-semibold ${patient.urines_sucre === 'positif' ? 'text-red-400' : patient.urines_sucre === 'negatif' ? 'text-green-400' : 'text-gray-600'}`}>
+                          {patient.urines_sucre === 'positif' ? '+ Positif' : patient.urines_sucre === 'negatif' ? '- Négatif' : '—'}
                         </p>
                       )}
                     </div>

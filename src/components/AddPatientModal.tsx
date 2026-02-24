@@ -773,8 +773,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                       className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
                     >
                       <option value="">Non testé</option>
-                      <option value="positive">+ Positif</option>
-                      <option value="negative">- Négatif</option>
+                      <option value="positif">+ Positif</option>
+                      <option value="negatif">- Négatif</option>
                     </select>
                   </div>
 
@@ -791,8 +791,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                       className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
                     >
                       <option value="">Non testé</option>
-                      <option value="positive">+ Positif</option>
-                      <option value="negative">- Négatif</option>
+                      <option value="positif">+ Positif</option>
+                      <option value="negatif">- Négatif</option>
                     </select>
                   </div>
 
@@ -809,8 +809,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                       className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
                     >
                       <option value="">Non testé</option>
-                      <option value="positive">+ Positif</option>
-                      <option value="negative">- Négatif</option>
+                      <option value="positif">+ Positif</option>
+                      <option value="negatif">- Négatif</option>
                     </select>
                   </div>
                 </div>
@@ -823,31 +823,35 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                       <label htmlFor="urines_albumine" className="block text-xs font-medium text-gray-400 mb-1">
                         Albumine
                       </label>
-                      <input
-                        type="text"
+                      <select
                         id="urines_albumine"
                         name="urines_albumine"
                         value={formData.urines_albumine}
                         onChange={handleChange}
                         disabled={loading}
-                        placeholder="Absent / Présent"
-                        className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
-                      />
+                        className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                      >
+                        <option value="">Non testé</option>
+                        <option value="positif">+ Positif</option>
+                        <option value="negatif">- Négatif</option>
+                      </select>
                     </div>
                     <div>
                       <label htmlFor="urines_sucre" className="block text-xs font-medium text-gray-400 mb-1">
                         Sucre
                       </label>
-                      <input
-                        type="text"
+                      <select
                         id="urines_sucre"
                         name="urines_sucre"
                         value={formData.urines_sucre}
                         onChange={handleChange}
                         disabled={loading}
-                        placeholder="Absent / Présent"
-                        className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
-                      />
+                        className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                      >
+                        <option value="">Non testé</option>
+                        <option value="positif">+ Positif</option>
+                        <option value="negatif">- Négatif</option>
+                      </select>
                     </div>
                   </div>
                 </div>
