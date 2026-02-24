@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { supabase } from '../lib/supabase';
 import {
   Mail, Send, Inbox, FileText, Trash2, Plus, X,
   User, RefreshCw, Loader2, AlertCircle,
-  CheckCircle2, Clock, ChevronDown
+  CheckCircle2, Clock, ChevronDown, Paperclip, Image, File
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -92,6 +92,11 @@ const EmailPage: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
+  // Attachments
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Patient autocomplete
   const [patientSearch, setPatientSearch] = useState('');
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -147,6 +152,52 @@ const EmailPage: React.FC = () => {
     setBody(template.body);
   };
 
+  // ── Attachments ──────────────────────────────────────────────────────────
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+
+  const handleFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAttachmentError(null);
+    const selected = Array.from(e.target.files || []);
+    const oversized = selected.find((f) => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+      setAttachmentError(`"${oversized.name}" dépasse la limite de 10 MB.`);
+      e.target.value = '';
+      return;
+    }
+    setAttachments((prev) => {
+      const existing = new Set(prev.map((f) => f.name));
+      const newFiles = selected.filter((f) => !existing.has(f.name));
+      const combined = [...prev, ...newFiles].slice(0, 10);
+      return combined;
+    });
+    e.target.value = '';
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const fileIcon = (file: File) => {
+    if (file.type.startsWith('image/')) return <Image size={14} className="text-blue-400 shrink-0" />;
+    if (file.type === 'application/pdf' || file.name.endsWith('.pdf'))
+      return <FileText size={14} className="text-red-400 shrink-0" />;
+    return <File size={14} className="text-gray-400 shrink-0" />;
+  };
+
   // ── Send ─────────────────────────────────────────────────────────────────
   const handleSend = async () => {
     if (!toEmail || !subject || !body) return;
@@ -156,6 +207,17 @@ const EmailPage: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+
+      // Convert attachments to base64
+      const attachmentsPayload = attachments.length > 0
+        ? await Promise.all(
+            attachments.map(async (f) => ({
+              filename: f.name,
+              content: await fileToBase64(f),
+              type: f.type || 'application/octet-stream',
+            }))
+          )
+        : undefined;
 
       const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: 'POST',
@@ -170,6 +232,7 @@ const EmailPage: React.FC = () => {
           subject,
           body,
           templateUsed: selectedTemplate || undefined,
+          ...(attachmentsPayload ? { attachments: attachmentsPayload } : {}),
         }),
       });
 
@@ -183,6 +246,8 @@ const EmailPage: React.FC = () => {
         setSubject('');
         setBody('');
         setSelectedTemplate('');
+        setAttachments([]);
+        setAttachmentError(null);
         fetchEmails();
       } else {
         setSendResult({ type: 'error', message: result.error || "Erreur lors de l'envoi" });
@@ -444,6 +509,58 @@ const EmailPage: React.FC = () => {
                         placeholder="Rédigez votre message ici… (HTML accepté)"
                         className="w-full px-3 py-2.5 text-sm bg-[#0f172a] border border-[#334155] rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition resize-y"
                       />
+                    </div>
+
+                    {/* Attachments */}
+                    <div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"
+                        className="hidden"
+                        title="Sélectionner des pièces jointes"
+                        aria-label="Sélectionner des pièces jointes"
+                        onChange={handleFilesChange}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-cyan-400 border border-dashed border-[#334155] hover:border-cyan-500/50 rounded-xl transition-colors w-full justify-center"
+                      >
+                        <Paperclip size={15} />
+                        Ajouter une pièce jointe
+                        <span className="text-xs text-gray-600">(PDF, image, doc — max 10 MB)</span>
+                      </button>
+
+                      {attachmentError && (
+                        <p className="flex items-center gap-1.5 text-xs text-red-400 mt-1.5 ml-1">
+                          <AlertCircle size={12} /> {attachmentError}
+                        </p>
+                      )}
+
+                      {attachments.length > 0 && (
+                        <div className="mt-2 space-y-1.5">
+                          {attachments.map((file, i) => (
+                            <div
+                              key={`${file.name}-${i}`}
+                              className="flex items-center gap-2 px-3 py-2 bg-[#0f172a] border border-[#334155]/60 rounded-lg"
+                            >
+                              {fileIcon(file)}
+                              <span className="text-sm text-gray-300 truncate flex-1">{file.name}</span>
+                              <span className="text-xs text-gray-500 shrink-0">{formatBytes(file.size)}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeAttachment(i)}
+                                className="p-0.5 text-gray-500 hover:text-red-400 transition-colors rounded"
+                                title="Supprimer"
+                              >
+                                <X size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Send button */}

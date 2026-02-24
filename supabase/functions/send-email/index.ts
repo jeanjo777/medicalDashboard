@@ -6,12 +6,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
 
+interface Attachment {
+  filename: string;
+  content: string; // base64
+  type?: string;
+}
+
 interface SendEmailRequest {
   to: string;
   toName?: string;
   subject: string;
   body: string;
   templateUsed?: string;
+  attachments?: Attachment[];
 }
 
 Deno.serve(async (req: Request) => {
@@ -33,7 +40,7 @@ Deno.serve(async (req: Request) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    const { to, toName, subject, body, templateUsed }: SendEmailRequest = await req.json();
+    const { to, toName, subject, body, templateUsed, attachments }: SendEmailRequest = await req.json();
 
     if (!to || !subject || !body) {
       return new Response(
@@ -56,6 +63,7 @@ Deno.serve(async (req: Request) => {
       to: toName ? [{ email: to, name: toName }] : [to],
       subject,
       html: body,
+      ...(attachments && attachments.length > 0 ? { attachments } : {}),
     };
 
     const resendResponse = await fetch('https://api.resend.com/emails', {
