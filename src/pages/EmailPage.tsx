@@ -23,6 +23,20 @@ interface EmailRecord {
   created_at: string;
 }
 
+interface ReceivedEmailRecord {
+  id: string;
+  from_email: string;
+  from_name: string | null;
+  to_email: string;
+  subject: string | null;
+  text_body: string | null;
+  html_body: string | null;
+  reply_to: string | null;
+  resend_id: string | null;
+  is_read: boolean;
+  received_at: string;
+}
+
 interface Patient {
   id: string;
   name: string;
@@ -31,7 +45,7 @@ interface Patient {
   email?: string | null;
 }
 
-type TabId = 'composer' | 'envois' | 'modeles';
+type TabId = 'composer' | 'envois' | 'modeles' | 'recus';
 
 // ─── Templates ────────────────────────────────────────────────────────────────
 
@@ -107,6 +121,14 @@ const EmailPage: React.FC = () => {
   const [emailsLoading, setEmailsLoading] = useState(false);
   const [emailsError, setEmailsError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Received emails
+  const [receivedEmails, setReceivedEmails] = useState<ReceivedEmailRecord[]>([]);
+  const [receivedLoading, setReceivedLoading] = useState(false);
+  const [receivedError, setReceivedError] = useState<string | null>(null);
+  const [deletingReceivedId, setDeletingReceivedId] = useState<string | null>(null);
+  const [expandedEmailId, setExpandedEmailId] = useState<string | null>(null);
+  const unreadCount = receivedEmails.filter((e) => !e.is_read).length;
 
   // ── Patient search ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -282,6 +304,46 @@ const EmailPage: React.FC = () => {
     if (activeTab === 'envois') fetchEmails();
   }, [activeTab, fetchEmails]);
 
+  // ── Fetch received emails ─────────────────────────────────────────────────
+  const fetchReceivedEmails = useCallback(async () => {
+    setReceivedLoading(true);
+    setReceivedError(null);
+    try {
+      const { data, error } = await supabase
+        .from('received_emails')
+        .select('*')
+        .order('received_at', { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      setReceivedEmails(data || []);
+    } catch (err: unknown) {
+      setReceivedError(err instanceof Error ? err.message : 'Erreur de chargement');
+    } finally {
+      setReceivedLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'recus') fetchReceivedEmails();
+  }, [activeTab, fetchReceivedEmails]);
+
+  const handleDeleteReceived = async (id: string) => {
+    setDeletingReceivedId(id);
+    const { error } = await supabase.from('received_emails').delete().eq('id', id);
+    if (!error) {
+      setReceivedEmails((prev) => prev.filter((e) => e.id !== id));
+      if (expandedEmailId === id) setExpandedEmailId(null);
+    }
+    setDeletingReceivedId(null);
+  };
+
+  const markAsRead = async (id: string) => {
+    await supabase.from('received_emails').update({ is_read: true }).eq('id', id);
+    setReceivedEmails((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, is_read: true } : e))
+    );
+  };
+
   // ── Delete ───────────────────────────────────────────────────────────────
   const handleDelete = async (id: string) => {
     setDeletingId(id);
@@ -347,8 +409,9 @@ const EmailPage: React.FC = () => {
               [
                 { id: 'composer', label: 'Composer', icon: <Plus size={15} /> },
                 { id: 'envois', label: 'Envois', icon: <Send size={15} /> },
+                { id: 'recus', label: 'Reçus', icon: <Inbox size={15} />, badge: unreadCount },
                 { id: 'modeles', label: 'Modèles', icon: <FileText size={15} /> },
-              ] as { id: TabId; label: string; icon: React.ReactNode }[]
+              ] as { id: TabId; label: string; icon: React.ReactNode; badge?: number }[]
             ).map((tab) => (
               <button
                 key={tab.id}
@@ -362,6 +425,11 @@ const EmailPage: React.FC = () => {
               >
                 {tab.icon}
                 {tab.label}
+                {tab.badge != null && tab.badge > 0 && (
+                  <span className="ml-0.5 px-1.5 py-0.5 text-[10px] font-bold bg-cyan-500 text-white rounded-full leading-none">
+                    {tab.badge}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -390,7 +458,7 @@ const EmailPage: React.FC = () => {
                       <AlertCircle size={18} className="shrink-0 mt-0.5" />
                     )}
                     <span className="text-sm flex-1">{sendResult.message}</span>
-                    <button type="button" onClick={() => setSendResult(null)}>
+                    <button type="button" title="Fermer" onClick={() => setSendResult(null)}>
                       <X size={16} />
                     </button>
                   </div>
@@ -668,6 +736,188 @@ const EmailPage: React.FC = () => {
                           </button>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ══ REÇUS ══ */}
+            {activeTab === 'recus' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-white font-semibold">Boîte de réception</h2>
+                    {unreadCount > 0 && (
+                      <span className="px-2 py-0.5 text-xs font-bold bg-cyan-500/20 text-cyan-400 rounded-full">
+                        {unreadCount} non lu{unreadCount > 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={fetchReceivedEmails}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-cyan-400 transition-colors"
+                  >
+                    <RefreshCw size={14} className={receivedLoading ? 'animate-spin' : ''} />
+                    Actualiser
+                  </button>
+                </div>
+
+                {receivedError && (
+                  <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                    <AlertCircle size={18} className="shrink-0" />
+                    {receivedError}
+                  </div>
+                )}
+
+                <div className="bg-[#1e293b] border border-[#334155]/50 rounded-2xl overflow-hidden">
+                  {receivedLoading ? (
+                    <div className="p-4 space-y-2">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="h-16 bg-[#0f172a] rounded-xl animate-pulse" />
+                      ))}
+                    </div>
+                  ) : receivedEmails.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                      <Inbox size={36} className="mb-3 opacity-30" />
+                      <p className="text-sm">Aucun email reçu pour l'instant</p>
+                      <p className="text-xs mt-1 text-gray-600">Les réponses de vos patients apparaîtront ici</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/5">
+                      {receivedEmails.map((email) => {
+                        const isExpanded = expandedEmailId === email.id;
+                        const senderLabel = email.from_name
+                          ? `${email.from_name} <${email.from_email}>`
+                          : email.from_email;
+                        const initials = (email.from_name || email.from_email)
+                          .slice(0, 2)
+                          .toUpperCase();
+
+                        return (
+                          <div key={email.id} className="group">
+                            {/* Row */}
+                            <div
+                              onClick={() => {
+                                if (!isExpanded) markAsRead(email.id);
+                                setExpandedEmailId(isExpanded ? null : email.id);
+                              }}
+                              className={`flex items-start gap-4 px-5 py-4 hover:bg-white/5 transition-colors cursor-pointer ${
+                                !email.is_read ? 'bg-cyan-500/5' : ''
+                              }`}
+                            >
+                              {/* Avatar */}
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
+                                !email.is_read
+                                  ? 'bg-cyan-600/30 text-cyan-400'
+                                  : 'bg-[#334155]/50 text-gray-400'
+                              }`}>
+                                {initials}
+                              </div>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className={`text-sm font-medium truncate ${!email.is_read ? 'text-white' : 'text-gray-300'}`}>
+                                    {senderLabel}
+                                  </p>
+                                  {!email.is_read && (
+                                    <span className="w-2 h-2 rounded-full bg-cyan-500 shrink-0" />
+                                  )}
+                                </div>
+                                <p className={`text-sm mt-0.5 truncate ${!email.is_read ? 'text-gray-200 font-medium' : 'text-gray-400'}`}>
+                                  {email.subject || '(sans objet)'}
+                                </p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-gray-500 text-xs">{formatDate(email.received_at)}</p>
+                                  {!isExpanded && email.text_body && (
+                                    <>
+                                      <span className="text-gray-600 text-xs">•</span>
+                                      <p className="text-gray-600 text-xs truncate max-w-xs">
+                                        {email.text_body.slice(0, 80)}
+                                      </p>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Delete button */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteReceived(email.id);
+                                }}
+                                disabled={deletingReceivedId === email.id}
+                                className="p-2 text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-red-500/10 shrink-0"
+                                title="Supprimer"
+                              >
+                                {deletingReceivedId === email.id ? (
+                                  <Loader2 size={15} className="animate-spin" />
+                                ) : (
+                                  <Trash2 size={15} />
+                                )}
+                              </button>
+                            </div>
+
+                            {/* Expanded content */}
+                            {isExpanded && (
+                              <div className="px-5 pb-5 border-t border-white/5 bg-[#0f172a]/50">
+                                {/* Meta */}
+                                <div className="py-3 text-xs text-gray-500 space-y-1">
+                                  <p><span className="text-gray-400">De :</span> {senderLabel}</p>
+                                  <p><span className="text-gray-400">À :</span> {email.to_email}</p>
+                                  {email.reply_to && (
+                                    <p><span className="text-gray-400">Répondre à :</span> {email.reply_to}</p>
+                                  )}
+                                </div>
+                                {/* Body */}
+                                <div className="mt-2 border border-[#334155]/50 rounded-xl overflow-hidden">
+                                  {email.html_body ? (
+                                    <iframe
+                                      srcDoc={email.html_body}
+                                      title="Email content"
+                                      className="w-full min-h-48 bg-white rounded-xl border-0"
+                                      sandbox="allow-same-origin"
+                                      onLoad={(e) => {
+                                        const iframe = e.currentTarget;
+                                        const h = iframe.contentDocument?.documentElement?.scrollHeight;
+                                        if (h) iframe.style.height = `${Math.min(h + 16, 600)}px`;
+                                      }}
+                                    />
+                                  ) : (
+                                    <pre className="p-4 text-sm text-gray-300 whitespace-pre-wrap font-sans">
+                                      {email.text_body || '(message vide)'}
+                                    </pre>
+                                  )}
+                                </div>
+                                {/* Reply button */}
+                                <div className="mt-3 flex justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setToEmail(email.from_email);
+                                      setToName(email.from_name || '');
+                                      setPatientSearch(email.from_name || email.from_email);
+                                      setSubject(
+                                        email.subject
+                                          ? (email.subject.startsWith('Re:') ? email.subject : `Re: ${email.subject}`)
+                                          : 'Re: '
+                                      );
+                                      setBody('');
+                                      setActiveTab('composer');
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-cyan-400 border border-cyan-500/30 rounded-xl hover:bg-cyan-500/10 transition-colors"
+                                  >
+                                    <Send size={13} />
+                                    Répondre
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
