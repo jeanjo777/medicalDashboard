@@ -18,6 +18,7 @@ import AppointmentsPage from './pages/AppointmentsPage.tsx';
 import CalendarViewPage from './pages/CalendarViewPage.tsx';
 import PatientsViewPageEnhanced from './pages/PatientsViewPageEnhanced.tsx';
 import AnalyticsPageAdvanced from './pages/AnalyticsPageAdvanced.tsx';
+import ReportsPage from './pages/ReportsPage.tsx';
 
 // Secondary pages - lazy loaded
 const App = lazy(() => import('./App.tsx'));
@@ -76,7 +77,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/segmentation" element={<ProtectedRoute><AnalyticsPageAdvanced /></ProtectedRoute>} />
               <Route path="/ai-alerts" element={<ProtectedRoute><AnalyticsPageAdvanced /></ProtectedRoute>} />
               <Route path="/comparative" element={<ProtectedRoute><AnalyticsPageAdvanced /></ProtectedRoute>} />
-              <Route path="/reports" element={<ProtectedRoute><AnalyticsPageAdvanced /></ProtectedRoute>} />
+              <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
               <Route path="/analytics" element={<Navigate to="/analytics-advanced" replace />} />
               <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistantPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
