@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import ErrorBoundary from '../components/ErrorBoundary';
+import ReportsTab from '../components/Analytics/ReportsTab';
 import { supabase } from '../lib/supabase';
 import { generateSifcaPDF } from '../utils/sifcaPdfGenerator';
 import {
@@ -260,6 +261,17 @@ const ReportsPage: React.FC = () => {
                   {filtered.length} patient{filtered.length > 1 ? 's' : ''}
                 </p>
               )}
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 py-2">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-xs theme-text-secondary uppercase tracking-widest font-medium">Générateur de rapports analytiques</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+
+              {/* Old ReportsTab content */}
+              <ReportsTab filters={{}} />
+
             </div>
           </ErrorBoundary>
         </main>
