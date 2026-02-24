@@ -1,0 +1,117 @@
+import { createClient } from 'npm:@supabase/supabase-js@2.76.1';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
+};
+
+interface SendEmailRequest {
+  to: string;
+  toName?: string;
+  subject: string;
+  body: string;
+  templateUsed?: string;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+  if (!resendApiKey) {
+    return new Response(
+      JSON.stringify({ error: 'RESEND_API_KEY non configuré dans les secrets Supabase' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  try {
+    const { to, toName, subject, body, templateUsed }: SendEmailRequest = await req.json();
+
+    if (!to || !subject || !body) {
+      return new Response(
+        JSON.stringify({ error: 'Les champs to, subject et body sont requis' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(to)) {
+      return new Response(
+        JSON.stringify({ error: 'Adresse email destinataire invalide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Call Resend API
+    const resendPayload = {
+      from: 'Cabinet Médical <onboarding@resend.dev>',
+      to: toName ? [{ email: to, name: toName }] : [to],
+      subject,
+      html: body,
+    };
+
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(resendPayload),
+    });
+
+    const resendData = await resendResponse.json();
+
+    const status = resendResponse.ok ? 'sent' : 'failed';
+    const resendId = resendData?.id ?? null;
+    const errorMessage = !resendResponse.ok
+      ? (resendData?.message ?? resendData?.name ?? 'Erreur Resend inconnue')
+      : null;
+
+    const { data: insertedEmail, error: dbError } = await supabase
+      .from('emails')
+      .insert({
+        to_email: to,
+        to_name: toName ?? null,
+        subject,
+        body,
+        status,
+        resend_id: resendId,
+        template_used: templateUsed ?? null,
+        error_message: errorMessage,
+        sent_at: resendResponse.ok ? new Date().toISOString() : null,
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('DB insert error:', dbError);
+    }
+
+    if (!resendResponse.ok) {
+      return new Response(
+        JSON.stringify({ error: `Erreur lors de l'envoi: ${errorMessage}`, details: resendData }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, message: 'Email envoyé avec succès', emailId: insertedEmail?.id, resendId }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Une erreur inattendue est survenue' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});

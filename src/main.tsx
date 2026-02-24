@@ -36,6 +36,7 @@ const PatientsViewPage = lazy(() => import('./pages/PatientsViewPage.tsx'));
 const AppointmentsViewPage = lazy(() => import('./pages/AppointmentsViewPage.tsx'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage.tsx'));
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage.tsx'));
+const EmailPage = lazy(() => import('./pages/EmailPage.tsx'));
 
 const PageLoader = () => (
   <div className="min-h-screen bg-[#0f172a] flex items-center justify-center">
@@ -81,6 +82,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/analytics" element={<Navigate to="/analytics-advanced" replace />} />
               <Route path="/ai-assistant" element={<ProtectedRoute><AIAssistantPage /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+              <Route path="/email" element={<ProtectedRoute><EmailPage /></ProtectedRoute>} />
             </Routes>
           </Suspense>
           </BrowserRouter>

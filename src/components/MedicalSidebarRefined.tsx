@@ -22,7 +22,8 @@ import {
   PieChart,
   ArrowLeftRight,
   FileText,
-  Sparkles
+  Sparkles,
+  Mail
 } from 'lucide-react';
 
 interface MenuItem {
@@ -159,6 +160,13 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
       icon: <FileText size={22} strokeWidth={2} />,
       path: '/reports',
       section: 'analytics'
+    },
+    {
+      id: 'email',
+      label: 'Messagerie Email',
+      icon: <Mail size={22} strokeWidth={2} />,
+      path: '/email',
+      section: 'management'
     },
     {
       id: 'settings',
