@@ -181,7 +181,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
         .from('patients')
         .update({
           name: fullName,
-          email: formData.email.trim(),
+          email: formData.email.trim() || null,
           first_name: formData.first_name.trim(),
           last_name: formData.last_name.trim(),
           date_of_birth: formData.date_of_birth,
