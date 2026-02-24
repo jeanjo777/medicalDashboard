@@ -8,12 +8,20 @@ interface PatientData {
   temperature?: number | null;
   poids?: number | null;
   tension_arterielle?: string | null;
+  glycemie?: number | null;
   visitType?: 'consultation' | 'systematique' | 'embauche';
   filiale?: string;
   medecin?: string;
   urines_albumine?: string | null;
   urines_sucre?: string | null;
 }
+
+const formatUrines = (val?: string | null): string => {
+  if (!val) return '';
+  if (val === 'positif') return '+ Positif';
+  if (val === 'negatif') return '- Négatif';
+  return val;
+};
 
 const calculateAge = (dob?: string): string => {
   if (!dob) return '';
@@ -142,7 +150,8 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   lineY('Température', patient.temperature != null ? `${patient.temperature} °C` : '', py); py += gap;
   lineY('Age', calculateAge(patient.date_of_birth), py); py += gap;
   lineY('Poids', patient.poids != null ? `${patient.poids} kg` : '', py); py += gap;
-  lineY('TA', patient.tension_arterielle || '', py); py += gap + 4;
+  lineY('TA', patient.tension_arterielle || '', py); py += gap;
+  lineY('Glycémie', patient.glycemie != null ? `${patient.glycemie} g/L` : '', py); py += gap + 4;
 
   doc.line(margin, py, pageW - margin, py); // séparateur
 
@@ -167,9 +176,10 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   doc.text('Albumine', margin + 10, py);
   const albumineLineStart = margin + 10 + doc.getTextWidth('Albumine') + 3;
   doc.line(albumineLineStart, py, margin + halfW - 5, py);
-  if (patient.urines_albumine) {
+  const albumineVal = formatUrines(patient.urines_albumine);
+  if (albumineVal) {
     doc.setFont('helvetica', 'bold');
-    doc.text(patient.urines_albumine, albumineLineStart + 2, py - 0.5);
+    doc.text(albumineVal, albumineLineStart + 2, py - 0.5);
     doc.setFont('helvetica', 'normal');
   }
 
@@ -177,9 +187,10 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   doc.text('Sucre', margin + halfW + 10, py);
   const sucreLineStart = margin + halfW + 10 + doc.getTextWidth('Sucre') + 3;
   doc.line(sucreLineStart, py, pageW - margin - 5, py);
-  if (patient.urines_sucre) {
+  const sucreVal = formatUrines(patient.urines_sucre);
+  if (sucreVal) {
     doc.setFont('helvetica', 'bold');
-    doc.text(patient.urines_sucre, sucreLineStart + 2, py - 0.5);
+    doc.text(sucreVal, sucreLineStart + 2, py - 0.5);
     doc.setFont('helvetica', 'normal');
   }
 
