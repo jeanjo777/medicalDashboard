@@ -53,6 +53,8 @@ interface Patient {
   taille?: number;
   glycemie?: number;
   test_palu?: string;
+  test_typhoide?: string;
+  test_dengue?: string;
 }
 
 interface PatientDetailModalProps {
@@ -162,6 +164,8 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           taille: editedPatient.taille ?? null,
           glycemie: editedPatient.glycemie ?? null,
           test_palu: editedPatient.test_palu || null,
+          test_typhoide: editedPatient.test_typhoide || null,
+          test_dengue: editedPatient.test_dengue || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', patient.id);
@@ -760,6 +764,64 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                         </p>
                       )}
                     </div>
+
+                    {/* Test Typhoïde */}
+                    <div className={`rounded-lg p-3 col-span-2 sm:col-span-1 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-orange-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <FlaskConical size={12} className="text-orange-400 flex-shrink-0" />
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Test Typhoïde</p>
+                      </div>
+                      {isEditing ? (
+                        <select
+                          value={editedPatient.test_typhoide || ''}
+                          onChange={(e) => setEditedPatient({ ...editedPatient, test_typhoide: e.target.value })}
+                          aria-label="Résultat du test typhoïde"
+                          className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition-all duration-150 cursor-pointer"
+                        >
+                          <option value="">— Non fait</option>
+                          <option value="negatif">Négatif</option>
+                          <option value="positif">Positif</option>
+                        </select>
+                      ) : (
+                        <p className={`text-sm font-semibold ${
+                          patient.test_typhoide === 'positif' ? 'text-red-400' :
+                          patient.test_typhoide ? 'text-green-400' : 'text-gray-600'
+                        }`}>
+                          {patient.test_typhoide
+                            ? patient.test_typhoide.charAt(0).toUpperCase() + patient.test_typhoide.slice(1)
+                            : '—'}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Test Dengue */}
+                    <div className={`rounded-lg p-3 col-span-2 sm:col-span-1 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-pink-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <FlaskConical size={12} className="text-pink-400 flex-shrink-0" />
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Test Dengue</p>
+                      </div>
+                      {isEditing ? (
+                        <select
+                          value={editedPatient.test_dengue || ''}
+                          onChange={(e) => setEditedPatient({ ...editedPatient, test_dengue: e.target.value })}
+                          aria-label="Résultat du test dengue"
+                          className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all duration-150 cursor-pointer"
+                        >
+                          <option value="">— Non fait</option>
+                          <option value="negatif">Négatif</option>
+                          <option value="positif">Positif</option>
+                        </select>
+                      ) : (
+                        <p className={`text-sm font-semibold ${
+                          patient.test_dengue === 'positif' ? 'text-red-400' :
+                          patient.test_dengue ? 'text-green-400' : 'text-gray-600'
+                        }`}>
+                          {patient.test_dengue
+                            ? patient.test_dengue.charAt(0).toUpperCase() + patient.test_dengue.slice(1)
+                            : '—'}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -769,7 +831,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
                       <FileText size={14} className="text-cyan-400 sm:w-4 sm:h-4" />
                     </div>
-                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Notes médicales</span>
+                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Notes interrogatoires</span>
                   </div>
                   {isEditing ? (
                     <textarea

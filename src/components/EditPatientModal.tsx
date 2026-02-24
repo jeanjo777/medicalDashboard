@@ -26,6 +26,8 @@ interface EditPatientModalProps {
     taille?: number;
     tension_arterielle?: string;
     test_palu?: string;
+    test_typhoide?: string;
+    test_dengue?: string;
     glycemie?: number;
     pouls?: number;
     visit_type?: string;
@@ -50,6 +52,8 @@ interface FormData {
   taille: string;
   tension_arterielle: string;
   test_palu: string;
+  test_typhoide: string;
+  test_dengue: string;
   glycemie: string;
   pouls: string;
   visit_type: string;
@@ -89,6 +93,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
     taille: '',
     tension_arterielle: '',
     test_palu: '',
+    test_typhoide: '',
+    test_dengue: '',
     glycemie: '',
     pouls: ''
   });
@@ -118,6 +124,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
         taille: patient.taille?.toString() || '',
         tension_arterielle: patient.tension_arterielle || '',
         test_palu: patient.test_palu || '',
+        test_typhoide: patient.test_typhoide || '',
+        test_dengue: patient.test_dengue || '',
         glycemie: patient.glycemie?.toString() || '',
         pouls: patient.pouls?.toString() || '',
         visit_type: patient.visit_type || '',
@@ -203,6 +211,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
           taille: formData.taille ? parseInt(formData.taille) : null,
           tension_arterielle: formData.tension_arterielle.trim() || null,
           test_palu: formData.test_palu || null,
+          test_typhoide: formData.test_typhoide || null,
+          test_dengue: formData.test_dengue || null,
           glycemie: formData.glycemie ? parseFloat(formData.glycemie) : null,
           pouls: formData.pouls ? parseInt(formData.pouls) : null,
           visit_type: formData.visit_type || null,
@@ -719,12 +729,48 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                       <option value="negative">- Négatif</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label htmlFor="test_typhoide" className="block text-xs font-medium text-gray-400 mb-1">
+                      Test Typhoïde
+                    </label>
+                    <select
+                      id="test_typhoide"
+                      name="test_typhoide"
+                      value={formData.test_typhoide}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="">Non testé</option>
+                      <option value="positive">+ Positif</option>
+                      <option value="negative">- Négatif</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="test_dengue" className="block text-xs font-medium text-gray-400 mb-1">
+                      Test Dengue
+                    </label>
+                    <select
+                      id="test_dengue"
+                      name="test_dengue"
+                      value={formData.test_dengue}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="">Non testé</option>
+                      <option value="positive">+ Positif</option>
+                      <option value="negative">- Négatif</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <div>
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-300 mb-2">
-                  Notes additionnelles
+                  Notes interrogatoires
                 </label>
                 <textarea
                   id="notes"

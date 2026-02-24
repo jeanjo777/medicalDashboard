@@ -78,7 +78,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
     glycemie: '',
     pouls: '',
     visit_type: '',
-    filiale: ''
+    filiale: '',
+    test_typhoide: '',
+    test_dengue: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -188,7 +190,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
             glycemie: formData.glycemie ? parseFloat(formData.glycemie) : null,
             pouls: formData.pouls ? parseInt(formData.pouls) : null,
             visit_type: formData.visit_type || null,
-            filiale: formData.filiale || null
+            filiale: formData.filiale || null,
+            test_typhoide: formData.test_typhoide || null,
+            test_dengue: formData.test_dengue || null
           }
         ]);
 
@@ -216,7 +220,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
         glycemie: '',
         pouls: '',
         visit_type: '',
-        filiale: ''
+        filiale: '',
+        test_typhoide: '',
+        test_dengue: ''
       });
       setFieldErrors({});
 
@@ -765,12 +771,48 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                       <option value="negative">- Négatif</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label htmlFor="test_typhoide" className="block text-xs font-medium text-gray-400 mb-1">
+                      Test Typhoïde
+                    </label>
+                    <select
+                      id="test_typhoide"
+                      name="test_typhoide"
+                      value={formData.test_typhoide}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="">Non testé</option>
+                      <option value="positive">+ Positif</option>
+                      <option value="negative">- Négatif</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="test_dengue" className="block text-xs font-medium text-gray-400 mb-1">
+                      Test Dengue
+                    </label>
+                    <select
+                      id="test_dengue"
+                      name="test_dengue"
+                      value={formData.test_dengue}
+                      onChange={handleChange}
+                      disabled={loading}
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50 cursor-pointer"
+                    >
+                      <option value="">Non testé</option>
+                      <option value="positive">+ Positif</option>
+                      <option value="negative">- Négatif</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <div className="mt-4">
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-300 mb-2">
-                  Notes additionnelles
+                  Notes interrogatoires
                 </label>
                 <textarea
                   id="notes"
@@ -780,7 +822,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                   disabled={loading}
                   rows={4}
                   className="w-full px-4 py-2.5 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder="Notes additionnelles sur le patient (antécédents, allergies, observations, etc.)..."
+                  placeholder="Interrogatoire, antécédents, allergies, observations..."
                 />
               </div>
             </div>
