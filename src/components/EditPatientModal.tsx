@@ -28,6 +28,8 @@ interface EditPatientModalProps {
     test_palu?: string;
     test_typhoide?: string;
     test_dengue?: string;
+    urines_albumine?: string;
+    urines_sucre?: string;
     glycemie?: number;
     pouls?: number;
     visit_type?: string;
@@ -54,6 +56,8 @@ interface FormData {
   test_palu: string;
   test_typhoide: string;
   test_dengue: string;
+  urines_albumine: string;
+  urines_sucre: string;
   glycemie: string;
   pouls: string;
   visit_type: string;
@@ -95,6 +99,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
     test_palu: '',
     test_typhoide: '',
     test_dengue: '',
+    urines_albumine: '',
+    urines_sucre: '',
     glycemie: '',
     pouls: ''
   });
@@ -126,6 +132,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
         test_palu: patient.test_palu || '',
         test_typhoide: patient.test_typhoide || '',
         test_dengue: patient.test_dengue || '',
+        urines_albumine: patient.urines_albumine || '',
+        urines_sucre: patient.urines_sucre || '',
         glycemie: patient.glycemie?.toString() || '',
         pouls: patient.pouls?.toString() || '',
         visit_type: patient.visit_type || '',
@@ -213,6 +221,8 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
           test_palu: formData.test_palu || null,
           test_typhoide: formData.test_typhoide || null,
           test_dengue: formData.test_dengue || null,
+          urines_albumine: formData.urines_albumine.trim() || null,
+          urines_sucre: formData.urines_sucre.trim() || null,
           glycemie: formData.glycemie ? parseFloat(formData.glycemie) : null,
           pouls: formData.pouls ? parseInt(formData.pouls) : null,
           visit_type: formData.visit_type || null,
@@ -764,6 +774,43 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                       <option value="positive">+ Positif</option>
                       <option value="negative">- Négatif</option>
                     </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* URINES */}
+              <div className="mt-4 pt-3 border-t border-[#334155]">
+                <h5 className="text-white font-medium text-sm mb-3 uppercase tracking-wide">Urines</h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="urines_albumine_edit" className="block text-xs font-medium text-gray-400 mb-1">
+                      Albumine
+                    </label>
+                    <input
+                      type="text"
+                      id="urines_albumine_edit"
+                      name="urines_albumine"
+                      value={formData.urines_albumine}
+                      onChange={handleChange}
+                      disabled={loading}
+                      placeholder="Absent / Présent"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="urines_sucre_edit" className="block text-xs font-medium text-gray-400 mb-1">
+                      Sucre
+                    </label>
+                    <input
+                      type="text"
+                      id="urines_sucre_edit"
+                      name="urines_sucre"
+                      value={formData.urines_sucre}
+                      onChange={handleChange}
+                      disabled={loading}
+                      placeholder="Absent / Présent"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                    />
                   </div>
                 </div>
               </div>

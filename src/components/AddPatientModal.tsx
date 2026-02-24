@@ -80,7 +80,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
     visit_type: '',
     filiale: '',
     test_typhoide: '',
-    test_dengue: ''
+    test_dengue: '',
+    urines_albumine: '',
+    urines_sucre: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -192,7 +194,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
             visit_type: formData.visit_type || null,
             filiale: formData.filiale || null,
             test_typhoide: formData.test_typhoide || null,
-            test_dengue: formData.test_dengue || null
+            test_dengue: formData.test_dengue || null,
+            urines_albumine: formData.urines_albumine.trim() || null,
+            urines_sucre: formData.urines_sucre.trim() || null
           }
         ]);
 
@@ -222,7 +226,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
         visit_type: '',
         filiale: '',
         test_typhoide: '',
-        test_dengue: ''
+        test_dengue: '',
+        urines_albumine: '',
+        urines_sucre: ''
       });
       setFieldErrors({});
 
@@ -806,6 +812,43 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                       <option value="positive">+ Positif</option>
                       <option value="negative">- Négatif</option>
                     </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* URINES */}
+              <div className="mt-4 pt-3 border-t border-[#334155]">
+                <h5 className="text-white font-medium text-sm mb-3 uppercase tracking-wide">Urines</h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="urines_albumine" className="block text-xs font-medium text-gray-400 mb-1">
+                      Albumine
+                    </label>
+                    <input
+                      type="text"
+                      id="urines_albumine"
+                      name="urines_albumine"
+                      value={formData.urines_albumine}
+                      onChange={handleChange}
+                      disabled={loading}
+                      placeholder="Absent / Présent"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="urines_sucre" className="block text-xs font-medium text-gray-400 mb-1">
+                      Sucre
+                    </label>
+                    <input
+                      type="text"
+                      id="urines_sucre"
+                      name="urines_sucre"
+                      value={formData.urines_sucre}
+                      onChange={handleChange}
+                      disabled={loading}
+                      placeholder="Absent / Présent"
+                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm disabled:opacity-50"
+                    />
                   </div>
                 </div>
               </div>

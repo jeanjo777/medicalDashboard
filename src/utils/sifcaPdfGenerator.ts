@@ -11,6 +11,8 @@ interface PatientData {
   visitType?: 'consultation' | 'systematique' | 'embauche';
   filiale?: string;
   medecin?: string;
+  urines_albumine?: string | null;
+  urines_sucre?: string | null;
 }
 
 const calculateAge = (dob?: string): string => {
@@ -163,11 +165,23 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   const halfW = (pageW - margin * 2) / 2;
   // Albumine
   doc.text('Albumine', margin + 10, py);
-  doc.line(margin + 10 + doc.getTextWidth('Albumine') + 3, py, margin + halfW - 5, py);
+  const albumineLineStart = margin + 10 + doc.getTextWidth('Albumine') + 3;
+  doc.line(albumineLineStart, py, margin + halfW - 5, py);
+  if (patient.urines_albumine) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(patient.urines_albumine, albumineLineStart + 2, py - 0.5);
+    doc.setFont('helvetica', 'normal');
+  }
 
   // Sucre
   doc.text('Sucre', margin + halfW + 10, py);
-  doc.line(margin + halfW + 10 + doc.getTextWidth('Sucre') + 3, py, pageW - margin - 5, py);
+  const sucreLineStart = margin + halfW + 10 + doc.getTextWidth('Sucre') + 3;
+  doc.line(sucreLineStart, py, pageW - margin - 5, py);
+  if (patient.urines_sucre) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(patient.urines_sucre, sucreLineStart + 2, py - 0.5);
+    doc.setFont('helvetica', 'normal');
+  }
 
   // ─── SAVE ────────────────────────────────────────────────────────────────
   const safeName = (patient.name || 'patient').replace(/\s+/g, '_');

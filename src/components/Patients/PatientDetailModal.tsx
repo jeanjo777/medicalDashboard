@@ -55,6 +55,8 @@ interface Patient {
   test_palu?: string;
   test_typhoide?: string;
   test_dengue?: string;
+  urines_albumine?: string;
+  urines_sucre?: string;
 }
 
 interface PatientDetailModalProps {
@@ -166,6 +168,8 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           test_palu: editedPatient.test_palu || null,
           test_typhoide: editedPatient.test_typhoide || null,
           test_dengue: editedPatient.test_dengue || null,
+          urines_albumine: editedPatient.urines_albumine || null,
+          urines_sucre: editedPatient.urines_sucre || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', patient.id);
@@ -819,6 +823,52 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                           {patient.test_dengue
                             ? patient.test_dengue.charAt(0).toUpperCase() + patient.test_dengue.slice(1)
                             : '—'}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* URINES */}
+                <div className="bg-[#0f172a] rounded-xl border border-[#334155] p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-7 h-7 rounded-lg bg-teal-500/10 flex items-center justify-center flex-shrink-0">
+                      <Droplets size={14} className="text-teal-400" />
+                    </div>
+                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Urines</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Albumine */}
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-teal-400/20' : 'bg-[#1e293b]'}`}>
+                      <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide mb-2">Albumine</p>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedPatient.urines_albumine || ''}
+                          onChange={(e) => setEditedPatient({ ...editedPatient, urines_albumine: e.target.value })}
+                          placeholder="Absent / Présent"
+                          className="w-full bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 transition-colors placeholder-gray-600"
+                        />
+                      ) : (
+                        <p className={`text-sm font-semibold ${patient.urines_albumine ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.urines_albumine || '—'}
+                        </p>
+                      )}
+                    </div>
+                    {/* Sucre */}
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-teal-400/20' : 'bg-[#1e293b]'}`}>
+                      <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide mb-2">Sucre</p>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedPatient.urines_sucre || ''}
+                          onChange={(e) => setEditedPatient({ ...editedPatient, urines_sucre: e.target.value })}
+                          placeholder="Absent / Présent"
+                          className="w-full bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm text-white focus:outline-none focus:border-teal-400 transition-colors placeholder-gray-600"
+                        />
+                      ) : (
+                        <p className={`text-sm font-semibold ${patient.urines_sucre ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.urines_sucre || '—'}
                         </p>
                       )}
                     </div>
