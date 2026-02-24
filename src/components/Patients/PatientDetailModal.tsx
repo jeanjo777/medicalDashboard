@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
-  User,
   Mail,
   Phone,
   Calendar,
@@ -16,6 +15,11 @@ import {
   Clock,
   Heart,
   AlertTriangle,
+  Thermometer,
+  Scale,
+  Ruler,
+  Droplets,
+  FlaskConical,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../Common/Toast';
@@ -36,6 +40,13 @@ interface Patient {
   updated_at: string;
   emergency_contact?: string;
   last_visit?: string;
+  temperature?: number;
+  pouls?: number;
+  tension_arterielle?: string;
+  poids?: number;
+  taille?: number;
+  glycemie?: number;
+  test_palu?: string;
 }
 
 interface PatientDetailModalProps {
@@ -522,6 +533,86 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </p>
                   </div>
                 )}
+
+                {/* Signes Vitaux */}
+                <div className="bg-[#0f172a] rounded-xl border border-[#334155] p-3 sm:p-3.5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0">
+                      <Activity size={14} className="text-rose-400 sm:w-4 sm:h-4" />
+                    </div>
+                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Signes vitaux</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
+                      <Thermometer size={14} className="text-orange-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Température</p>
+                        <p className={`text-sm font-semibold ${patient.temperature != null ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.temperature != null ? `${patient.temperature} °C` : '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
+                      <Heart size={14} className="text-pink-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Pouls</p>
+                        <p className={`text-sm font-semibold ${patient.pouls != null ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.pouls != null ? `${patient.pouls} bpm` : '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
+                      <Activity size={14} className="text-red-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Tension</p>
+                        <p className={`text-sm font-semibold ${patient.tension_arterielle ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.tension_arterielle || '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
+                      <Scale size={14} className="text-green-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Poids</p>
+                        <p className={`text-sm font-semibold ${patient.poids != null ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.poids != null ? `${patient.poids} kg` : '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
+                      <Ruler size={14} className="text-blue-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Taille</p>
+                        <p className={`text-sm font-semibold ${patient.taille != null ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.taille != null ? `${patient.taille} cm` : '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
+                      <Droplets size={14} className="text-cyan-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Glycémie</p>
+                        <p className={`text-sm font-semibold ${patient.glycemie != null ? 'text-white' : 'text-gray-600'}`}>
+                          {patient.glycemie != null ? `${patient.glycemie} g/L` : '—'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2 col-span-2 sm:col-span-1">
+                      <FlaskConical size={14} className="text-yellow-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Test Palu</p>
+                        <p className={`text-sm font-semibold ${
+                          patient.test_palu === 'positif' ? 'text-red-400' :
+                          patient.test_palu ? 'text-green-400' : 'text-gray-600'
+                        }`}>
+                          {patient.test_palu
+                            ? patient.test_palu.charAt(0).toUpperCase() + patient.test_palu.slice(1)
+                            : '—'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Notes */}
                 <div className="group bg-[#0f172a] rounded-xl border border-[#334155] p-3 sm:p-3.5 hover:border-cyan-500/30 transition-colors">
