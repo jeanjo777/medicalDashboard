@@ -76,7 +76,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
     tension_arterielle: '',
     test_palu: '',
     glycemie: '',
-    pouls: ''
+    pouls: '',
+    visit_type: '',
+    filiale: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -184,7 +186,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
             tension_arterielle: formData.tension_arterielle.trim() || null,
             test_palu: formData.test_palu || null,
             glycemie: formData.glycemie ? parseFloat(formData.glycemie) : null,
-            pouls: formData.pouls ? parseInt(formData.pouls) : null
+            pouls: formData.pouls ? parseInt(formData.pouls) : null,
+            visit_type: formData.visit_type || null,
+            filiale: formData.filiale || null
           }
         ]);
 
@@ -210,7 +214,9 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
         tension_arterielle: '',
         test_palu: '',
         glycemie: '',
-        pouls: ''
+        pouls: '',
+        visit_type: '',
+        filiale: ''
       });
       setFieldErrors({});
 
@@ -568,6 +574,62 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                   placeholder="Nom et numéro du contact d'urgence"
                   className="w-full px-4 py-3 bg-[#1e293b] border border-gray-600 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
                 />
+              </div>
+
+              {/* Type de visite + Filiale */}
+              <div className="mt-5 pt-4 border-t border-[#334155]">
+                <h4 className="text-white font-medium mb-3 flex items-center gap-2">
+                  <FileText size={16} className="text-blue-400" />
+                  Type de visite &amp; Filiale
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Type de visite */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">Type de visite</label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 'consultation', label: 'Consultation' },
+                        { value: 'systematique', label: 'Visite Systématique' },
+                        { value: 'embauche', label: "Visite d'embauche" },
+                      ].map((v) => (
+                        <label key={v.value} className="flex items-center gap-2.5 cursor-pointer group">
+                          <div
+                            onClick={() => setFormData({ ...formData, visit_type: formData.visit_type === v.value ? '' : v.value })}
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
+                              formData.visit_type === v.value
+                                ? 'bg-blue-500 border-blue-500'
+                                : 'border-[#475569] group-hover:border-blue-400/50'
+                            }`}
+                          >
+                            {formData.visit_type === v.value && <div className="w-2 h-2 bg-white rounded-sm" />}
+                          </div>
+                          <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{v.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Filiale */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-400 mb-2 uppercase tracking-wide">Filiale / Société</label>
+                    <div className="space-y-1.5">
+                      {['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'].map((f) => (
+                        <label key={f} className="flex items-center gap-2.5 cursor-pointer group">
+                          <div
+                            onClick={() => setFormData({ ...formData, filiale: formData.filiale === f ? '' : f })}
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
+                              formData.filiale === f
+                                ? 'bg-blue-500 border-blue-500'
+                                : 'border-[#475569] group-hover:border-blue-400/50'
+                            }`}
+                          >
+                            {formData.filiale === f && <div className="w-2 h-2 bg-white rounded-sm" />}
+                          </div>
+                          <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{f}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="mt-5 pt-4 border-t border-[#334155]">

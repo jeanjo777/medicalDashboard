@@ -44,6 +44,8 @@ interface Patient {
   last_visit?: string;
   first_name?: string;
   last_name?: string;
+  visit_type?: string;
+  filiale?: string;
   temperature?: number;
   pouls?: number;
   tension_arterielle?: string;
@@ -844,7 +846,11 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setShowSifcaDialog(true)}
+                        onClick={() => {
+                          setSifcaVisitType((patient.visit_type as any) || '');
+                          setSifcaFiliale(patient.filiale || '');
+                          setShowSifcaDialog(true);
+                        }}
                         className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-emerald-400 hover:text-white hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl transition-all cursor-pointer"
                         title="Générer rapport SIFCA PDF"
                       >
