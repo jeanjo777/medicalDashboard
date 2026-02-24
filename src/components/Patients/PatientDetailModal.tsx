@@ -145,6 +145,13 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           status: editedPatient.status,
           notes: editedPatient.notes,
           emergency_contact: (editedPatient as any).emergency_contact || null,
+          temperature: editedPatient.temperature ?? null,
+          pouls: editedPatient.pouls ?? null,
+          tension_arterielle: editedPatient.tension_arterielle || null,
+          poids: editedPatient.poids ?? null,
+          taille: editedPatient.taille ?? null,
+          glycemie: editedPatient.glycemie ?? null,
+          test_palu: editedPatient.test_palu || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', patient.id);
@@ -543,64 +550,184 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Signes vitaux</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
-                      <Thermometer size={14} className="text-orange-400 flex-shrink-0" />
-                      <div>
+                    {/* Température */}
+                    <div className="bg-[#1e293b] rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Thermometer size={12} className="text-orange-400 flex-shrink-0" />
                         <p className="text-gray-500 text-[10px] uppercase tracking-wide">Température</p>
+                      </div>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="30"
+                            max="45"
+                            value={editedPatient.temperature ?? ''}
+                            onChange={(e) => setEditedPatient({ ...editedPatient, temperature: e.target.value ? parseFloat(e.target.value) : undefined })}
+                            placeholder="37.0"
+                            aria-label="Température"
+                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-orange-400 transition-colors"
+                          />
+                          <span className="text-gray-500 text-[10px] flex-shrink-0">°C</span>
+                        </div>
+                      ) : (
                         <p className={`text-sm font-semibold ${patient.temperature != null ? 'text-white' : 'text-gray-600'}`}>
                           {patient.temperature != null ? `${patient.temperature} °C` : '—'}
                         </p>
-                      </div>
+                      )}
                     </div>
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
-                      <Heart size={14} className="text-pink-400 flex-shrink-0" />
-                      <div>
+
+                    {/* Pouls */}
+                    <div className="bg-[#1e293b] rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Heart size={12} className="text-pink-400 flex-shrink-0" />
                         <p className="text-gray-500 text-[10px] uppercase tracking-wide">Pouls</p>
+                      </div>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="20"
+                            max="250"
+                            value={editedPatient.pouls ?? ''}
+                            onChange={(e) => setEditedPatient({ ...editedPatient, pouls: e.target.value ? parseInt(e.target.value) : undefined })}
+                            placeholder="70"
+                            aria-label="Pouls"
+                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-pink-400 transition-colors"
+                          />
+                          <span className="text-gray-500 text-[10px] flex-shrink-0">bpm</span>
+                        </div>
+                      ) : (
                         <p className={`text-sm font-semibold ${patient.pouls != null ? 'text-white' : 'text-gray-600'}`}>
                           {patient.pouls != null ? `${patient.pouls} bpm` : '—'}
                         </p>
-                      </div>
+                      )}
                     </div>
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
-                      <Activity size={14} className="text-red-400 flex-shrink-0" />
-                      <div>
+
+                    {/* Tension */}
+                    <div className="bg-[#1e293b] rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Activity size={12} className="text-red-400 flex-shrink-0" />
                         <p className="text-gray-500 text-[10px] uppercase tracking-wide">Tension</p>
+                      </div>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editedPatient.tension_arterielle || ''}
+                          onChange={(e) => setEditedPatient({ ...editedPatient, tension_arterielle: e.target.value })}
+                          placeholder="12/8"
+                          aria-label="Tension artérielle"
+                          className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-red-400 transition-colors"
+                        />
+                      ) : (
                         <p className={`text-sm font-semibold ${patient.tension_arterielle ? 'text-white' : 'text-gray-600'}`}>
                           {patient.tension_arterielle || '—'}
                         </p>
-                      </div>
+                      )}
                     </div>
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
-                      <Scale size={14} className="text-green-400 flex-shrink-0" />
-                      <div>
+
+                    {/* Poids */}
+                    <div className="bg-[#1e293b] rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Scale size={12} className="text-green-400 flex-shrink-0" />
                         <p className="text-gray-500 text-[10px] uppercase tracking-wide">Poids</p>
+                      </div>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="1"
+                            max="300"
+                            value={editedPatient.poids ?? ''}
+                            onChange={(e) => setEditedPatient({ ...editedPatient, poids: e.target.value ? parseFloat(e.target.value) : undefined })}
+                            placeholder="70"
+                            aria-label="Poids"
+                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-green-400 transition-colors"
+                          />
+                          <span className="text-gray-500 text-[10px] flex-shrink-0">kg</span>
+                        </div>
+                      ) : (
                         <p className={`text-sm font-semibold ${patient.poids != null ? 'text-white' : 'text-gray-600'}`}>
                           {patient.poids != null ? `${patient.poids} kg` : '—'}
                         </p>
-                      </div>
+                      )}
                     </div>
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
-                      <Ruler size={14} className="text-blue-400 flex-shrink-0" />
-                      <div>
+
+                    {/* Taille */}
+                    <div className="bg-[#1e293b] rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Ruler size={12} className="text-blue-400 flex-shrink-0" />
                         <p className="text-gray-500 text-[10px] uppercase tracking-wide">Taille</p>
+                      </div>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="50"
+                            max="250"
+                            value={editedPatient.taille ?? ''}
+                            onChange={(e) => setEditedPatient({ ...editedPatient, taille: e.target.value ? parseInt(e.target.value) : undefined })}
+                            placeholder="170"
+                            aria-label="Taille"
+                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-400 transition-colors"
+                          />
+                          <span className="text-gray-500 text-[10px] flex-shrink-0">cm</span>
+                        </div>
+                      ) : (
                         <p className={`text-sm font-semibold ${patient.taille != null ? 'text-white' : 'text-gray-600'}`}>
                           {patient.taille != null ? `${patient.taille} cm` : '—'}
                         </p>
-                      </div>
+                      )}
                     </div>
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2">
-                      <Droplets size={14} className="text-cyan-400 flex-shrink-0" />
-                      <div>
+
+                    {/* Glycémie */}
+                    <div className="bg-[#1e293b] rounded-lg p-2.5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Droplets size={12} className="text-cyan-400 flex-shrink-0" />
                         <p className="text-gray-500 text-[10px] uppercase tracking-wide">Glycémie</p>
+                      </div>
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="10"
+                            value={editedPatient.glycemie ?? ''}
+                            onChange={(e) => setEditedPatient({ ...editedPatient, glycemie: e.target.value ? parseFloat(e.target.value) : undefined })}
+                            placeholder="0.90"
+                            aria-label="Glycémie"
+                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-cyan-400 transition-colors"
+                          />
+                          <span className="text-gray-500 text-[10px] flex-shrink-0">g/L</span>
+                        </div>
+                      ) : (
                         <p className={`text-sm font-semibold ${patient.glycemie != null ? 'text-white' : 'text-gray-600'}`}>
                           {patient.glycemie != null ? `${patient.glycemie} g/L` : '—'}
                         </p>
-                      </div>
+                      )}
                     </div>
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 flex items-center gap-2 col-span-2 sm:col-span-1">
-                      <FlaskConical size={14} className="text-yellow-400 flex-shrink-0" />
-                      <div>
+
+                    {/* Test Palu */}
+                    <div className="bg-[#1e293b] rounded-lg p-2.5 col-span-2 sm:col-span-1">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <FlaskConical size={12} className="text-yellow-400 flex-shrink-0" />
                         <p className="text-gray-500 text-[10px] uppercase tracking-wide">Test Palu</p>
+                      </div>
+                      {isEditing ? (
+                        <select
+                          value={editedPatient.test_palu || ''}
+                          onChange={(e) => setEditedPatient({ ...editedPatient, test_palu: e.target.value })}
+                          aria-label="Test paludisme"
+                          className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-yellow-400 transition-colors cursor-pointer"
+                        >
+                          <option value="">— Non fait</option>
+                          <option value="negatif">Négatif</option>
+                          <option value="positif">Positif</option>
+                        </select>
+                      ) : (
                         <p className={`text-sm font-semibold ${
                           patient.test_palu === 'positif' ? 'text-red-400' :
                           patient.test_palu ? 'text-green-400' : 'text-gray-600'
@@ -609,7 +736,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                             ? patient.test_palu.charAt(0).toUpperCase() + patient.test_palu.slice(1)
                             : '—'}
                         </p>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
