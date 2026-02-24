@@ -167,7 +167,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
         .insert([
           {
             name: fullName,
-            email: formData.email.trim(),
+            email: formData.email.trim() || null,
             first_name: formData.first_name.trim(),
             last_name: formData.last_name.trim(),
             date_of_birth: formData.date_of_birth,
