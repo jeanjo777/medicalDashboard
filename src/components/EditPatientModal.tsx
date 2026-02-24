@@ -776,41 +776,41 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
                     </select>
                   </div>
                 </div>
-              </div>
 
-              {/* URINES */}
-              <div className="mt-4 pt-3 border-t border-[#334155]">
-                <h5 className="text-white font-medium text-sm mb-3 uppercase tracking-wide">Urines</h5>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor="urines_albumine_edit" className="block text-xs font-medium text-gray-400 mb-1">
-                      Albumine
-                    </label>
-                    <input
-                      type="text"
-                      id="urines_albumine_edit"
-                      name="urines_albumine"
-                      value={formData.urines_albumine}
-                      onChange={handleChange}
-                      disabled={loading}
-                      placeholder="Absent / Présent"
-                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="urines_sucre_edit" className="block text-xs font-medium text-gray-400 mb-1">
-                      Sucre
-                    </label>
-                    <input
-                      type="text"
-                      id="urines_sucre_edit"
-                      name="urines_sucre"
-                      value={formData.urines_sucre}
-                      onChange={handleChange}
-                      disabled={loading}
-                      placeholder="Absent / Présent"
-                      className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
-                    />
+                {/* URINES — inside Signes vitaux */}
+                <div className="mt-3 pt-3 border-t border-[#334155]/60">
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Urines</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="urines_albumine_edit" className="block text-xs font-medium text-gray-400 mb-1">
+                        Albumine
+                      </label>
+                      <input
+                        type="text"
+                        id="urines_albumine_edit"
+                        name="urines_albumine"
+                        value={formData.urines_albumine}
+                        onChange={handleChange}
+                        disabled={loading}
+                        placeholder="Absent / Présent"
+                        className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="urines_sucre_edit" className="block text-xs font-medium text-gray-400 mb-1">
+                        Sucre
+                      </label>
+                      <input
+                        type="text"
+                        id="urines_sucre_edit"
+                        name="urines_sucre"
+                        value={formData.urines_sucre}
+                        onChange={handleChange}
+                        disabled={loading}
+                        placeholder="Absent / Présent"
+                        className="w-full px-3 py-2 bg-[#1e293b] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm disabled:opacity-50"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
