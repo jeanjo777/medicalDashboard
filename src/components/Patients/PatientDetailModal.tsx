@@ -20,8 +20,10 @@ import {
   Ruler,
   Droplets,
   FlaskConical,
+  Printer,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { generateSifcaPDF } from '../../utils/sifcaPdfGenerator';
 import { useToast } from '../Common/Toast';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import ErrorState from '../ErrorState';
@@ -40,6 +42,8 @@ interface Patient {
   updated_at: string;
   emergency_contact?: string;
   last_visit?: string;
+  first_name?: string;
+  last_name?: string;
   temperature?: number;
   pouls?: number;
   tension_arterielle?: string;
@@ -542,22 +546,34 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                 )}
 
                 {/* Signes Vitaux */}
-                <div className="bg-[#0f172a] rounded-xl border border-[#334155] p-3 sm:p-3.5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-rose-500/10 flex items-center justify-center flex-shrink-0">
-                      <Activity size={14} className="text-rose-400 sm:w-4 sm:h-4" />
+                <div className={`bg-[#0f172a] rounded-xl border p-3 sm:p-3.5 transition-all duration-200 ${
+                  isEditing ? 'border-rose-500/50 shadow-[0_0_0_1px_rgba(244,63,94,0.15)]' : 'border-[#334155]'
+                }`}>
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
+                        isEditing ? 'bg-rose-500/20' : 'bg-rose-500/10'
+                      }`}>
+                        <Activity size={14} className="text-rose-400 sm:w-4 sm:h-4" />
+                      </div>
+                      <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Signes vitaux</span>
                     </div>
-                    <span className="text-gray-500 text-xs font-medium uppercase tracking-wider">Signes vitaux</span>
+                    {isEditing && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-medium">
+                        <Edit size={9} />
+                        Modifiable
+                      </span>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {/* Température */}
-                    <div className="bg-[#1e293b] rounded-lg p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-orange-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
                         <Thermometer size={12} className="text-orange-400 flex-shrink-0" />
-                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Température</p>
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Température</p>
                       </div>
                       {isEditing ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="number"
                             step="0.1"
@@ -566,10 +582,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                             value={editedPatient.temperature ?? ''}
                             onChange={(e) => setEditedPatient({ ...editedPatient, temperature: e.target.value ? parseFloat(e.target.value) : undefined })}
                             placeholder="37.0"
-                            aria-label="Température"
-                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-orange-400 transition-colors"
+                            aria-label="Température en degrés Celsius"
+                            className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20 transition-all duration-150"
                           />
-                          <span className="text-gray-500 text-[10px] flex-shrink-0">°C</span>
+                          <span className="text-orange-400/70 text-xs font-medium flex-shrink-0 bg-orange-400/10 px-1.5 py-1 rounded">°C</span>
                         </div>
                       ) : (
                         <p className={`text-sm font-semibold ${patient.temperature != null ? 'text-white' : 'text-gray-600'}`}>
@@ -579,13 +595,13 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </div>
 
                     {/* Pouls */}
-                    <div className="bg-[#1e293b] rounded-lg p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-pink-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
                         <Heart size={12} className="text-pink-400 flex-shrink-0" />
-                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Pouls</p>
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Pouls</p>
                       </div>
                       {isEditing ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="number"
                             min="20"
@@ -593,10 +609,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                             value={editedPatient.pouls ?? ''}
                             onChange={(e) => setEditedPatient({ ...editedPatient, pouls: e.target.value ? parseInt(e.target.value) : undefined })}
                             placeholder="70"
-                            aria-label="Pouls"
-                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-pink-400 transition-colors"
+                            aria-label="Pouls en battements par minute"
+                            className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-400/20 transition-all duration-150"
                           />
-                          <span className="text-gray-500 text-[10px] flex-shrink-0">bpm</span>
+                          <span className="text-pink-400/70 text-xs font-medium flex-shrink-0 bg-pink-400/10 px-1.5 py-1 rounded">bpm</span>
                         </div>
                       ) : (
                         <p className={`text-sm font-semibold ${patient.pouls != null ? 'text-white' : 'text-gray-600'}`}>
@@ -606,10 +622,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </div>
 
                     {/* Tension */}
-                    <div className="bg-[#1e293b] rounded-lg p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-red-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
                         <Activity size={12} className="text-red-400 flex-shrink-0" />
-                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Tension</p>
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Tension</p>
                       </div>
                       {isEditing ? (
                         <input
@@ -617,8 +633,8 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                           value={editedPatient.tension_arterielle || ''}
                           onChange={(e) => setEditedPatient({ ...editedPatient, tension_arterielle: e.target.value })}
                           placeholder="12/8"
-                          aria-label="Tension artérielle"
-                          className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-red-400 transition-colors"
+                          aria-label="Tension artérielle (systolique/diastolique)"
+                          className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20 transition-all duration-150"
                         />
                       ) : (
                         <p className={`text-sm font-semibold ${patient.tension_arterielle ? 'text-white' : 'text-gray-600'}`}>
@@ -628,13 +644,13 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </div>
 
                     {/* Poids */}
-                    <div className="bg-[#1e293b] rounded-lg p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-green-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
                         <Scale size={12} className="text-green-400 flex-shrink-0" />
-                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Poids</p>
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Poids</p>
                       </div>
                       {isEditing ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="number"
                             step="0.1"
@@ -643,10 +659,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                             value={editedPatient.poids ?? ''}
                             onChange={(e) => setEditedPatient({ ...editedPatient, poids: e.target.value ? parseFloat(e.target.value) : undefined })}
                             placeholder="70"
-                            aria-label="Poids"
-                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-green-400 transition-colors"
+                            aria-label="Poids en kilogrammes"
+                            className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all duration-150"
                           />
-                          <span className="text-gray-500 text-[10px] flex-shrink-0">kg</span>
+                          <span className="text-green-400/70 text-xs font-medium flex-shrink-0 bg-green-400/10 px-1.5 py-1 rounded">kg</span>
                         </div>
                       ) : (
                         <p className={`text-sm font-semibold ${patient.poids != null ? 'text-white' : 'text-gray-600'}`}>
@@ -656,13 +672,13 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </div>
 
                     {/* Taille */}
-                    <div className="bg-[#1e293b] rounded-lg p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-blue-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
                         <Ruler size={12} className="text-blue-400 flex-shrink-0" />
-                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Taille</p>
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Taille</p>
                       </div>
                       {isEditing ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="number"
                             min="50"
@@ -670,10 +686,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                             value={editedPatient.taille ?? ''}
                             onChange={(e) => setEditedPatient({ ...editedPatient, taille: e.target.value ? parseInt(e.target.value) : undefined })}
                             placeholder="170"
-                            aria-label="Taille"
-                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-blue-400 transition-colors"
+                            aria-label="Taille en centimètres"
+                            className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all duration-150"
                           />
-                          <span className="text-gray-500 text-[10px] flex-shrink-0">cm</span>
+                          <span className="text-blue-400/70 text-xs font-medium flex-shrink-0 bg-blue-400/10 px-1.5 py-1 rounded">cm</span>
                         </div>
                       ) : (
                         <p className={`text-sm font-semibold ${patient.taille != null ? 'text-white' : 'text-gray-600'}`}>
@@ -683,13 +699,13 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </div>
 
                     {/* Glycémie */}
-                    <div className="bg-[#1e293b] rounded-lg p-2.5">
-                      <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`rounded-lg p-3 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-cyan-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
                         <Droplets size={12} className="text-cyan-400 flex-shrink-0" />
-                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Glycémie</p>
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Glycémie</p>
                       </div>
                       {isEditing ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5">
                           <input
                             type="number"
                             step="0.01"
@@ -698,10 +714,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                             value={editedPatient.glycemie ?? ''}
                             onChange={(e) => setEditedPatient({ ...editedPatient, glycemie: e.target.value ? parseFloat(e.target.value) : undefined })}
                             placeholder="0.90"
-                            aria-label="Glycémie"
-                            className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-cyan-400 transition-colors"
+                            aria-label="Glycémie en grammes par litre"
+                            className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white placeholder-gray-600 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all duration-150"
                           />
-                          <span className="text-gray-500 text-[10px] flex-shrink-0">g/L</span>
+                          <span className="text-cyan-400/70 text-xs font-medium flex-shrink-0 bg-cyan-400/10 px-1.5 py-1 rounded">g/L</span>
                         </div>
                       ) : (
                         <p className={`text-sm font-semibold ${patient.glycemie != null ? 'text-white' : 'text-gray-600'}`}>
@@ -711,17 +727,17 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     </div>
 
                     {/* Test Palu */}
-                    <div className="bg-[#1e293b] rounded-lg p-2.5 col-span-2 sm:col-span-1">
-                      <div className="flex items-center gap-1.5 mb-1">
+                    <div className={`rounded-lg p-3 col-span-2 sm:col-span-1 transition-colors duration-150 ${isEditing ? 'bg-[#1e293b] ring-1 ring-yellow-400/20' : 'bg-[#1e293b]'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
                         <FlaskConical size={12} className="text-yellow-400 flex-shrink-0" />
-                        <p className="text-gray-500 text-[10px] uppercase tracking-wide">Test Palu</p>
+                        <p className="text-gray-500 text-[10px] font-medium uppercase tracking-wide">Test Palu</p>
                       </div>
                       {isEditing ? (
                         <select
                           value={editedPatient.test_palu || ''}
                           onChange={(e) => setEditedPatient({ ...editedPatient, test_palu: e.target.value })}
-                          aria-label="Test paludisme"
-                          className="w-full bg-[#0f172a] border border-[#475569] rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-yellow-400 transition-colors cursor-pointer"
+                          aria-label="Résultat du test paludisme"
+                          className="w-full min-h-[36px] bg-[#0f172a] border border-[#475569] rounded-lg px-2.5 py-1.5 text-sm font-semibold text-white focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 transition-all duration-150 cursor-pointer"
                         >
                           <option value="">— Non fait</option>
                           <option value="negatif">Négatif</option>
@@ -821,14 +837,34 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                       <Trash2 size={16} />
                       Supprimer
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleEdit}
-                      className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-blue-500/25 cursor-pointer"
-                    >
-                      <Edit size={16} />
-                      Modifier
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => generateSifcaPDF({
+                          name: patient.name,
+                          first_name: patient.first_name,
+                          last_name: patient.last_name,
+                          date_of_birth: patient.date_of_birth,
+                          temperature: patient.temperature,
+                          poids: patient.poids,
+                          tension_arterielle: patient.tension_arterielle,
+                          visitType: 'consultation',
+                        })}
+                        className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-emerald-400 hover:text-white hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl transition-all cursor-pointer"
+                        title="Générer rapport SIFCA PDF"
+                      >
+                        <Printer size={16} />
+                        <span className="hidden sm:inline">Rapport SIFCA</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleEdit}
+                        className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all shadow-lg shadow-blue-500/25 cursor-pointer"
+                      >
+                        <Edit size={16} />
+                        Modifier
+                      </button>
+                    </div>
                   </>
                 )}
               </div>
