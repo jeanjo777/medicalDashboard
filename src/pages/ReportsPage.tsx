@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import ErrorBoundary from '../components/ErrorBoundary';
 import ReportsTab from '../components/Analytics/ReportsTab';
@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { generateSifcaPDF } from '../utils/sifcaPdfGenerator';
 import {
   FileText, Search, Printer, RefreshCw, ChevronDown, X,
-  User, Calendar, Building2, Stethoscope, CheckSquare, AlertCircle,
+  User, Calendar, Building2, Stethoscope, CheckSquare, AlertCircle, Loader2,
 } from 'lucide-react';
 
 interface Patient {
@@ -32,12 +32,18 @@ const VISIT_TYPES = [
 
 const FILIALES = ['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'];
 
+const PAGE_SIZE = 50;
+
 const ReportsPage: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -46,36 +52,74 @@ const ReportsPage: React.FC = () => {
   const [visitType, setVisitType] = useState('');
   const [filiale, setFiliale] = useState('');
 
-  const fetchPatients = useCallback(async () => {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search input — 300 ms
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setOffset(0);         // reset pagination on new search
+      setPatients([]);      // clear list immediately
+    }, 300);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [search]);
+
+  // Build Supabase query
+  const buildQuery = useCallback((q: string, from: number) => {
+    let query = supabase
+      .from('patients')
+      .select(
+        'id, name, first_name, last_name, date_of_birth, gender, status, temperature, poids, tension_arterielle, visit_type, filiale',
+        { count: 'exact' }
+      )
+      .order('name', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (q) {
+      query = query.or(
+        `name.ilike.%${q}%,first_name.ilike.%${q}%,last_name.ilike.%${q}%`
+      );
+    }
+    return query;
+  }, []);
+
+  // Initial / search fetch (replaces list)
+  const fetchPatients = useCallback(async (q: string) => {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: err } = await supabase
-        .from('patients')
-        .select('id, name, first_name, last_name, date_of_birth, gender, status, temperature, poids, tension_arterielle, visit_type, filiale')
-        .order('name', { ascending: true });
-
+      const { data, error: err, count } = await buildQuery(q, 0);
       if (err) throw err;
       setPatients(data || []);
+      setTotal(count ?? 0);
+      setOffset(PAGE_SIZE);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Erreur de chargement');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [buildQuery]);
 
+  // Load more (append)
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const { data, error: err } = await buildQuery(debouncedSearch, offset);
+      if (err) throw err;
+      setPatients((prev) => [...prev, ...(data || [])]);
+      setOffset((prev) => prev + PAGE_SIZE);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Erreur de chargement');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Trigger fetch when debouncedSearch changes
   useEffect(() => {
-    fetchPatients();
-  }, [fetchPatients]);
-
-  const filtered = patients.filter((p) => {
-    const q = search.toLowerCase();
-    return (
-      p.name?.toLowerCase().includes(q) ||
-      p.first_name?.toLowerCase().includes(q) ||
-      p.last_name?.toLowerCase().includes(q)
-    );
-  });
+    fetchPatients(debouncedSearch);
+  }, [debouncedSearch, fetchPatients]);
 
   const openDialog = (patient: Patient) => {
     setSelectedPatient(patient);
@@ -103,12 +147,7 @@ const ReportsPage: React.FC = () => {
   };
 
   const getInitials = (name: string) =>
-    name
-      .split(' ')
-      .slice(0, 2)
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
+    name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase();
 
   const avatarColors = [
     'bg-blue-500', 'bg-purple-500', 'bg-emerald-500',
@@ -116,6 +155,8 @@ const ReportsPage: React.FC = () => {
     'bg-indigo-500', 'bg-rose-500',
   ];
   const getColor = (name: string) => avatarColors[name.charCodeAt(0) % avatarColors.length];
+
+  const hasMore = patients.length < total;
 
   return (
     <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
@@ -136,7 +177,7 @@ const ReportsPage: React.FC = () => {
             </div>
             <button
               type="button"
-              onClick={fetchPatients}
+              onClick={() => fetchPatients(debouncedSearch)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm theme-text-secondary hover:text-primary transition-colors"
               title="Actualiser"
             >
@@ -148,7 +189,7 @@ const ReportsPage: React.FC = () => {
 
         <main className="flex-1 p-3 sm:p-4 lg:p-8">
           <ErrorBoundary>
-            <div className="max-w-5xl mx-auto space-y-6">
+            <div className="max-w-5xl mx-auto space-y-5">
 
               {/* Info banner */}
               <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
@@ -158,16 +199,26 @@ const ReportsPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Search */}
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-secondary" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Rechercher un patient..."
-                  className="w-full pl-9 pr-4 py-2.5 text-sm theme-bg-secondary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
-                />
+              {/* Search + count */}
+              <div className="flex items-center gap-3">
+                <div className="relative flex-1">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-secondary" />
+                  {loading && search ? (
+                    <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-secondary animate-spin" />
+                  ) : null}
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Rechercher par nom, prénom…"
+                    className="w-full pl-9 pr-10 py-2.5 text-sm theme-bg-secondary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  />
+                </div>
+                {!loading && (
+                  <span className="text-xs theme-text-secondary whitespace-nowrap flex-shrink-0">
+                    {total.toLocaleString('fr-FR')} patient{total > 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
 
               {/* Error */}
@@ -178,89 +229,123 @@ const ReportsPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Patient list */}
-              {loading ? (
-                <div className="space-y-3">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="h-16 theme-bg-secondary rounded-xl animate-pulse" />
-                  ))}
+              {/* Patient list — scrollable container */}
+              <div className="theme-bg-secondary border theme-border rounded-2xl overflow-hidden">
+                {/* List header */}
+                <div className="px-4 py-3 border-b theme-border flex items-center justify-between">
+                  <span className="text-sm font-semibold theme-text-primary">Liste des patients</span>
+                  {!loading && patients.length > 0 && (
+                    <span className="text-xs theme-text-secondary">
+                      {patients.length.toLocaleString('fr-FR')} affiché{patients.length > 1 ? 's' : ''} sur {total.toLocaleString('fr-FR')}
+                    </span>
+                  )}
                 </div>
-              ) : filtered.length === 0 ? (
-                <div className="text-center py-16 theme-text-secondary">
-                  <User size={40} className="mx-auto mb-3 opacity-30" />
-                  <p>Aucun patient trouvé</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {filtered.map((patient) => (
-                    <div
-                      key={patient.id}
-                      className="flex items-center gap-4 p-4 theme-bg-secondary border theme-border rounded-xl hover:border-primary/50 transition-all group"
-                    >
-                      {/* Avatar */}
-                      <div className={`w-10 h-10 rounded-full ${getColor(patient.name)} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}>
-                        {getInitials(patient.name)}
-                      </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold theme-text-primary truncate">
-                          {patient.last_name
-                            ? `${patient.last_name.toUpperCase()} ${patient.first_name || ''}`
-                            : patient.name}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
-                          {patient.date_of_birth && (
-                            <span className="flex items-center gap-1 text-xs theme-text-secondary">
-                              <Calendar size={11} />
-                              {patient.date_of_birth}
-                            </span>
-                          )}
-                          {patient.visit_type && (
-                            <span className="flex items-center gap-1 text-xs text-blue-400">
-                              <Stethoscope size={11} />
-                              {VISIT_TYPES.find((v) => v.key === patient.visit_type)?.label || patient.visit_type}
-                            </span>
-                          )}
-                          {patient.filiale && (
-                            <span className="flex items-center gap-1 text-xs text-emerald-400">
-                              <Building2 size={11} />
-                              {patient.filiale}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Badge vitals */}
-                      <div className="hidden sm:flex items-center gap-2">
-                        {(patient.temperature || patient.poids || patient.tension_arterielle) && (
-                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">
-                            <CheckSquare size={11} />
-                            Signes vitaux
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Button */}
-                      <button
-                        type="button"
-                        onClick={() => openDialog(patient)}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/80 transition-colors flex-shrink-0"
-                      >
-                        <Printer size={15} />
-                        <span className="hidden sm:inline">Générer PDF</span>
-                      </button>
+                {/* Scrollable area */}
+                <div className="overflow-y-auto max-h-[480px]">
+                  {loading ? (
+                    <div className="p-4 space-y-2">
+                      {[...Array(8)].map((_, i) => (
+                        <div key={i} className="h-14 theme-bg-primary rounded-xl animate-pulse" />
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  ) : patients.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 theme-text-secondary">
+                      <User size={36} className="mb-3 opacity-30" />
+                      <p className="text-sm">
+                        {search ? `Aucun résultat pour « ${search} »` : 'Aucun patient enregistré'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/5">
+                      {patients.map((patient) => (
+                        <div
+                          key={patient.id}
+                          className="flex items-center gap-4 px-4 py-3 hover:bg-white/5 transition-colors group"
+                        >
+                          {/* Avatar */}
+                          <div className={`w-9 h-9 rounded-full ${getColor(patient.name)} flex items-center justify-center text-white font-bold text-xs flex-shrink-0`}>
+                            {getInitials(patient.name)}
+                          </div>
 
-              {/* Count */}
-              {!loading && filtered.length > 0 && (
-                <p className="text-center text-xs theme-text-secondary">
-                  {filtered.length} patient{filtered.length > 1 ? 's' : ''}
-                </p>
-              )}
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold theme-text-primary text-sm truncate">
+                              {patient.last_name
+                                ? `${patient.last_name.toUpperCase()} ${patient.first_name || ''}`
+                                : patient.name}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                              {patient.date_of_birth && (
+                                <span className="flex items-center gap-1 text-xs theme-text-secondary">
+                                  <Calendar size={10} />
+                                  {patient.date_of_birth}
+                                </span>
+                              )}
+                              {patient.visit_type && (
+                                <span className="flex items-center gap-1 text-xs text-blue-400">
+                                  <Stethoscope size={10} />
+                                  {VISIT_TYPES.find((v) => v.key === patient.visit_type)?.label || patient.visit_type}
+                                </span>
+                              )}
+                              {patient.filiale && (
+                                <span className="flex items-center gap-1 text-xs text-emerald-400">
+                                  <Building2 size={10} />
+                                  {patient.filiale}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Vitals badge */}
+                          <div className="hidden sm:flex items-center">
+                            {(patient.temperature || patient.poids || patient.tension_arterielle) && (
+                              <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+                                <CheckSquare size={10} />
+                                Signes vitaux
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Generate button */}
+                          <button
+                            type="button"
+                            onClick={() => openDialog(patient)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary/80 transition-colors flex-shrink-0"
+                          >
+                            <Printer size={13} />
+                            <span className="hidden sm:inline">PDF</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Load more footer */}
+                {!loading && hasMore && (
+                  <div className="px-4 py-3 border-t theme-border">
+                    <button
+                      type="button"
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="w-full flex items-center justify-center gap-2 py-2 text-sm font-medium theme-text-secondary hover:text-primary border theme-border rounded-xl hover:border-primary/40 transition-all"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          Chargement…
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown size={14} />
+                          Charger {Math.min(PAGE_SIZE, total - patients.length)} patients de plus
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Divider */}
               <div className="flex items-center gap-4 py-2">
@@ -269,7 +354,7 @@ const ReportsPage: React.FC = () => {
                 <div className="flex-1 h-px bg-white/10" />
               </div>
 
-              {/* Old ReportsTab content */}
+              {/* Analytics ReportsTab */}
               <ReportsTab filters={{}} />
 
             </div>
@@ -277,11 +362,10 @@ const ReportsPage: React.FC = () => {
         </main>
       </div>
 
-      {/* ─── PDF Generation Dialog ─────────────────────────────────────── */}
+      {/* ─── PDF Generation Dialog ──────────────────────────────────────── */}
       {dialogOpen && selectedPatient && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
           onClick={(e) => { if (e.target === e.currentTarget) setDialogOpen(false); }}
         >
           <div className="theme-bg-secondary border theme-border rounded-2xl shadow-2xl w-full max-w-md">
@@ -313,9 +397,7 @@ const ReportsPage: React.FC = () => {
             <div className="p-5 space-y-5">
               {/* Médecin */}
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-1.5">
-                  Médecin
-                </label>
+                <label className="block text-sm font-medium theme-text-primary mb-1.5">Médecin</label>
                 <input
                   type="text"
                   value={medecin}
@@ -327,9 +409,7 @@ const ReportsPage: React.FC = () => {
 
               {/* Type de visite */}
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">
-                  Type de visite
-                </label>
+                <label className="block text-sm font-medium theme-text-primary mb-2">Type de visite</label>
                 <div className="space-y-2">
                   {VISIT_TYPES.map((v) => (
                     <label
@@ -356,9 +436,7 @@ const ReportsPage: React.FC = () => {
 
               {/* Filiale */}
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-1.5">
-                  Filiale
-                </label>
+                <label className="block text-sm font-medium theme-text-primary mb-1.5">Filiale</label>
                 <div className="relative">
                   <select
                     value={filiale}
