@@ -76,6 +76,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showSifcaDialog, setShowSifcaDialog] = useState(false);
+  const [sifcaVisitType, setSifcaVisitType] = useState<'consultation' | 'systematique' | 'embauche' | ''>('');
+  const [sifcaFiliale, setSifcaFiliale] = useState('');
+  const [sifcaMedecin, setSifcaMedecin] = useState('');
 
   const modalRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
@@ -840,16 +844,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => generateSifcaPDF({
-                          name: patient.name,
-                          first_name: patient.first_name,
-                          last_name: patient.last_name,
-                          date_of_birth: patient.date_of_birth,
-                          temperature: patient.temperature,
-                          poids: patient.poids,
-                          tension_arterielle: patient.tension_arterielle,
-                          visitType: 'consultation',
-                        })}
+                        onClick={() => setShowSifcaDialog(true)}
                         className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2.5 text-sm font-medium text-emerald-400 hover:text-white hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl transition-all cursor-pointer"
                         title="Générer rapport SIFCA PDF"
                       >
@@ -872,6 +867,115 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           )}
         </div>
       </div>
+
+      {/* SIFCA Report Dialog */}
+      {showSifcaDialog && patient && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-[#1e293b] border border-[#334155] rounded-2xl w-full max-w-sm mx-4 shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#334155]">
+              <div className="flex items-center gap-2">
+                <Printer size={18} className="text-emerald-400" />
+                <h3 className="text-white font-semibold text-sm">Rapport SIFCA</h3>
+              </div>
+              <button type="button" aria-label="Fermer" onClick={() => setShowSifcaDialog(false)} className="text-gray-400 hover:text-white transition-colors cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="px-5 py-4 space-y-4">
+              {/* Médecin */}
+              <div>
+                <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Médecin</label>
+                <input
+                  type="text"
+                  value={sifcaMedecin}
+                  onChange={(e) => setSifcaMedecin(e.target.value)}
+                  placeholder="Nom du médecin"
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                />
+              </div>
+
+              {/* Type de visite */}
+              <div>
+                <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Type de visite</label>
+                <div className="space-y-2">
+                  {[
+                    { value: 'consultation', label: 'Consultation' },
+                    { value: 'systematique', label: 'Visite Systématique' },
+                    { value: 'embauche', label: "Visite d'embauche" },
+                  ].map((v) => (
+                    <label key={v.value} className="flex items-center gap-2.5 cursor-pointer group">
+                      <div
+                        onClick={() => setSifcaVisitType(v.value as any)}
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
+                          sifcaVisitType === v.value
+                            ? 'bg-emerald-500 border-emerald-500'
+                            : 'border-[#475569] group-hover:border-emerald-500/50'
+                        }`}
+                      >
+                        {sifcaVisitType === v.value && <div className="w-2 h-2 bg-white rounded-sm" />}
+                      </div>
+                      <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{v.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Filiale */}
+              <div>
+                <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Filiale</label>
+                <select
+                  value={sifcaFiliale}
+                  onChange={(e) => setSifcaFiliale(e.target.value)}
+                  aria-label="Filiale SIFCA"
+                  title="Filiale SIFCA"
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                >
+                  <option value="">— Sélectionner</option>
+                  {['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'].map((f) => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[#334155]">
+              <button
+                type="button"
+                onClick={() => setShowSifcaDialog(false)}
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-[#334155] rounded-xl transition-all cursor-pointer"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  generateSifcaPDF({
+                    name: patient.name,
+                    first_name: patient.first_name,
+                    last_name: patient.last_name,
+                    date_of_birth: patient.date_of_birth,
+                    temperature: patient.temperature,
+                    poids: patient.poids,
+                    tension_arterielle: patient.tension_arterielle,
+                    visitType: sifcaVisitType || undefined,
+                    filiale: sifcaFiliale || undefined,
+                    medecin: sifcaMedecin || undefined,
+                  });
+                  setShowSifcaDialog(false);
+                  setSifcaVisitType('');
+                  setSifcaFiliale('');
+                  setSifcaMedecin('');
+                }}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all cursor-pointer"
+              >
+                <Printer size={15} />
+                Générer PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={showDeleteDialog}
