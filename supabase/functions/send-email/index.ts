@@ -59,7 +59,7 @@ Deno.serve(async (req: Request) => {
 
     // Call Resend API
     const resendPayload = {
-      from: 'Cabinet Médical <onboarding@resend.dev>',
+      from: 'Cabinet Médical <no-reply@simpliceake.com>',
       to: toName ? [{ email: to, name: toName }] : [to],
       subject,
       html: body,
