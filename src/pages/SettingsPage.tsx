@@ -334,6 +334,9 @@ const SettingsPage: React.FC = () => {
                 <option>Neurologie</option>
                 <option>Pédiatrie</option>
                 <option>Dermatologie</option>
+                <option>Rhumatologie</option>
+                <option>Ophtalmologie</option>
+                <option>Diabétologie</option>
               </select>
             </div>
           </div>
