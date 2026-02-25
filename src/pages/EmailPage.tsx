@@ -226,8 +226,7 @@ const EmailPage: React.FC = () => {
     setSending(true);
     setSendResult(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = localStorage.getItem('auth_token');
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 
       // Convert attachments to base64

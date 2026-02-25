@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.76.1';
+import { verify } from 'https://deno.land/x/djwt@v3.0.2/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,9 +22,46 @@ interface SendEmailRequest {
   attachments?: Attachment[];
 }
 
+async function verifyAuthToken(req: Request): Promise<boolean> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) return false;
+
+  const token = authHeader.replace('Bearer ', '');
+  const jwtSecret = Deno.env.get('JWT_SECRET');
+
+  if (!jwtSecret) {
+    console.error('JWT_SECRET not configured');
+    return false;
+  }
+
+  try {
+    const key = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(jwtSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    const payload = await verify(token, key);
+    return !!payload?.sub;
+  } catch (error) {
+    console.error('JWT verification failed:', error);
+    return false;
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: corsHeaders });
+  }
+
+  // Verify custom auth token
+  const isAuthenticated = await verifyAuthToken(req);
+  if (!isAuthenticated) {
+    return new Response(
+      JSON.stringify({ error: 'Non autorisé - token invalide ou expiré' }),
+      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

@@ -1559,21 +1559,6 @@ const AIAssistantPage: React.FC = () => {
                 })}
               </div>
 
-              <div className="w-full max-w-2xl">
-                <p className="text-xs theme-text-muted uppercase tracking-wider mb-3 text-center">Suggestions rapides</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {QUICK_PROMPTS[mode].map((prompt, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => handleQuickPrompt(prompt)}
-                      className="text-left px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm theme-text-secondary hover:border-cyan-500/50 hover:bg-[var(--bg-secondary)]/80 transition-all group"
-                    >
-                      <span className="group-hover:text-cyan-300 transition-colors">{prompt}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {conversations.length > 0 && (
                 <div className="w-full max-w-2xl mt-6">
