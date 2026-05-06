@@ -45,6 +45,7 @@ services:
     environment:
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
     restart: unless-stopped
 
   # MediCare Pro - Frontend + Nginx API proxy

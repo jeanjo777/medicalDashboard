@@ -302,14 +302,170 @@ app.post('/functions/v1/validate-reset-token', async (req, res) => {
 });
 
 // ============================================================
-// AI DOCTOR ASSISTANT (stub)
+// AI DOCTOR ASSISTANT (Claude API with SSE streaming)
 // ============================================================
+const Anthropic = require('@anthropic-ai/sdk');
+
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+
+const MODE_PROMPTS = {
+  general: "Tu es un assistant medical IA generaliste. Reponds aux questions medicales de maniere claire et professionnelle.",
+  diagnostic: "Tu es un assistant specialise en diagnostic medical. Aide le medecin a analyser les symptomes, proposer des diagnostics differentiels et suggerer des examens complementaires.",
+  treatment: "Tu es un assistant specialise en therapeutique. Aide le medecin a elaborer des plans de traitement, choisir les medicaments adaptes et planifier le suivi.",
+  literature: "Tu es un assistant specialise en recherche medicale. Fournis des references a la litterature scientifique, des guidelines et des etudes recentes.",
+  radiology: "Tu es un assistant specialise en imagerie medicale. Aide a interpreter les images, decrire les anomalies et suggerer des diagnostics radiologiques.",
+  pharmacology: "Tu es un assistant specialise en pharmacologie. Aide a verifier les interactions medicamenteuses, les posologies et les contre-indications.",
+};
+
+function buildSystemPrompt(mode, patientContext, doctorName) {
+  let prompt = `Tu es l'Assistant Medical IA de MediCare Pro, un outil d'aide a la decision clinique pour les professionnels de sante.\n\n`;
+  prompt += `Medecin: ${doctorName || 'Medecin'}\n\n`;
+  prompt += `${MODE_PROMPTS[mode] || MODE_PROMPTS.general}\n\n`;
+  prompt += `REGLES IMPORTANTES:\n`;
+  prompt += `- Reponds TOUJOURS en francais\n`;
+  prompt += `- Tu assistes un medecin qualifie, pas un patient\n`;
+  prompt += `- Fournis des informations detaillees et techniques appropriees pour un professionnel\n`;
+  prompt += `- Mentionne toujours les red flags et signes d'alarme\n`;
+  prompt += `- Suggere des examens complementaires quand c'est pertinent\n`;
+  prompt += `- Precise quand un avis specialise est recommande\n`;
+  prompt += `- N'hesite pas a utiliser la terminologie medicale\n`;
+  prompt += `- Structure tes reponses avec des titres et listes pour la lisibilite\n`;
+
+  if (patientContext) {
+    prompt += `\n--- CONTEXTE PATIENT ---\n`;
+    if (patientContext.patientName) prompt += `Nom: ${patientContext.patientName}\n`;
+    if (patientContext.patientAge) prompt += `Age: ${patientContext.patientAge} ans\n`;
+    if (patientContext.patientSex) prompt += `Sexe: ${patientContext.patientSex}\n`;
+    if (patientContext.bloodType) prompt += `Groupe sanguin: ${patientContext.bloodType}\n`;
+    if (patientContext.primaryPathology) prompt += `Pathologie principale: ${patientContext.primaryPathology}\n`;
+    if (patientContext.antecedents?.length) prompt += `Antecedents: ${patientContext.antecedents.join(', ')}\n`;
+    if (patientContext.currentMedications?.length) prompt += `Medicaments actuels: ${patientContext.currentMedications.join(', ')}\n`;
+    if (patientContext.allergies) prompt += `Allergies: ${patientContext.allergies}\n`;
+    if (patientContext.medicalHistory) prompt += `Historique medical: ${patientContext.medicalHistory}\n`;
+    if (patientContext.riskScore !== undefined) prompt += `Score de risque: ${patientContext.riskScore}/100\n`;
+    if (patientContext.appointments?.length) {
+      prompt += `Derniers RDV:\n`;
+      patientContext.appointments.slice(0, 5).forEach(a => {
+        prompt += `  - ${a.date} ${a.time}: ${a.type} (${a.motif}) [${a.status}]\n`;
+      });
+    }
+    prompt += `--- FIN CONTEXTE ---\n`;
+  }
+
+  return prompt;
+}
+
 app.post('/functions/v1/ai-doctor-assistant', async (req, res) => {
   const claims = verifyAuth(req);
   if (!claims) return res.status(401).json({ error: 'Non autorise' });
-  res.json({
-    response: 'L\'assistant IA n\'est pas configure en mode self-hosted. Configurez VITE_N8N_WEBHOOK_URL pour activer cette fonctionnalite.',
-  });
+
+  if (!ANTHROPIC_API_KEY) {
+    return res.json({
+      success: true,
+      response: "L'assistant IA n'est pas configure. La cle API Anthropic (ANTHROPIC_API_KEY) n'est pas definie.",
+    });
+  }
+
+  try {
+    const { message, history = [], context, mode = 'general', stream = false, doctorName, images } = req.body;
+
+    if (!message && (!images || images.length === 0)) {
+      return res.status(400).json({ error: 'Message requis' });
+    }
+
+    const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+    const systemPrompt = buildSystemPrompt(mode, context, doctorName);
+
+    // Build messages array from history
+    const claudeMessages = [];
+    for (const msg of history.slice(-20)) {
+      claudeMessages.push({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content,
+      });
+    }
+
+    // Build current message content (text + images)
+    const currentContent = [];
+    if (images && images.length > 0) {
+      for (const img of images) {
+        currentContent.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: img.mediaType || 'image/jpeg',
+            data: img.base64,
+          },
+        });
+      }
+    }
+    currentContent.push({ type: 'text', text: message || 'Analyse cette image.' });
+    claudeMessages.push({ role: 'user', content: currentContent });
+
+    if (stream) {
+      // ===== SSE STREAMING =====
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+      });
+
+      let fullResponse = '';
+
+      const streamResponse = await anthropic.messages.stream({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: claudeMessages,
+      });
+
+      streamResponse.on('text', (text) => {
+        fullResponse += text;
+        res.write(`event: text\ndata: ${JSON.stringify({ text })}\n\n`);
+      });
+
+      streamResponse.on('end', () => {
+        res.write(`event: done\ndata: ${JSON.stringify({ full_response: fullResponse })}\n\n`);
+        res.end();
+      });
+
+      streamResponse.on('error', (err) => {
+        console.error('Claude stream error:', err);
+        res.write(`event: error\ndata: ${JSON.stringify({ error: err.message || 'Erreur de streaming' })}\n\n`);
+        res.end();
+      });
+
+      // Handle client disconnect
+      req.on('close', () => {
+        streamResponse.abort();
+      });
+
+    } else {
+      // ===== NON-STREAMING =====
+      const response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: claudeMessages,
+      });
+
+      const textContent = response.content
+        .filter(b => b.type === 'text')
+        .map(b => b.text)
+        .join('\n');
+
+      res.json({ success: true, response: textContent, mode });
+    }
+  } catch (err) {
+    console.error('ai-doctor-assistant error:', err);
+    const errorMsg = err.status === 401
+      ? 'Cle API Anthropic invalide'
+      : err.status === 429
+      ? 'Limite de requetes atteinte. Reessayez dans quelques instants.'
+      : `Erreur: ${err.message || 'Erreur inconnue'}`;
+    res.status(500).json({ error: errorMsg });
+  }
 });
 
 // ============================================================
