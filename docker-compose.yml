@@ -33,6 +33,20 @@ services:
       PGRST_DB_USE_LEGACY_GUCS: "false"
     restart: unless-stopped
 
+  # Edge Functions service (auth, patients, etc.)
+  functions:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.functions
+    container_name: medicare-functions
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    restart: unless-stopped
+
   # MediCare Pro - Frontend + Nginx API proxy
   app:
     build:
@@ -44,6 +58,7 @@ services:
     container_name: medicare-app
     depends_on:
       - postgrest
+      - functions
     restart: unless-stopped
 
   # Caddy - HTTPS reverse proxy (auto Let's Encrypt)
