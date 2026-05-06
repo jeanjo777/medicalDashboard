@@ -317,7 +317,121 @@ const MODE_PROMPTS = {
   pharmacology: "Tu es un assistant specialise en pharmacologie. Aide a verifier les interactions medicamenteuses, les posologies et les contre-indications.",
 };
 
-function buildSystemPrompt(mode, patientContext, doctorName) {
+// Fetch a global clinical summary from the database for the AI
+async function fetchClinicSummary() {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+
+    const [
+      totalPatientsRes,
+      highRiskRes,
+      todayApptsRes,
+      statsRes,
+      alertsRes,
+      recentConsRes,
+      pathologiesRes,
+      departmentsRes,
+    ] = await Promise.all([
+      pool.query('SELECT count(*)::int AS total FROM patients'),
+      pool.query(
+        `SELECT first_name, last_name, name, risk_score, "riskScore", primary_pathology
+         FROM patients WHERE risk_score >= 70 OR "riskScore" >= 70
+         ORDER BY COALESCE(risk_score, "riskScore") DESC LIMIT 10`
+      ),
+      pool.query(
+        `SELECT patient_name, appointment_time, type_consultation, motif, status
+         FROM appointments WHERE appointment_date = $1
+         ORDER BY appointment_time`,
+        [today]
+      ),
+      pool.query(
+        'SELECT * FROM analytics_stats ORDER BY date DESC LIMIT 1'
+      ),
+      pool.query(
+        `SELECT title, description, severity FROM analytics_alerts
+         WHERE is_acknowledged = false ORDER BY created_at DESC LIMIT 5`
+      ),
+      pool.query(
+        `SELECT count(*)::int AS total FROM consultations
+         WHERE created_at >= NOW() - INTERVAL '7 days'`
+      ),
+      pool.query(
+        'SELECT pathologie, pourcentage FROM analytics_pathologies ORDER BY pourcentage DESC LIMIT 5'
+      ),
+      pool.query(
+        'SELECT departement, patients_count, croissance FROM analytics_departement ORDER BY patients_count DESC LIMIT 5'
+      ),
+    ]);
+
+    const totalPatients = totalPatientsRes.rows[0]?.total || 0;
+    const highRisk = highRiskRes.rows;
+    const todayAppts = todayApptsRes.rows;
+    const stats = statsRes.rows[0];
+    const alerts = alertsRes.rows;
+    const recentCons = recentConsRes.rows[0]?.total || 0;
+    const topPatho = pathologiesRes.rows;
+    const topDepts = departmentsRes.rows;
+
+    let summary = `\n--- CONTEXTE GLOBAL CLINIQUE (donnees en temps reel) ---\n`;
+    summary += `Date du jour: ${today}\n`;
+    summary += `Patients total: ${totalPatients}\n`;
+    summary += `Consultations cette semaine: ${recentCons}\n`;
+
+    if (stats) {
+      summary += `\nStatistiques recentes:\n`;
+      summary += `  - Patients consultes: ${stats.patients_consultes} (${stats.patients_consultes_evolution > 0 ? '+' : ''}${stats.patients_consultes_evolution}%)\n`;
+      summary += `  - RDV honores: ${stats.rdv_honores} (${stats.rdv_honores_evolution > 0 ? '+' : ''}${stats.rdv_honores_evolution}%)\n`;
+      summary += `  - Cas a risque: ${stats.cas_risque}\n`;
+    }
+
+    if (todayAppts.length > 0) {
+      summary += `\nRDV aujourd'hui (${todayAppts.length}):\n`;
+      todayAppts.forEach(a => {
+        summary += `  - ${a.appointment_time} : ${a.patient_name} - ${a.type_consultation || ''} (${a.motif || ''}) [${a.status}]\n`;
+      });
+    } else {
+      summary += `\nAucun RDV aujourd'hui.\n`;
+    }
+
+    if (highRisk.length > 0) {
+      summary += `\nPatients a risque eleve (${highRisk.length}):\n`;
+      highRisk.forEach(p => {
+        const name = p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : p.name;
+        const score = p.risk_score || p.riskScore;
+        summary += `  - ${name}: score ${score}/100 - ${p.primary_pathology || 'non precise'}\n`;
+      });
+    }
+
+    if (topPatho.length > 0) {
+      summary += `\nPathologies les plus frequentes:\n`;
+      topPatho.forEach(p => {
+        summary += `  - ${p.pathologie}: ${p.pourcentage}%\n`;
+      });
+    }
+
+    if (topDepts.length > 0) {
+      summary += `\nDepartements (top 5):\n`;
+      topDepts.forEach(d => {
+        summary += `  - ${d.departement}: ${d.patients_count} patients (${d.croissance > 0 ? '+' : ''}${d.croissance}%)\n`;
+      });
+    }
+
+    if (alerts.length > 0) {
+      summary += `\nAlertes actives (${alerts.length}):\n`;
+      alerts.forEach(a => {
+        summary += `  - [${a.severity}] ${a.title}: ${a.description}\n`;
+      });
+    }
+
+    summary += `--- FIN CONTEXTE GLOBAL ---\n`;
+    return summary;
+  } catch (err) {
+    console.error('fetchClinicSummary error:', err.message);
+    return '';
+  }
+}
+
+function buildSystemPrompt(mode, patientContext, doctorName, clinicSummary) {
   let prompt = `Tu es l'Assistant Medical IA de MediCare Pro, un outil d'aide a la decision clinique pour les professionnels de sante.\n\n`;
   prompt += `Medecin: ${doctorName || 'Medecin'}\n\n`;
   prompt += `${MODE_PROMPTS[mode] || MODE_PROMPTS.general}\n\n`;
@@ -330,9 +444,16 @@ function buildSystemPrompt(mode, patientContext, doctorName) {
   prompt += `- Precise quand un avis specialise est recommande\n`;
   prompt += `- N'hesite pas a utiliser la terminologie medicale\n`;
   prompt += `- Structure tes reponses avec des titres et listes pour la lisibilite\n`;
+  prompt += `- Tu as acces aux donnees en temps reel de la clinique. Utilise-les pour repondre aux questions sur les patients, les rendez-vous, les statistiques et les alertes.\n`;
 
+  // Global clinic context (auto-fetched from DB)
+  if (clinicSummary) {
+    prompt += clinicSummary;
+  }
+
+  // Individual patient context (from frontend selection)
   if (patientContext) {
-    prompt += `\n--- CONTEXTE PATIENT ---\n`;
+    prompt += `\n--- CONTEXTE PATIENT SELECTIONNE ---\n`;
     if (patientContext.patientName) prompt += `Nom: ${patientContext.patientName}\n`;
     if (patientContext.patientAge) prompt += `Age: ${patientContext.patientAge} ans\n`;
     if (patientContext.patientSex) prompt += `Sexe: ${patientContext.patientSex}\n`;
@@ -349,7 +470,7 @@ function buildSystemPrompt(mode, patientContext, doctorName) {
         prompt += `  - ${a.date} ${a.time}: ${a.type} (${a.motif}) [${a.status}]\n`;
       });
     }
-    prompt += `--- FIN CONTEXTE ---\n`;
+    prompt += `--- FIN CONTEXTE PATIENT ---\n`;
   }
 
   return prompt;
@@ -374,7 +495,8 @@ app.post('/functions/v1/ai-doctor-assistant', async (req, res) => {
     }
 
     const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
-    const systemPrompt = buildSystemPrompt(mode, context, doctorName);
+    const clinicSummary = await fetchClinicSummary();
+    const systemPrompt = buildSystemPrompt(mode, context, doctorName, clinicSummary);
 
     // Build messages array from history
     const claudeMessages = [];
