@@ -1,0 +1,15 @@
+{
+    email jeanjo@simpliceake.com
+}
+
+medical.simpliceake.com {
+    reverse_proxy app:80
+}
+
+simpliceake.com {
+    redir https://medical.simpliceake.com{uri} permanent
+}
+
+www.simpliceake.com {
+    redir https://medical.simpliceake.com{uri} permanent
+}

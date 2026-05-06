@@ -38,15 +38,31 @@ services:
     build:
       context: .
       args:
-        VITE_SUPABASE_URL: http://${VPS_HOST:-localhost}
+        VITE_SUPABASE_URL: https://medical.simpliceake.com
         VITE_SUPABASE_ANON_KEY: ${ANON_KEY}
         VITE_N8N_WEBHOOK_URL: ${VITE_N8N_WEBHOOK_URL:-}
     container_name: medicare-app
-    ports:
-      - "80:80"
     depends_on:
       - postgrest
     restart: unless-stopped
 
+  # Caddy - HTTPS reverse proxy (auto Let's Encrypt)
+  caddy:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.proxy
+    container_name: medicare-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+    restart: unless-stopped
+
 volumes:
   medicare-data:
+  caddy-data:
+  caddy-config:
