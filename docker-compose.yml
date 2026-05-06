@@ -1,26 +1,15 @@
 services:
-  # Traefik - Reverse Proxy (multi-app + auto SSL)
-  traefik:
-    image: traefik:v3.1
-    container_name: traefik
-    command:
-      - "--api.dashboard=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-jeanjo@simpliceake.com}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+  # Nginx Reverse Proxy (multi-app + SSL)
+  proxy:
+    image: nginx:alpine
+    container_name: proxy
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - letsencrypt:/letsencrypt
+      - ./docker/proxy.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
     restart: unless-stopped
 
   # PostgreSQL Database (shared across apps)
@@ -30,7 +19,7 @@ services:
     environment:
       POSTGRES_DB: medicare
       POSTGRES_USER: medicare
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-MediCare@Pg2026}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/roles.sql:/docker-entrypoint-initdb.d/00-roles.sql
@@ -50,7 +39,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      PGRST_DB_URI: postgres://medicare:${DB_PASSWORD:-MediCare@Pg2026}@db:5432/medicare
+      PGRST_DB_URI: postgres://medicare:${DB_PASSWORD_ENCODED}@db:5432/medicare
       PGRST_DB_SCHEMAS: public
       PGRST_DB_ANON_ROLE: anon
       PGRST_JWT_SECRET: ${JWT_SECRET}
@@ -68,20 +57,7 @@ services:
     container_name: medicare-app
     depends_on:
       - postgrest
-    labels:
-      - "traefik.enable=true"
-      # HTTPS route for medical.simpliceake.com
-      - "traefik.http.routers.medicare.rule=Host(`medical.simpliceake.com`)"
-      - "traefik.http.routers.medicare.entrypoints=websecure"
-      - "traefik.http.routers.medicare.tls.certresolver=letsencrypt"
-      - "traefik.http.services.medicare.loadbalancer.server.port=80"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
 volumes:
   pgdata:
-  letsencrypt:
