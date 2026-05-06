@@ -1,10 +1,12 @@
 import { jsPDF } from 'jspdf';
+import { SIFCA_LOGO_BW } from './sifcaLogoBw';
 
 interface PatientData {
   name: string;
   first_name?: string;
   last_name?: string;
   date_of_birth?: string;
+  gender?: string;
   temperature?: number | null;
   poids?: number | null;
   tension_arterielle?: string | null;
@@ -49,14 +51,12 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   const rightCol = 130;
 
   // ─── HEADER ──────────────────────────────────────────────────────────────
-  // Logo SIFCA (texte stylisé)
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SIFCA', margin, 22);
+  // Logo SIFCA (image PNG noir et blanc)
+  doc.addImage(SIFCA_LOGO_BW, 'PNG', margin, 8, 35, 25);
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('CENTRE MEDICO-SOCIAL', margin, 28);
+  doc.text('CENTRE MEDICO-SOCIAL', margin, 36);
 
   // Date
   doc.setFontSize(10);
@@ -246,20 +246,14 @@ interface SifcaDocData extends PatientData {
 
 // ─── SIFCA Header for all 6 docs ──────────────────────────────────────
 function drawSifcaHeader(doc: jsPDF, m: number) {
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text('SIFCA', m, 22);
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.8);
-  doc.line(m, 25, m + 30, 25);
-  doc.setLineWidth(0.3);
-  doc.line(m, 27, m + 30, 27);
+  // Logo SIFCA (image PNG noir et blanc)
+  doc.addImage(SIFCA_LOGO_BW, 'PNG', m, 8, 35, 25);
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text('S.A au capital de 4 002 935 000', m, 32);
-  doc.text('01 BP 1289 ABIDJAN 01 - RC: ABIDJAN N\u00b04254', m, 36);
-  doc.text('Tel: (225) 27 21 75 75 75 - Fax: (225) 27 21 75 75 99', m, 40);
+  doc.text('S.A au capital de 4 002 935 000', m, 36);
+  doc.text('01 BP 1289 ABIDJAN 01 - RC: ABIDJAN N\u00b04254', m, 40);
+  doc.text('Tel: (225) 27 21 75 75 75 - Fax: (225) 27 21 75 75 99', m, 44);
 }
 
 function drawDocTitle(doc: jsPDF, title: string, y: number) {
