@@ -591,6 +591,261 @@ app.post('/functions/v1/ai-doctor-assistant', async (req, res) => {
 });
 
 // ============================================================
+// PDF REPORT GENERATION
+// ============================================================
+const PDFDocument = require('pdfkit');
+
+const SIFCA = {
+  capital: 'S.A au capital de 4 002 935 000',
+  address: '01 BP 1289 ABIDJAN 01 - RC: ABIDJAN N\u00b04254',
+  tel: 'Tel: (225) 27 21 75 75 75 - Fax: (225) 27 21 75 75 99',
+};
+
+function drawSifcaHeader(doc) {
+  doc.fontSize(28).font('Helvetica-Bold').text('SIFCA', 50, 50);
+  doc.moveTo(50, 82).lineTo(130, 82).lineWidth(2).stroke();
+  doc.moveTo(50, 86).lineTo(130, 86).lineWidth(1).stroke();
+  doc.fontSize(7).font('Helvetica')
+    .text(SIFCA.capital, 50, 95)
+    .text(SIFCA.address, 50, 105)
+    .text(SIFCA.tel, 50, 115);
+}
+
+function drawPdfTitle(doc, title, y) {
+  const w = doc.widthOfString(title) + 30;
+  const x = (doc.page.width - w) / 2;
+  doc.lineWidth(1.5).rect(x, y, w, 28).stroke();
+  doc.fontSize(14).font('Helvetica-Bold').text(title, 0, y + 7, { align: 'center', width: doc.page.width });
+  return y + 50;
+}
+
+function drawPdfDate(doc, date) {
+  doc.fontSize(10).font('Helvetica').text('Date ' + (date || '.......... / .......... / ..........'), 350, 55, { width: 200, align: 'right' });
+}
+
+function drawPdfField(doc, label, value, x, y, lw) {
+  lw = lw || 430;
+  doc.fontSize(11).font('Helvetica-Bold').text(label, x, y);
+  const lWidth = doc.widthOfString(label);
+  const val = value || '';
+  if (val) doc.font('Helvetica').text(val, x + lWidth + 5, y);
+  const lineY = y + 14;
+  const startX = x + lWidth + 5 + (val ? doc.widthOfString(val) + 5 : 0);
+  const endX = x + lw;
+  if (startX < endX) {
+    for (let dx = startX; dx < endX; dx += 4) doc.circle(dx, lineY, 0.5).fill('#000');
+  }
+  return y + 30;
+}
+
+function drawDots(doc, x, y, width) {
+  for (let dx = x; dx < x + width; dx += 4) doc.circle(dx, y, 0.5).fill('#000');
+  return y + 25;
+}
+
+const PDF_GENERATORS = {
+  'certificat-tension': (doc, d) => {
+    drawSifcaHeader(doc);
+    let y = drawPdfTitle(doc, 'CERTIFICAT DE PRISE DE TENSION', 145);
+    y += 15;
+    y = drawPdfField(doc, 'Je soussign\u00e9 (e), Docteur :', d.docteur, 50, y);
+    y += 5;
+    y = drawPdfField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de M/ Mme/ Mlle ', d.patient, 50, y);
+    y = drawDots(doc, 50, y, 430);
+    y += 10;
+    doc.fontSize(11).font('Helvetica-Bold').text('Est satisfaisant.', 50, y); y += 35;
+    doc.fontSize(11).font('Helvetica-Bold').text('Sa tension art\u00e9rielle de ce jour est :', 50, y); y += 35;
+    y = drawPdfField(doc, 'Tension art\u00e9rielle bras droit :', d.tensionDroit || '', 50, y);
+    y += 10;
+    y = drawPdfField(doc, 'Tension art\u00e9rielle bras gauche :', d.tensionGauche || '', 50, y);
+    y += 40;
+    doc.fontSize(11).font('Helvetica-Bold').text('Fait \u00e0 Abidjan, le ', 250, y);
+    drawDots(doc, 370, y + 14, 150); y += 45;
+    doc.fontSize(12).font('Helvetica-Bold').text('M\u00e9decin :', 250, y);
+  },
+  'certificat-medical': (doc, d) => {
+    drawSifcaHeader(doc);
+    drawPdfDate(doc, d.date);
+    let y = drawPdfTitle(doc, 'CERTIFICAT MEDICAL', 145);
+    y += 15;
+    y = drawPdfField(doc, 'Je soussign\u00e9 Dr ', d.docteur, 50, y);
+    y += 5;
+    doc.fontSize(11).font('Helvetica-Bold').text('Certifie avoir examin\u00e9', 50, y); y += 25;
+    y = drawPdfField(doc, 'l\u2019enfant ', d.patient, 50, y);
+    y = drawDots(doc, 50, y, 430);
+    y += 30;
+    doc.fontSize(11).font('Helvetica-Bold').text('Atteste qu\u2019il ou elle est en bonne sant\u00e9.', 50, y); y += 40;
+    doc.fontSize(11).font('Helvetica').text('En foi de quoi je d\u00e9livre ce certificat pour servir et valoir ce que de droit.', 100, y); y += 50;
+    doc.fontSize(13).font('Helvetica-Bold').text('LE MEDECIN', 350, y);
+  },
+  'arret-travail': (doc, d) => {
+    drawSifcaHeader(doc);
+    let y = drawPdfTitle(doc, 'ARRET DE TRAVAIL', 145);
+    y += 15;
+    y = drawPdfField(doc, 'Je soussign\u00e9 (e), Docteur :', d.docteur, 50, y);
+    y += 5;
+    y = drawPdfField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de :', d.patient, 50, y);
+    y = drawDots(doc, 50, y, 430);
+    y += 10;
+    y = drawPdfField(doc, 'Matricule :', d.matricule || '', 50, y, 180);
+    doc.fontSize(11).font('Helvetica-Bold').text('Direction :', 280, y - 30);
+    drawDots(doc, 340, y - 30 + 14, 140);
+    y += 10;
+    y = drawPdfField(doc, '1) n\u00e9cessite un arr\u00eat de travail de :', d.arret || '', 50, y);
+    y += 10;
+    y = drawPdfField(doc, '2) n\u00e9cessite une prolongation de travail de :', d.prolongation || '', 50, y);
+    y += 10;
+    y = drawPdfField(doc, 'Sauf complication \u00e0 dater du :', d.dateComplication || '', 50, y);
+    y += 40;
+    doc.fontSize(11).font('Helvetica-Bold').text('Fait \u00e0 Abidjan, le ', 250, y);
+    drawDots(doc, 370, y + 14, 150); y += 45;
+    doc.fontSize(12).font('Helvetica-Bold').text('M\u00e9decin :', 250, y);
+  },
+  'certificat-grossesse': (doc, d) => {
+    drawSifcaHeader(doc);
+    let y = drawPdfTitle(doc, 'CERTIFICAT DE GROSSESSE', 145);
+    y += 15;
+    y = drawPdfField(doc, 'Je soussign\u00e9, Docteur :', d.docteur, 50, y);
+    y += 5;
+    y = drawPdfField(doc, 'Certifie que Madame :', d.patient, 50, y);
+    y += 5;
+    y = drawPdfField(doc, 'Est actuellement en cours d\u2019une grossesse de :', d.dureeGrossesse || '', 50, y);
+    y += 5;
+    y = drawPdfField(doc, 'Dont le terme est fix\u00e9 le :', d.terme || '', 50, y);
+    y += 30;
+    doc.fontSize(11).font('Helvetica-Bold').text('Fait \u00e0 Abidjan, le ', 280, y);
+    drawDots(doc, 390, y + 14, 130); y += 40;
+    doc.fontSize(11).font('Helvetica-Bold').text('Le M\u00e9decin :', 50, y);
+    drawDots(doc, 140, y + 14, 380);
+  },
+  'ordonnance-medicale': (doc, d) => {
+    drawSifcaHeader(doc);
+    drawPdfDate(doc, d.date);
+    let y = drawPdfTitle(doc, 'ORDONNANCE MEDICALE', 145);
+    y += 10;
+    doc.fontSize(11).font('Helvetica-Bold').text('Docteur', 50, y);
+    if (d.docteur) doc.font('Helvetica').text(d.docteur, 100, y);
+    y += 25;
+    if (d.patient) { doc.fontSize(10).font('Helvetica').text('Patient: ' + d.patient, 50, y); y += 20; }
+    if (d.prescriptions && d.prescriptions.length > 0) {
+      y += 10;
+      d.prescriptions.forEach((rx, i) => { doc.fontSize(11).font('Helvetica').text((i+1) + '. ' + rx, 70, y); y += 22; });
+    } else {
+      for (let i = 0; i < 15; i++) { y += 25; drawDots(doc, 50, y, 480); }
+    }
+  },
+  'bulletin-consultation': (doc, d) => {
+    drawSifcaHeader(doc);
+    drawPdfDate(doc, d.date);
+    let y = drawPdfTitle(doc, 'BULLETIN DE CONSULTATION', 145);
+    y += 10;
+    y = drawPdfField(doc, 'SERVICE :', d.service || '', 50, y);
+    y = drawPdfField(doc, 'NOM :', d.nom || '', 50, y);
+    y = drawPdfField(doc, 'PRENOM :', d.prenom || '', 50, y);
+    doc.fontSize(11).font('Helvetica-Bold').text('AGE :', 50, y);
+    if (d.age) doc.font('Helvetica').text(d.age, 85, y);
+    drawDots(doc, 85 + (d.age ? doc.widthOfString(d.age) + 5 : 0), y + 14, 200);
+    doc.fontSize(11).font('Helvetica-Bold').text('SEXE :', 310, y);
+    if (d.sexe) doc.font('Helvetica').text(d.sexe, 350, y);
+    drawDots(doc, 350 + (d.sexe ? doc.widthOfString(d.sexe) + 5 : 0), y + 14, 130);
+    y += 30;
+    y = drawPdfField(doc, 'CONSULTATION EN :', d.consultationEn || '', 50, y);
+    for (let i = 0; i < 8; i++) { y = drawDots(doc, 50, y + 5, 480); }
+    y += 10;
+    doc.fontSize(11).font('Helvetica-Bold').text('RENSEIGNEMENTS CLINIQUES', 50, y); y += 20;
+    for (let i = 0; i < 5; i++) { y = drawDots(doc, 50, y + 5, 480); }
+    y += 20;
+    doc.fontSize(11).font('Helvetica-Bold').text('Signature et cachet M\u00e9decin', 300, y);
+  },
+};
+
+// GET /functions/v1/rapport/types - List available report types
+app.get('/functions/v1/rapport/types', (req, res) => {
+  res.json({
+    types: Object.keys(PDF_GENERATORS).map(key => ({
+      id: key,
+      label: key.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' '),
+    })),
+  });
+});
+
+// POST /functions/v1/rapport/generate - Generate a PDF report
+app.post('/functions/v1/rapport/generate', async (req, res) => {
+  try {
+    const { type, patientId, data } = req.body;
+
+    if (!type || !PDF_GENERATORS[type]) {
+      return res.status(400).json({ error: 'Type de rapport invalide. Types: ' + Object.keys(PDF_GENERATORS).join(', ') });
+    }
+
+    let pdfData = data || {};
+
+    // If patientId provided, fetch patient + consultation data
+    if (patientId) {
+      const [patientRes, medicRes, consRes, apptRes] = await Promise.all([
+        pool.query('SELECT * FROM patients WHERE id = $1', [patientId]),
+        pool.query('SELECT * FROM medics LIMIT 1'),
+        pool.query('SELECT * FROM consultations WHERE patient_id = $1 ORDER BY created_at DESC LIMIT 1', [patientId]),
+        pool.query('SELECT * FROM appointments WHERE patient_id = $1 ORDER BY appointment_date DESC LIMIT 1', [patientId]),
+      ]);
+
+      const patient = patientRes.rows[0];
+      const medic = medicRes.rows[0];
+      const consultation = consRes.rows[0];
+      const appointment = apptRes.rows[0];
+
+      if (!patient) return res.status(404).json({ error: 'Patient non trouve' });
+
+      const docteur = medic ? `Dr. ${medic.prenom || ''} ${medic.nom || ''}`.trim() : '';
+      const today = new Date().toISOString().slice(0, 10);
+
+      pdfData = {
+        docteur,
+        patient: patient.name,
+        date: today,
+        nom: patient.name ? patient.name.split(' ').slice(-1)[0] : '',
+        prenom: patient.name ? patient.name.split(' ').slice(0, -1).join(' ') : '',
+        age: patient.age ? String(patient.age) : '',
+        sexe: patient.gender || '',
+        service: appointment ? appointment.type_consultation : '',
+        consultationEn: consultation ? consultation.diagnosis_summary : '',
+        prescriptions: consultation && consultation.recommendations
+          ? consultation.recommendations.split(',').map(s => s.trim())
+          : [],
+        tensionDroit: patient.blood_pressure || '',
+        tensionGauche: '',
+        ...pdfData, // Allow override from request body
+      };
+    }
+
+    // Generate PDF in memory
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const chunks = [];
+    doc.on('data', chunk => chunks.push(chunk));
+
+    await new Promise((resolve, reject) => {
+      doc.on('end', resolve);
+      doc.on('error', reject);
+      PDF_GENERATORS[type](doc, pdfData);
+      doc.end();
+    });
+
+    const pdfBuffer = Buffer.concat(chunks);
+    const filename = patientId
+      ? `${type}_${(pdfData.patient || 'patient').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0, 10)}.pdf`
+      : `${type}_template.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.send(pdfBuffer);
+  } catch (err) {
+    console.error('PDF generation error:', err);
+    res.status(500).json({ error: 'Erreur generation PDF: ' + err.message });
+  }
+});
+
+// ============================================================
 // HEALTH CHECK
 // ============================================================
 app.get('/health', async (req, res) => {

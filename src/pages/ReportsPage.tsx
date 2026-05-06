@@ -3,7 +3,7 @@ import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import ErrorBoundary from '../components/ErrorBoundary';
 import ReportsTab from '../components/Analytics/ReportsTab';
 import { supabase } from '../lib/supabase';
-import { generateSifcaPDF } from '../utils/sifcaPdfGenerator';
+import { generateSifcaPDF, generateSifcaDocument, SIFCA_DOC_TYPES, type SifcaDocType } from '../utils/sifcaPdfGenerator';
 import {
   FileText, Search, Printer, RefreshCw, ChevronDown, X,
   User, Calendar, Building2, Stethoscope, CheckSquare, AlertCircle, Loader2,
@@ -53,6 +53,7 @@ const ReportsPage: React.FC = () => {
   const [medecin, setMedecin] = useState('');
   const [visitType, setVisitType] = useState('');
   const [filiale, setFiliale] = useState('');
+  const [selectedDocType, setSelectedDocType] = useState<SifcaDocType>('fiche-cms');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -128,12 +129,13 @@ const ReportsPage: React.FC = () => {
     setVisitType(patient.visit_type || '');
     setFiliale(patient.filiale || '');
     setMedecin('');
+    setSelectedDocType('fiche-cms');
     setDialogOpen(true);
   };
 
   const handleGenerate = () => {
     if (!selectedPatient) return;
-    generateSifcaPDF({
+    generateSifcaDocument(selectedDocType, {
       name: selectedPatient.name,
       first_name: selectedPatient.first_name,
       last_name: selectedPatient.last_name,
@@ -398,10 +400,40 @@ const ReportsPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-5 space-y-5">
+            <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
+              {/* Type de document */}
+              <div>
+                <label className="block text-sm font-medium theme-text-primary mb-2">Type de document</label>
+                <div className="grid grid-cols-1 gap-1.5 max-h-[180px] overflow-y-auto pr-1">
+                  {SIFCA_DOC_TYPES.map((dt) => (
+                    <label
+                      key={dt.id}
+                      className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                        selectedDocType === dt.id
+                          ? 'border-primary bg-primary/10 text-primary'
+                          : 'border-transparent theme-bg-primary theme-text-secondary hover:border-primary/40'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="docType"
+                        value={dt.id}
+                        checked={selectedDocType === dt.id}
+                        onChange={() => setSelectedDocType(dt.id)}
+                        className="accent-primary flex-shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <span className="text-sm font-medium block">{dt.label}</span>
+                        <span className="text-xs opacity-60 block truncate">{dt.description}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* Médecin */}
               <div>
-                <label className="block text-sm font-medium theme-text-primary mb-1.5">Médecin</label>
+                <label className="block text-sm font-medium theme-text-primary mb-1.5">Medecin</label>
                 <input
                   type="text"
                   value={medecin}
@@ -411,52 +443,54 @@ const ReportsPage: React.FC = () => {
                 />
               </div>
 
-              {/* Type de visite */}
-              <div>
-                <label className="block text-sm font-medium theme-text-primary mb-2">Type de visite</label>
-                <div className="space-y-2">
-                  {VISIT_TYPES.map((v) => (
-                    <label
-                      key={v.key}
-                      className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
-                        visitType === v.key
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-transparent theme-bg-primary theme-text-secondary hover:border-primary/40'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="visitType"
-                        value={v.key}
-                        checked={visitType === v.key}
-                        onChange={() => setVisitType(v.key)}
-                        className="accent-primary"
-                      />
-                      <span className="text-sm font-medium">{v.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+              {selectedDocType === 'fiche-cms' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-2">Type de visite</label>
+                    <div className="space-y-2">
+                      {VISIT_TYPES.map((v) => (
+                        <label
+                          key={v.key}
+                          className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                            visitType === v.key
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-transparent theme-bg-primary theme-text-secondary hover:border-primary/40'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="visitType"
+                            value={v.key}
+                            checked={visitType === v.key}
+                            onChange={() => setVisitType(v.key)}
+                            className="accent-primary"
+                          />
+                          <span className="text-sm font-medium">{v.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* Filiale */}
-              <div>
-                <label className="block text-sm font-medium theme-text-primary mb-1.5">Filiale</label>
-                <div className="relative">
-                  <select
-                    value={filiale}
-                    onChange={(e) => setFiliale(e.target.value)}
-                    aria-label="Sélectionner une filiale"
-                    title="Filiale"
-                    className="w-full px-3 py-2.5 pr-8 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition"
-                  >
-                    <option value="">— Sélectionner une filiale —</option>
-                    {FILIALES.map((f) => (
-                      <option key={f} value={f}>{f}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-secondary pointer-events-none" />
-                </div>
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Filiale</label>
+                    <div className="relative">
+                      <select
+                        value={filiale}
+                        onChange={(e) => setFiliale(e.target.value)}
+                        aria-label="Sélectionner une filiale"
+                        title="Filiale"
+                        className="w-full px-3 py-2.5 pr-8 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition"
+                      >
+                        <option value="">— Sélectionner une filiale —</option>
+                        {FILIALES.map((f) => (
+                          <option key={f} value={f}>{f}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 theme-text-secondary pointer-events-none" />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Dialog footer */}
