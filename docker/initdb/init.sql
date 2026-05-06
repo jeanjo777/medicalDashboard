@@ -619,12 +619,12 @@ $$ LANGUAGE plpgsql;
 
 INSERT INTO medics (username, nom, prenom, specialite, password, password_hash, is_active)
 VALUES (
-    'admin',
+    'medecin',
     'Admin',
     'MediCare',
     'Administrateur',
-    'admin123',
-    '$2a$12$LQv3c1yqBo9SkvXS7Qo.u.gS.Ht/dFKkF/JmH0LNP6v6Xz5G5GnK',
+    'Medical@2026',
+    '$2b$12$MXgIzLwNof8kkPkkL0apie.tEfl8/y7gPLXPwB47MHrHIUfKEGwhq',
     true
 )
 ON CONFLICT (username) DO NOTHING;
