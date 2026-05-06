@@ -3,7 +3,7 @@ import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import ErrorBoundary from '../components/ErrorBoundary';
 import ReportsTab from '../components/Analytics/ReportsTab';
 import { supabase } from '../lib/supabase';
-import { generateSifcaPDF, generateSifcaDocument, SIFCA_DOC_TYPES, type SifcaDocType } from '../utils/sifcaPdfGenerator';
+import { generateSifcaDocument, SIFCA_DOC_TYPES, type SifcaDocType } from '../utils/sifcaPdfGenerator';
 import {
   FileText, Search, Printer, RefreshCw, ChevronDown, X,
   User, Calendar, Building2, Stethoscope, CheckSquare, AlertCircle, Loader2,
@@ -17,9 +17,6 @@ interface Patient {
   date_of_birth?: string;
   gender?: string;
   status?: string;
-  temperature?: number | null;
-  poids?: number | null;
-  tension_arterielle?: string | null;
   visit_type?: string | null;
   filiale?: string | null;
   urines_albumine?: string | null;
@@ -73,7 +70,7 @@ const ReportsPage: React.FC = () => {
     let query = supabase
       .from('patients')
       .select(
-        'id, name, first_name, last_name, date_of_birth, gender, status, temperature, poids, tension_arterielle, visit_type, filiale, urines_albumine, urines_sucre',
+        'id, name, first_name, last_name, date_of_birth, gender, status, visit_type, filiale, urines_albumine, urines_sucre',
         { count: 'exact' }
       )
       .order('name', { ascending: true })
@@ -140,9 +137,6 @@ const ReportsPage: React.FC = () => {
       first_name: selectedPatient.first_name,
       last_name: selectedPatient.last_name,
       date_of_birth: selectedPatient.date_of_birth,
-      temperature: selectedPatient.temperature,
-      poids: selectedPatient.poids,
-      tension_arterielle: selectedPatient.tension_arterielle,
       visitType: visitType as 'consultation' | 'systematique' | 'embauche' | undefined,
       filiale: filiale || undefined,
       medecin: medecin || undefined,
@@ -303,12 +297,12 @@ const ReportsPage: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Vitals badge */}
+                          {/* Status badge */}
                           <div className="hidden sm:flex items-center">
-                            {(patient.temperature || patient.poids || patient.tension_arterielle) && (
+                            {patient.status === 'active' && (
                               <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full">
                                 <CheckSquare size={10} />
-                                Signes vitaux
+                                Actif
                               </span>
                             )}
                           </div>
