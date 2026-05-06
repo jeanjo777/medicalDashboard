@@ -1,0 +1,87 @@
+services:
+  # Traefik - Reverse Proxy (multi-app + auto SSL)
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - "--api.dashboard=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-jeanjo@simpliceake.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    restart: unless-stopped
+
+  # PostgreSQL Database (shared across apps)
+  db:
+    image: postgres:16-alpine
+    container_name: medicare-db
+    environment:
+      POSTGRES_DB: medicare
+      POSTGRES_USER: medicare
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-MediCare@Pg2026}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/roles.sql:/docker-entrypoint-initdb.d/00-roles.sql
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medicare -d medicare"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # PostgREST - REST API (Supabase compatible)
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: medicare-api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGRST_DB_URI: postgres://medicare:${DB_PASSWORD:-MediCare@Pg2026}@db:5432/medicare
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+    restart: unless-stopped
+
+  # MediCare Pro - Frontend App
+  app:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: https://medical.simpliceake.com
+        VITE_SUPABASE_ANON_KEY: ${ANON_KEY}
+        VITE_N8N_WEBHOOK_URL: ${VITE_N8N_WEBHOOK_URL:-}
+    container_name: medicare-app
+    depends_on:
+      - postgrest
+    labels:
+      - "traefik.enable=true"
+      # HTTPS route for medical.simpliceake.com
+      - "traefik.http.routers.medicare.rule=Host(`medical.simpliceake.com`)"
+      - "traefik.http.routers.medicare.entrypoints=websecure"
+      - "traefik.http.routers.medicare.tls.certresolver=letsencrypt"
+      - "traefik.http.services.medicare.loadbalancer.server.port=80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pgdata:
+  letsencrypt:

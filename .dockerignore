@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.github
+.bolt
+.claude
+.sixth
+.env
+.env.local
+.env.development
+*.log
+*.md
+hostinger-openapi.json
+railway-api.html
+railway-manage-domains.html
