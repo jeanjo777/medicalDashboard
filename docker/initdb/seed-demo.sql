@@ -119,13 +119,19 @@ BEGIN
   RETURNING id INTO p20;
 
   INSERT INTO patients (id, email, name, first_name, last_name, age, gender, phone, blood_type, primary_pathology, status, "riskScore", risk_score, created_at, registered_at)
-  VALUES
-    (gen_random_uuid(), 'lamine.sidibe@email.com', 'Lamine Sidibe', 'Lamine', 'Sidibe', 47, 'male', '+225 01 55 66 77', 'O+', 'Paludisme', 'active', 40, 40, NOW() - interval '3 weeks'),
-    (gen_random_uuid(), 'safiatou.conde@email.com', 'Safiatou Conde', 'Safiatou', 'Conde', 39, 'female', '+225 07 22 33 44', 'B+', 'Fibromes uterins', 'in_treatment', 50, 50, NOW() - interval '2 months'),
-    (gen_random_uuid(), 'boubacar.bah@email.com', 'Boubacar Bah', 'Boubacar', 'Bah', 71, 'male', '+225 05 99 88 77', 'A+', 'BPCO', 'in_treatment', 80, 80, NOW() - interval '7 months'),
-    (gen_random_uuid(), 'nene.diallo@email.com', 'Nene Diallo', 'Nene', 'Diallo', 22, 'female', '+225 01 33 44 55', NULL, 'active', 8, 8, NOW() - interval '5 days'),
-    (gen_random_uuid(), 'cheick.sacko@email.com', 'Cheick Sacko', 'Cheick', 'Sacko', 54, 'male', '+225 07 66 55 44', 'Epilepsie', 'in_treatment', 65, 65, NOW() - interval '4 months')
-  RETURNING id INTO p21;
+  VALUES (gen_random_uuid(), 'lamine.sidibe@email.com', 'Lamine Sidibe', 'Lamine', 'Sidibe', 47, 'male', '+225 01 55 66 77', 'O+', 'Paludisme', 'active', 40, 40, NOW() - interval '3 weeks', NOW() - interval '3 weeks');
+
+  INSERT INTO patients (id, email, name, first_name, last_name, age, gender, phone, blood_type, primary_pathology, status, "riskScore", risk_score, created_at, registered_at)
+  VALUES (gen_random_uuid(), 'safiatou.conde@email.com', 'Safiatou Conde', 'Safiatou', 'Conde', 39, 'female', '+225 07 22 33 44', 'B+', 'Fibromes uterins', 'in_treatment', 50, 50, NOW() - interval '2 months', NOW() - interval '2 months');
+
+  INSERT INTO patients (id, email, name, first_name, last_name, age, gender, phone, blood_type, primary_pathology, status, "riskScore", risk_score, created_at, registered_at)
+  VALUES (gen_random_uuid(), 'boubacar.bah@email.com', 'Boubacar Bah', 'Boubacar', 'Bah', 71, 'male', '+225 05 99 88 77', 'A+', 'BPCO', 'in_treatment', 80, 80, NOW() - interval '7 months', NOW() - interval '7 months');
+
+  INSERT INTO patients (id, email, name, first_name, last_name, age, gender, phone, blood_type, primary_pathology, status, "riskScore", risk_score, created_at, registered_at)
+  VALUES (gen_random_uuid(), 'nene.diallo@email.com', 'Nene Diallo', 'Nene', 'Diallo', 22, 'female', '+225 01 33 44 55', NULL, NULL, 'active', 8, 8, NOW() - interval '5 days', NOW() - interval '5 days');
+
+  INSERT INTO patients (id, email, name, first_name, last_name, age, gender, phone, blood_type, primary_pathology, status, "riskScore", risk_score, created_at, registered_at)
+  VALUES (gen_random_uuid(), 'cheick.sacko@email.com', 'Cheick Sacko', 'Cheick', 'Sacko', 54, 'male', '+225 07 66 55 44', NULL, 'Epilepsie', 'in_treatment', 65, 65, NOW() - interval '4 months', NOW() - interval '4 months');
 
   -- ============================================================
   -- APPOINTMENTS (rendez-vous - incluant aujourd'hui)

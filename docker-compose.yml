@@ -10,7 +10,7 @@ services:
       POSTGRES_USER: medicare
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - medicare-data-v2:/var/lib/postgresql/data
+      - medicare-data-v3:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U medicare -d medicare"]
       interval: 10s
@@ -79,6 +79,6 @@ services:
     restart: unless-stopped
 
 volumes:
-  medicare-data-v2:
+  medicare-data-v3:
   caddy-data:
   caddy-config:
