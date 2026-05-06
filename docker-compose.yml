@@ -1,18 +1,5 @@
 services:
-  # Nginx Reverse Proxy (multi-app + SSL)
-  proxy:
-    image: nginx:alpine
-    container_name: proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./docker/proxy.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - app
-    restart: unless-stopped
-
-  # PostgreSQL Database (shared across apps)
+  # PostgreSQL Database
   db:
     image: postgres:16-alpine
     container_name: medicare-db
@@ -46,15 +33,17 @@ services:
       PGRST_DB_USE_LEGACY_GUCS: "false"
     restart: unless-stopped
 
-  # MediCare Pro - Frontend App
+  # MediCare Pro - Frontend + Nginx reverse proxy
   app:
     build:
       context: .
       args:
-        VITE_SUPABASE_URL: https://medical.simpliceake.com
+        VITE_SUPABASE_URL: http://${VPS_HOST:-localhost}
         VITE_SUPABASE_ANON_KEY: ${ANON_KEY}
         VITE_N8N_WEBHOOK_URL: ${VITE_N8N_WEBHOOK_URL:-}
     container_name: medicare-app
+    ports:
+      - "80:80"
     depends_on:
       - postgrest
     restart: unless-stopped
