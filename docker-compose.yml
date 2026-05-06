@@ -23,8 +23,7 @@ services:
     image: postgrest/postgrest:v12.2.3
     container_name: medicare-api
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       PGRST_DB_URI: postgres://medicare:${DB_PASSWORD_ENCODED}@db:5432/medicare
       PGRST_DB_SCHEMAS: public
@@ -40,8 +39,7 @@ services:
       dockerfile: Dockerfile.functions
     container_name: medicare-functions
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
