@@ -8,9 +8,8 @@ services:
       POSTGRES_USER: medicare
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - medicare-pgdata:/var/lib/postgresql/data
-      - ./docker/roles.sql:/docker-entrypoint-initdb.d/00-roles.sql
-      - ./docker/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - medicare-pgdata-v2:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U medicare -d medicare"]
       interval: 10s
@@ -49,4 +48,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  medicare-pgdata:
+  medicare-pgdata-v2:
