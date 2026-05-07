@@ -368,9 +368,9 @@ const ReportsPage: React.FC = () => {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
           onClick={(e) => { if (e.target === e.currentTarget) setDialogOpen(false); }}
         >
-          <div className="theme-bg-secondary border theme-border rounded-2xl shadow-2xl w-full max-w-md">
+          <div className="theme-bg-secondary border theme-border rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
             {/* Dialog header */}
-            <div className="flex items-center justify-between p-5 border-b theme-border">
+            <div className="flex items-center justify-between p-5 border-b theme-border flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/20 rounded-lg">
                   <FileText size={18} className="text-primary" />
@@ -394,7 +394,7 @@ const ReportsPage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
+            <div className="p-5 space-y-5 overflow-y-auto flex-1 min-h-0">
               {/* Type de document */}
               <div>
                 <label className="block text-sm font-medium theme-text-primary mb-2">Type de document</label>
@@ -488,7 +488,7 @@ const ReportsPage: React.FC = () => {
             </div>
 
             {/* Dialog footer */}
-            <div className="flex gap-3 p-5 border-t theme-border">
+            <div className="flex gap-3 p-5 border-t theme-border flex-shrink-0">
               <button
                 type="button"
                 onClick={() => setDialogOpen(false)}
