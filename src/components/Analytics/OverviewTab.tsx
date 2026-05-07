@@ -36,6 +36,7 @@ import {
   Sparkles,
   Shield
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import {
   useAnalyticsStats,
   useDepartementStats,
@@ -46,6 +47,7 @@ import {
   useSystemesSante
 } from '../../hooks/useAnalyticsData';
 import { useAppointmentsQuery } from '../../hooks/useAppointmentsQuery';
+import { supabase } from '../../lib/supabase';
 
 interface OverviewTabProps {
   filters: any;
@@ -72,6 +74,37 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters }) => {
   const { data: recuperation } = useTauxRecuperation();
   const { data: systemes } = useSystemesSante();
   const { appointments } = useAppointmentsQuery();
+
+  // Real DB counts (lightweight HEAD queries)
+  const { data: realPatientCount = 0 } = useQuery({
+    queryKey: ['real-patient-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase.from('patients').select('id', { count: 'exact', head: true });
+      if (error) throw error;
+      return count ?? 0;
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const { data: realConsultationCount = 0 } = useQuery({
+    queryKey: ['real-consultation-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase.from('consultations').select('id', { count: 'exact', head: true });
+      if (error) throw error;
+      return count ?? 0;
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const { data: realHighRiskCount = 0 } = useQuery({
+    queryKey: ['real-high-risk-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase.from('patients').select('id', { count: 'exact', head: true }).gt('riskScore', 60);
+      if (error) throw error;
+      return count ?? 0;
+    },
+    staleTime: 60 * 1000,
+  });
 
   const departmentData = useMemo(() => {
     const data = departements ?? [];
@@ -196,15 +229,15 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters }) => {
     };
   }, [flux]);
 
-  const totalPatients = departmentData.reduce((sum, d) => sum + d.patients, 0);
+  const totalPatients = realPatientCount;
   const avgSatisfaction = medicPerformance.length > 0
     ? (medicPerformance.reduce((sum, m) => sum + m.satisfaction, 0) / medicPerformance.length).toFixed(1)
     : '0';
-  const totalConsultations = patientFlowData.reduce((sum, f) => sum + f.consultations, 0);
+  const totalConsultations = realConsultationCount;
   const totalAppointments = appointmentTypeData.reduce((sum, a) => sum + a.count, 0);
   const globalScore = radarData.length > 0 ? Math.round(radarData.reduce((sum, r) => sum + r.value, 0) / radarData.length) : 0;
 
-  const casRisque = kpiStats?.cas_risque ?? 0;
+  const casRisque = realHighRiskCount;
   const casRisqueEvol = kpiStats?.cas_risque_evolution ?? 0;
   const patientsConsultesEvol = kpiStats?.patients_consultes_evolution ?? 0;
   const rdvHonoresEvol = kpiStats?.rdv_honores_evolution ?? 0;
