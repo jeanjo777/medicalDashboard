@@ -148,8 +148,8 @@ const ModernDashboardPageHybrid: React.FC = () => {
                     <MedicalFlowCard
                       title="Taux de présence"
                       value={`${Math.round(dashStats.patientsInTreatment)}%`}
-                      status="good"
-                      trend="up"
+                      status={dashStats.patientsInTreatment >= 50 ? 'good' : dashStats.patientsInTreatment >= 25 ? 'warning' : 'attention'}
+                      trend={dashStats.patientsInTreatmentChange >= 0 ? 'up' : 'down'}
                       trendValue={`${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`}
                     />
                   </ErrorBoundary>
@@ -217,7 +217,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                       <QuickStat label="Nouveaux patients" value={String(dashStats.newPatientsThisMonth)} change={`${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`} positive={dashStats.newPatientsThisMonthChange >= 0} />
                       <QuickStat label="RDV aujourd'hui" value={String(dashStats.appointmentsToday)} change={`${dashStats.appointmentsTodayChange > 0 ? '+' : ''}${dashStats.appointmentsTodayChange}%`} positive={dashStats.appointmentsTodayChange >= 0} />
                       <QuickStat label="Consultations" value={String(dashStats.consultationsThisWeek)} change={`${dashStats.consultationsThisWeekChange > 0 ? '+' : ''}${dashStats.consultationsThisWeekChange}%`} positive={dashStats.consultationsThisWeekChange >= 0} suffix=" cette sem." />
-                      <QuickStat label="En traitement" value={`${dashStats.patientsInTreatment}%`} change={`${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`} positive={dashStats.patientsInTreatmentChange >= 0} />
+                      <QuickStat label="Présence RDV" value={`${Math.round(dashStats.patientsInTreatment)}%`} change={`${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`} positive={dashStats.patientsInTreatmentChange >= 0} />
                     </div>
                   </div>
                 </ErrorBoundary>

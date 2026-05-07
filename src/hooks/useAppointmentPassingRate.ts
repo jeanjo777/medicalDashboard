@@ -27,7 +27,7 @@ export function useAppointmentPassingRate() {
       if (total === 0) return { complete: 0, cancelled: 0, pending: 0 };
 
       const completed = appointments.filter(a =>
-        ['completed', 'termine', 'honore'].includes(a.status)
+        ['completed', 'termine', 'honore', 'confirmed', 'in_progress'].includes(a.status)
       ).length;
       const cancelled = appointments.filter(a =>
         ['cancelled', 'annule', 'no_show'].includes(a.status)

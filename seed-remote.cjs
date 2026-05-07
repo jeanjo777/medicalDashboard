@@ -4,7 +4,7 @@ const path = require('path');
 
 const BASE = 'https://medical.simpliceake.com/rest/v1';
 const TOKEN = fs.readFileSync(path.join(__dirname, 'tok.txt'), 'utf8').trim();
-const MEDIC_ID = '2dcac9bd-3e8d-49aa-8ae4-37abdbb10668';
+const MEDIC_ID = 'b35c35f6-b991-4a95-9867-d51727bbb241';
 
 function post(table, data) {
   return new Promise((resolve, reject) => {

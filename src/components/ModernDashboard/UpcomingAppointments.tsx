@@ -63,8 +63,7 @@ const UpcomingAppointments: React.FC = () => {
         .select('*')
         .eq('appointment_date', todayDateStr)
         .neq('status', 'cancelled')
-        .order('appointment_time', { ascending: true })
-        .limit(6);
+        .order('appointment_time', { ascending: true });
 
       if (fetchError) {
         logger.error('[UpcomingAppointments] Error:', fetchError);
@@ -80,9 +79,9 @@ const UpcomingAppointments: React.FC = () => {
           email: apt.patient_email || '',
           phone: apt.patient_phone || '',
           initials: generateInitials(apt.patient_name),
-          department: extractDepartment(apt.message),
+          department: extractDepartment(apt.motif || apt.message),
           time: apt.appointment_time || '00:00',
-          type: extractType(apt.message) || 'Consultation',
+          type: apt.type_consultation ? capitalizeType(apt.type_consultation) : extractType(apt.motif || apt.message),
           bgColor: getColorForIndex(index)
         }));
 
@@ -107,31 +106,75 @@ const UpcomingAppointments: React.FC = () => {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
+  const normalizeAccents = (str: string): string =>
+    str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
   const extractDepartment = (message: string | null): string => {
     if (!message) return 'Consultation Générale';
+    const msgNorm = normalizeAccents(message);
     const departmentKeywords: { [key: string]: string } = {
       'cardio': 'Cardiologie',
+      'coeur': 'Cardiologie',
+      'thoracique': 'Cardiologie',
+      'tension': 'Cardiologie',
       'derma': 'Dermatologie',
+      'eczema': 'Dermatologie',
       'neuro': 'Neurologie',
+      'avc': 'Neurologie',
+      'epilepsie': 'Neurologie',
+      'migraine': 'Neurologie',
       'ortho': 'Orthopédie',
-      'pédiat': 'Pédiatrie',
-      'diabète': 'Diabétologie',
-      'physio': 'Physiothérapie'
+      'pediat': 'Pédiatrie',
+      'diabete': 'Diabétologie',
+      'glycemie': 'Diabétologie',
+      'thyroid': 'Endocrinologie',
+      'grossesse': 'Gynécologie',
+      'gyneco': 'Gynécologie',
+      'asthme': 'Pneumologie',
+      'dyspnee': 'Pneumologie',
+      'pulmo': 'Pneumologie',
+      'bpco': 'Pneumologie',
+      'gastri': 'Gastro-entérologie',
+      'hepati': 'Hépatologie',
+      'renal': 'Néphrologie',
+      'nephro': 'Néphrologie',
+      'rhumato': 'Rhumatologie',
+      'arthrite': 'Rhumatologie',
+      'drepano': 'Hématologie',
+      'sanguin': 'Hématologie',
+      'oncol': 'Oncologie',
+      'cancer': 'Oncologie',
+      'prostate': 'Oncologie',
+      'allergo': 'Allergologie',
+      'allergie': 'Allergologie',
+      'physio': 'Physiothérapie',
     };
-    const messageLower = message.toLowerCase();
     for (const [keyword, dept] of Object.entries(departmentKeywords)) {
-      if (messageLower.includes(keyword)) return dept;
+      if (msgNorm.includes(keyword)) return dept;
     }
     return 'Consultation Générale';
   };
 
+  const capitalizeType = (type: string): string => {
+    if (!type) return 'Consultation';
+    const map: Record<string, string> = {
+      'consultation': 'Consultation',
+      'suivi': 'Suivi',
+      'urgence': 'Urgence',
+      'controle': 'Contrôle',
+      'teleconsultation': 'Téléconsultation',
+    };
+    return map[type.toLowerCase()] || type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   const extractType = (message: string | null): string => {
     if (!message) return 'Consultation';
-    const messageLower = message.toLowerCase();
-    if (messageLower.includes('suivi')) return 'Suivi';
-    if (messageLower.includes('urgence')) return 'Urgence';
-    if (messageLower.includes('contrôle')) return 'Contrôle';
-    if (messageLower.includes('traitement')) return 'Traitement';
+    const msgNorm = normalizeAccents(message);
+    if (msgNorm.includes('suivi')) return 'Suivi';
+    if (msgNorm.includes('urgence')) return 'Urgence';
+    if (msgNorm.includes('controle')) return 'Contrôle';
+    if (msgNorm.includes('traitement')) return 'Traitement';
+    if (msgNorm.includes('bilan')) return 'Bilan';
     return 'Consultation';
   };
 

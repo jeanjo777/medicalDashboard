@@ -52,8 +52,8 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
   const [
     appointmentsTodayResult,
     appointmentsYesterdayResult,
-    patientsInTreatmentResult,
-    patientsInTreatmentLastWeekResult,
+    todayAttendanceResult,
+    yesterdayAttendanceResult,
     consultationsThisWeekResult,
     consultationsLastWeekResult,
     newPatientsThisMonthResult,
@@ -69,16 +69,17 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
       .select('id', { count: 'exact', head: true })
       .eq('appointment_date', yesterday),
 
+    // Attendance: today's appointments that are confirmed, in_progress, or completed
     supabase
-      .from('patients')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'in_treatment'),
+      .from('appointments')
+      .select('status')
+      .eq('appointment_date', today),
 
+    // Yesterday's attendance for trend comparison
     supabase
-      .from('patients')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'in_treatment')
-      .lte('updated_at', lastWeek),
+      .from('appointments')
+      .select('status')
+      .eq('appointment_date', yesterday),
 
     supabase
       .from('consultations')
@@ -105,24 +106,28 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
   const appointmentsToday = appointmentsTodayResult.count || 0;
   const appointmentsYesterday = appointmentsYesterdayResult.count || 0;
-  const patientsInTreatment = patientsInTreatmentResult.count || 0;
-  const patientsInTreatmentLastWeek = patientsInTreatmentLastWeekResult.count || 0;
   const consultationsThisWeek = consultationsThisWeekResult.count || 0;
   const consultationsLastWeek = consultationsLastWeekResult.count || 0;
   const newPatientsThisMonth = newPatientsThisMonthResult.count || 0;
   const newPatientsLastMonth = newPatientsLastMonthResult.count || 0;
 
-  const totalPatientsResult = await supabase
-    .from('patients')
-    .select('id', { count: 'exact', head: true });
-
-  const totalPatients = totalPatientsResult.count || 0;
-  const treatmentPercentage = totalPatients > 0
-    ? Number(((patientsInTreatment / totalPatients) * 100).toFixed(1))
+  // Calculate attendance rate: (confirmed + in_progress + completed) / total today
+  const todayAppts = (todayAttendanceResult.data as { status: string }[]) || [];
+  const todayTotal = todayAppts.length;
+  const todayPresent = todayAppts.filter(a =>
+    ['confirmed', 'in_progress', 'completed', 'termine', 'honore'].includes(a.status)
+  ).length;
+  const treatmentPercentage = todayTotal > 0
+    ? Number(((todayPresent / todayTotal) * 100).toFixed(1))
     : 0;
 
-  const treatmentPercentageLastWeek = totalPatients > 0
-    ? Number(((patientsInTreatmentLastWeek / totalPatients) * 100).toFixed(1))
+  const yesterdayAppts = (yesterdayAttendanceResult.data as { status: string }[]) || [];
+  const yesterdayTotal = yesterdayAppts.length;
+  const yesterdayPresent = yesterdayAppts.filter(a =>
+    ['confirmed', 'in_progress', 'completed', 'termine', 'honore'].includes(a.status)
+  ).length;
+  const treatmentPercentageLastWeek = yesterdayTotal > 0
+    ? Number(((yesterdayPresent / yesterdayTotal) * 100).toFixed(1))
     : 0;
 
   logger.info('[useDashboardStatsQuery] Stats calculated:', {

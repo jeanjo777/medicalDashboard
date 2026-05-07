@@ -23,7 +23,7 @@ export function useTodayPatientStats() {
       const appointments = data || [];
       const total = appointments.length;
       const seen = appointments.filter(a =>
-        ['completed', 'termine', 'honore'].includes(a.status)
+        ['completed', 'termine', 'honore', 'confirmed', 'in_progress'].includes(a.status)
       ).length;
       const absent = appointments.filter(a =>
         ['cancelled', 'no_show', 'annule'].includes(a.status)
