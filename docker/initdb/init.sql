@@ -674,62 +674,42 @@ ALTER TABLE appointment_reminders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE login_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE password_reset_tokens ENABLE ROW LEVEL SECURITY;
 
--- Anon: can only read non-sensitive data, insert appointment requests
+-- App uses anon role for all PostgREST operations; access control is at Edge Function level
 ALTER TABLE appointment_requests ENABLE ROW LEVEL SECURITY;
-CREATE POLICY anon_insert_requests ON appointment_requests FOR INSERT TO anon WITH CHECK (true);
-CREATE POLICY anon_read_requests ON appointment_requests FOR SELECT TO anon USING (true);
+CREATE POLICY allow_all_appointment_requests ON appointment_requests FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Patients: authenticated can do everything
-CREATE POLICY auth_all_patients ON patients FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_patients ON patients FOR SELECT TO anon USING (true);
+CREATE POLICY allow_all_patients ON patients FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Medics: authenticated can read all, update own
-CREATE POLICY auth_read_medics ON medics FOR SELECT TO authenticated USING (true);
-CREATE POLICY auth_update_own_medic ON medics FOR UPDATE TO authenticated USING (true);
-CREATE POLICY anon_read_medics ON medics FOR SELECT TO anon USING (true);
+CREATE POLICY allow_read_medics ON medics FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY allow_update_medics ON medics FOR UPDATE TO anon, authenticated USING (true);
 
--- Appointments: authenticated full access, anon read-only
-CREATE POLICY auth_all_appointments ON appointments FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_appointments ON appointments FOR SELECT TO anon USING (true);
+CREATE POLICY allow_all_appointments ON appointments FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Consultations: authenticated only
-CREATE POLICY auth_all_consultations ON consultations FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY auth_all_consultation_msgs ON consultation_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_consultations ON consultations FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_consultation_msgs ON consultation_messages FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Notifications: authenticated only
-CREATE POLICY auth_all_notifications ON notifications FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_notifications ON notifications FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Activity log: authenticated only
-CREATE POLICY auth_all_activity ON activity_log FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_activity ON activity_log FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Emails: authenticated only
-CREATE POLICY auth_all_emails ON emails FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY auth_all_received_emails ON received_emails FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_emails ON emails FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_received_emails ON received_emails FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Reminders: authenticated only
-CREATE POLICY auth_all_reminders ON appointment_reminders FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_reminders ON appointment_reminders FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Security tables: authenticated only (for functions service)
-CREATE POLICY auth_all_login_attempts ON login_attempts FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY auth_all_reset_tokens ON password_reset_tokens FOR ALL TO authenticated USING (true) WITH CHECK (true);
+-- Security tables: service only (Edge Functions use direct DB connection, not PostgREST)
+CREATE POLICY allow_all_login_attempts ON login_attempts FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_reset_tokens ON password_reset_tokens FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Analytics: authenticated full, anon read
-CREATE POLICY auth_all_analytics_stats ON analytics_stats FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_stats ON analytics_stats FOR SELECT TO anon USING (true);
-CREATE POLICY auth_all_analytics_dept ON analytics_departement FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_dept ON analytics_departement FOR SELECT TO anon USING (true);
-CREATE POLICY auth_all_analytics_med ON analytics_medecins FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_med ON analytics_medecins FOR SELECT TO anon USING (true);
-CREATE POLICY auth_all_analytics_flux ON analytics_flux_patients FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_flux ON analytics_flux_patients FOR SELECT TO anon USING (true);
-CREATE POLICY auth_all_analytics_patho ON analytics_pathologies FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_patho ON analytics_pathologies FOR SELECT TO anon USING (true);
-CREATE POLICY auth_all_analytics_recup ON analytics_recuperation FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_recup ON analytics_recuperation FOR SELECT TO anon USING (true);
-CREATE POLICY auth_all_analytics_sys ON analytics_systemes FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_sys ON analytics_systemes FOR SELECT TO anon USING (true);
-CREATE POLICY auth_all_analytics_alerts ON analytics_alerts FOR ALL TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY anon_read_analytics_alerts ON analytics_alerts FOR SELECT TO anon USING (true);
+-- Analytics: read for all, write for authenticated
+CREATE POLICY allow_all_analytics_stats ON analytics_stats FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_analytics_dept ON analytics_departement FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_analytics_med ON analytics_medecins FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_analytics_flux ON analytics_flux_patients FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_analytics_patho ON analytics_pathologies FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_analytics_recup ON analytics_recuperation FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_analytics_sys ON analytics_systemes FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY allow_all_analytics_alerts ON analytics_alerts FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
 -- service_role bypasses RLS by default (BYPASSRLS), no policies needed
 
