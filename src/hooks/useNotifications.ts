@@ -25,47 +25,9 @@ export function useNotifications() {
   useEffect(() => {
     fetchNotifications();
 
-    const channel = supabase
-      .channel('notifications-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications'
-        },
-        (payload) => {
-          logger.info('[Notifications] Real-time update:', payload);
-
-          if (payload.eventType === 'INSERT') {
-            const newNotification = payload.new as Notification;
-            setNotifications((prev) => [newNotification, ...prev]);
-            if (!newNotification.is_read) {
-              setUnreadCount((prev) => prev + 1);
-            }
-          } else if (payload.eventType === 'UPDATE') {
-            const updatedNotification = payload.new as Notification;
-            setNotifications((prev) =>
-              prev.map((n) => (n.id === updatedNotification.id ? updatedNotification : n))
-            );
-            if (updatedNotification.is_read) {
-              setUnreadCount((prev) => Math.max(0, prev - 1));
-            }
-          } else if (payload.eventType === 'DELETE') {
-            const deletedId = payload.old.id;
-            setNotifications((prev) => prev.filter((n) => n.id !== deletedId));
-            const wasUnread = payload.old.is_read === false;
-            if (wasUnread) {
-              setUnreadCount((prev) => Math.max(0, prev - 1));
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Poll for new notifications every 30s
+    const id = setInterval(fetchNotifications, 30_000);
+    return () => clearInterval(id);
   }, []);
 
   const fetchNotifications = async () => {

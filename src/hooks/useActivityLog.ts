@@ -106,26 +106,7 @@ export const useActivityLog = (
     }
   }, [limit, entityType, autoRefresh, refreshInterval]);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel('activity_log_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'activity_log',
-        },
-        () => {
-          fetchActivities();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [limit, entityType]);
+  // Realtime removed — autoRefresh polling above covers live updates
 
   return {
     activities,

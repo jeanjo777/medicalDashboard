@@ -1,135 +1,69 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
 
+const POLL_INTERVAL = 30_000; // 30 seconds
+
 /**
- * Hook to subscribe to real-time appointment changes
- * Automatically invalidates appointment queries when changes occur
+ * Hook that polls to keep appointment data fresh.
+ * Replaces Supabase Realtime subscriptions with periodic query invalidation.
  */
-export function useAppointmentsRealtime(enabled: boolean = true) {
+export function useAppointmentsRealtime(enabled = true) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!enabled) return;
 
-    const channel = supabase
-      .channel('appointments-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'appointments',
-        },
-        (payload) => {
-          logger.debug('Appointment change detected:', payload.eventType);
+    const id = setInterval(() => {
+      logger.debug('Polling: invalidating appointment queries');
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['today-patient-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['weekly-appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['appointment-passing-rate'] });
+    }, POLL_INTERVAL);
 
-          // Invalidate all appointment-related queries
-          queryClient.invalidateQueries({ queryKey: ['appointments'] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['upcoming-appointments'] });
-          queryClient.invalidateQueries({ queryKey: ['today-patient-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['weekly-appointments'] });
-          queryClient.invalidateQueries({ queryKey: ['appointment-passing-rate'] });
-
-          // Log the specific change for debugging
-          if (payload.eventType === 'INSERT') {
-            logger.info('New appointment created');
-          } else if (payload.eventType === 'UPDATE') {
-            logger.info('Appointment updated');
-          } else if (payload.eventType === 'DELETE') {
-            logger.info('Appointment deleted');
-          }
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          logger.debug('Subscribed to appointments realtime channel');
-        }
-      });
-
-    return () => {
-      logger.debug('Unsubscribing from appointments realtime channel');
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(id);
   }, [enabled, queryClient]);
 }
 
-/**
- * Hook to subscribe to real-time consultation changes
- */
-export function useConsultationsRealtime(enabled: boolean = true) {
+export function useConsultationsRealtime(enabled = true) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!enabled) return;
 
-    const channel = supabase
-      .channel('consultations-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'consultations',
-        },
-        (payload) => {
-          logger.debug('Consultation change detected:', payload.eventType);
+    const id = setInterval(() => {
+      logger.debug('Polling: invalidating consultation queries');
+      queryClient.invalidateQueries({ queryKey: ['consultations'] });
+      queryClient.invalidateQueries({ queryKey: ['patient-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['dynamic-analytics'] });
+    }, POLL_INTERVAL);
 
-          // Invalidate consultation-related queries
-          queryClient.invalidateQueries({ queryKey: ['consultations'] });
-          queryClient.invalidateQueries({ queryKey: ['patient-alerts'] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['dynamic-analytics'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(id);
   }, [enabled, queryClient]);
 }
 
-/**
- * Hook to subscribe to real-time patient changes
- */
-export function usePatientsRealtime(enabled: boolean = true) {
+export function usePatientsRealtime(enabled = true) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!enabled) return;
 
-    const channel = supabase
-      .channel('patients-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'patients',
-        },
-        (payload) => {
-          logger.debug('Patient change detected:', payload.eventType);
+    const id = setInterval(() => {
+      logger.debug('Polling: invalidating patient queries');
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['dynamic-analytics'] });
+    }, POLL_INTERVAL);
 
-          queryClient.invalidateQueries({ queryKey: ['patients'] });
-          queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
-          queryClient.invalidateQueries({ queryKey: ['dynamic-analytics'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => clearInterval(id);
   }, [enabled, queryClient]);
 }
 
-/**
- * Combined hook to subscribe to all medical data changes
- */
-export function useMedicalDataRealtime(enabled: boolean = true) {
+export function useMedicalDataRealtime(enabled = true) {
   useAppointmentsRealtime(enabled);
   useConsultationsRealtime(enabled);
   usePatientsRealtime(enabled);

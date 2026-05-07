@@ -79,22 +79,9 @@ export function useSidebarBadges(): SidebarBadges {
   useEffect(() => {
     fetchBadges();
 
-    // Poll every 60s as fallback
-    const interval = setInterval(fetchBadges, 60000);
-
-    // Real-time subscriptions
-    const channel = supabase
-      .channel('sidebar-badges')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, fetchBadges)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, fetchBadges)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations' }, fetchBadges)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'analytics_alerts' }, fetchBadges)
-      .subscribe();
-
-    return () => {
-      clearInterval(interval);
-      supabase.removeChannel(channel);
-    };
+    // Poll every 60s for fresh badge counts
+    const interval = setInterval(fetchBadges, 60_000);
+    return () => clearInterval(interval);
   }, [fetchBadges]);
 
   return badges;

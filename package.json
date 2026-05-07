@@ -18,7 +18,6 @@
     "start": "serve dist -s -p ${PORT:-8080}"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.76.1",
     "@tanstack/react-query": "^5.90.6",
     "cors": "^2.8.6",
     "date-fns": "^4.1.0",

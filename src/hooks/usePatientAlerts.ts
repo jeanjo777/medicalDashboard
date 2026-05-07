@@ -322,20 +322,7 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
     return () => clearInterval(interval);
   }, [fetchAlerts]);
 
-  // Real-time subscriptions
-  useEffect(() => {
-    const channel = supabase
-      .channel('patient-alerts-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => fetchAlerts())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'consultations' }, () => fetchAlerts())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchAlerts())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'analytics_alerts' }, () => fetchAlerts())
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [fetchAlerts]);
+  // Realtime removed — polling interval above covers live updates
 
   return {
     alerts,
