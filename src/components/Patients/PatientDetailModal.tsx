@@ -441,7 +441,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                         value={editedPatient.phone || ''}
                         onChange={(e) => setEditedPatient({ ...editedPatient, phone: e.target.value })}
                         aria-label="Téléphone"
-                        placeholder="+33 6 00 00 00 00"
+                        placeholder="+225 07 00 00 00 00"
                         className="w-full bg-[#1e293b] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
                       />
                     ) : (

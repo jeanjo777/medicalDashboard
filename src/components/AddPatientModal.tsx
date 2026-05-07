@@ -435,7 +435,7 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
                     className={`w-full px-4 py-2.5 bg-[#1e293b] border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                       fieldErrors.phone ? 'border-red-500 focus:ring-red-500' : 'border-[#334155]'
                     }`}
-                    placeholder="+33 6 12 34 56 78"
+                    placeholder="+225 07 12 34 56 78"
                     aria-required="true"
                     aria-invalid={!!fieldErrors.phone}
                     aria-describedby={fieldErrors.phone ? 'phone-error' : undefined}
