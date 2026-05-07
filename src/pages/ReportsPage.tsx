@@ -62,6 +62,13 @@ const ReportsPage: React.FC = () => {
   const [prolongation, setProlongation] = useState('');
   const [dateComplication, setDateComplication] = useState('');
 
+  // Ordonnance fields
+  const [prescriptionText, setPrescriptionText] = useState('');
+
+  // Certificat de grossesse fields
+  const [dureeGrossesse, setDureeGrossesse] = useState('');
+  const [terme, setTerme] = useState('');
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounce search input — 300 ms
@@ -140,6 +147,9 @@ const ReportsPage: React.FC = () => {
     setArret('');
     setProlongation('');
     setDateComplication('');
+    setPrescriptionText('');
+    setDureeGrossesse('');
+    setTerme('');
     setDialogOpen(true);
   };
 
@@ -163,6 +173,9 @@ const ReportsPage: React.FC = () => {
       arret: arret || undefined,
       prolongation: prolongation || undefined,
       dateComplication: dateComplication || undefined,
+      prescriptions: prescriptionText.trim() ? prescriptionText.trim().split('\n').filter(Boolean) : undefined,
+      dureeGrossesse: dureeGrossesse || undefined,
+      terme: terme || undefined,
     });
     setDialogOpen(false);
   };
@@ -510,6 +523,46 @@ const ReportsPage: React.FC = () => {
                       onChange={(e) => setDateComplication(e.target.value)}
                       title="Date de début"
                       aria-label="Sauf complication, à dater du"
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                </>
+              )}
+
+              {selectedDocType === 'ordonnance-medicale' && (
+                <div>
+                  <label className="block text-sm font-medium theme-text-primary mb-1.5">Prescriptions</label>
+                  <textarea
+                    value={prescriptionText}
+                    onChange={(e) => setPrescriptionText(e.target.value)}
+                    placeholder={"Une prescription par ligne :\nParacétamol 1g x3/jour\nAmoxicilline 500mg x2/jour"}
+                    rows={8}
+                    className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition resize-none"
+                  />
+                  <p className="text-xs theme-text-secondary mt-1">Une prescription par ligne</p>
+                </div>
+              )}
+
+              {selectedDocType === 'certificat-grossesse' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Durée de grossesse</label>
+                    <input
+                      type="text"
+                      value={dureeGrossesse}
+                      onChange={(e) => setDureeGrossesse(e.target.value)}
+                      placeholder="Ex: 6 mois, 28 semaines..."
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Dont le terme est fixé le</label>
+                    <input
+                      type="date"
+                      value={terme}
+                      onChange={(e) => setTerme(e.target.value)}
+                      title="Date du terme"
+                      aria-label="Date du terme de la grossesse"
                       className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
                     />
                   </div>

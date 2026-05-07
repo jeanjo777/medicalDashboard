@@ -518,7 +518,8 @@ function genCertificatGrossesse(doc: jsPDF, d: SifcaDocData) {
   y += 6;
   y = drawInlineField(doc, 'Est actuellement en cours d\u2019une grossesse de : ', d.dureeGrossesse || '', y);
   y += 6;
-  y = drawInlineField(doc, 'Dont le terme est fix\u00e9 le : ', d.terme || '', y);
+  const termeDisplay = d.terme ? new Date(d.terme + 'T00:00:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  y = drawInlineField(doc, 'Dont le terme est fixé le : ', termeDisplay, y);
 
   y += 24;
   drawSignature(doc, y);
