@@ -1088,6 +1088,48 @@ app.post('/functions/v1/rapport/generate', async (req, res) => {
 });
 
 // ============================================================
+// INBOUND EMAIL WEBHOOK (Resend sends emails here)
+// ============================================================
+app.post('/functions/v1/webhook/inbound-email', async (req, res) => {
+  try {
+    const payload = req.body;
+
+    // Resend inbound webhook payload format
+    const { from, to, subject, text, html, reply_to, headers, attachments } = payload;
+
+    if (!from || !to) {
+      return res.status(400).json({ error: 'Invalid payload' });
+    }
+
+    // Extract sender info
+    const fromEmail = typeof from === 'string' ? from : (from.email || from);
+    const fromName = typeof from === 'object' ? from.name || '' : '';
+    const toEmail = Array.isArray(to) ? to[0] : to;
+
+    await pool.query(
+      `INSERT INTO received_emails (from_email, from_name, to_email, subject, text_body, html_body, reply_to, headers, attachments, received_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())`,
+      [
+        fromEmail,
+        fromName || null,
+        typeof toEmail === 'string' ? toEmail : toEmail.email || '',
+        subject || '(Sans objet)',
+        text || null,
+        html || null,
+        reply_to || null,
+        headers ? JSON.stringify(headers) : null,
+        attachments ? JSON.stringify(attachments) : null,
+      ]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('inbound-email webhook error:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ============================================================
 // HEALTH CHECK
 // ============================================================
 app.get('/health', async (req, res) => {
