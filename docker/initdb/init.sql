@@ -626,13 +626,13 @@ ON CONFLICT (username) DO NOTHING;
 -- GRANT PERMISSIONS TO ROLES
 -- ============================================================
 
--- Anon: read-only on non-sensitive tables, write on appointment_requests (public form)
-GRANT SELECT ON patients, appointments, consultations, consultation_messages,
-    notifications, activity_log, analytics_stats, analytics_departement,
-    analytics_medecins, analytics_flux_patients, analytics_pathologies,
-    analytics_recuperation, analytics_systemes, analytics_alerts,
+-- Anon: full CRUD on clinical tables (app uses anon role for all operations, RLS provides access control)
+GRANT SELECT, INSERT, UPDATE, DELETE ON patients, appointments, consultations, consultation_messages,
+    notifications, activity_log, appointment_requests,
     emails, received_emails, reminder_templates TO anon;
-GRANT SELECT, INSERT ON appointment_requests TO anon;
+GRANT SELECT ON analytics_stats, analytics_departement,
+    analytics_medecins, analytics_flux_patients, analytics_pathologies,
+    analytics_recuperation, analytics_systemes, analytics_alerts TO anon;
 GRANT SELECT (id, username, nom, prenom, specialite, telephone, phone, avatar_url, is_active) ON medics TO anon;
 
 -- Authenticated: full CRUD on clinical tables
