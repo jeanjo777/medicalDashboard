@@ -9,20 +9,25 @@ const PAGE_W = 210;
 const M = 15; // marge gauche/droite
 const CONTENT_W = PAGE_W - M * 2; // 180mm
 
-// Logo dimensions (ratio 1.4:1)
-const LOGO_W = 35;
-const LOGO_H = 25;
+// Logo (plus grand, bien visible)
+const LOGO_W = 50;
+const LOGO_H = 36;
 
-// Typographie
-const FONT_TITLE = 14;
-const FONT_SUBTITLE = 12;
-const FONT_LABEL = 11;
-const FONT_BODY = 10;
-const FONT_SMALL = 8;
+// Hierarchie typographique claire
+const FONT_DOC_TITLE = 16;  // Titre du document (CERTIFICAT MEDICAL, etc.)
+const FONT_SECTION = 13;    // Sections (URINES, RENSEIGNEMENTS CLINIQUES)
+const FONT_VALUE = 12;      // Valeurs patient (BARRY, Aissatou, 37°C)
+const FONT_LABEL = 9;       // Labels de champ (Nom du malade, Prenoms)
+const FONT_BODY = 11;       // Texte courant (phrases)
+const FONT_COORD = 9;       // Coordonnees societe
+
+// Couleurs
+const COLOR_LABEL = 100;    // Gris pour labels
+const COLOR_VALUE = 0;      // Noir pour valeurs
 
 // Espacement
-const LINE_GAP = 8;
-const SECTION_GAP = 12;
+const FIELD_GAP = 12;       // Entre champs (label+value)
+const SECTION_GAP = 14;
 
 // ════════════════════════════════════════════════════════════════
 // INTERFACES
@@ -74,159 +79,186 @@ const formatDate = (): string => {
   });
 };
 
+const formatDateLong = (): string => {
+  return new Date().toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
 // ════════════════════════════════════════════════════════════════
 // PRIMITIVES DE DESSIN
 // ════════════════════════════════════════════════════════════════
 
-/** Ligne de séparation horizontale */
-function drawSeparator(doc: jsPDF, y: number, weight = 0.4) {
+/** Ligne de separation horizontale */
+function drawSeparator(doc: jsPDF, y: number, weight = 0.5) {
   doc.setLineWidth(weight);
   doc.setDrawColor(0);
   doc.line(M, y, PAGE_W - M, y);
   doc.setLineWidth(0.2);
 }
 
-/** Champ: label (bold) + valeur */
-function drawField(doc: jsPDF, label: string, value: string, y: number): number {
+/**
+ * Champ medical : petit label gris en haut, grande valeur noire bold en dessous
+ * Rendu professionnel type formulaire medical
+ */
+function drawMedicalField(doc: jsPDF, label: string, value: string, y: number): number {
+  // Label petit et gris
   doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'bold');
-  doc.text(label, M, y);
-  const lw = doc.getTextWidth(label);
-
-  if (value) {
-    doc.setFont('helvetica', 'normal');
-    doc.text(value, M + lw + 3, y);
-  }
   doc.setFont('helvetica', 'normal');
-  return y + LINE_GAP;
+  doc.setTextColor(COLOR_LABEL);
+  doc.text(label, M, y);
+
+  // Valeur grande et noire bold
+  doc.setFontSize(FONT_VALUE);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
+  doc.text(value || '', M, y + 5.5);
+
+  doc.setFont('helvetica', 'normal');
+  return y + FIELD_GAP;
 }
 
-/** Champ: label (bold) + valeur (bold) */
-function drawFieldUnderline(doc: jsPDF, label: string, value: string, y: number): number {
-  doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'bold');
+/**
+ * Champ inline : label (normal) + valeur (bold) sur la meme ligne
+ * Pour les certificats et documents formels
+ */
+function drawInlineField(doc: jsPDF, label: string, value: string, y: number, fontSize?: number): number {
+  const fs = fontSize || FONT_BODY;
+  doc.setFontSize(fs);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(COLOR_VALUE);
   doc.text(label, M, y);
   const lw = doc.getTextWidth(label);
 
   if (value) {
     doc.setFont('helvetica', 'bold');
-    doc.text(value, M + lw + 3, y);
+    doc.text(value, M + lw + 2, y);
   }
   doc.setFont('helvetica', 'normal');
-  return y + LINE_GAP + 2;
+  return y + 8;
 }
 
-/** Titre de document dans un cadre centré */
+/** Titre de document dans un cadre centre */
 function drawTitle(doc: jsPDF, title: string, y: number): number {
-  doc.setFontSize(FONT_TITLE);
+  doc.setFontSize(FONT_DOC_TITLE);
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
   const tw = doc.getTextWidth(title);
-  const bx = (PAGE_W - tw - 16) / 2;
+  const bx = (PAGE_W - tw - 20) / 2;
 
-  doc.setLineWidth(0.6);
-  doc.rect(bx, y - 7, tw + 16, 12);
-  doc.text(title, (PAGE_W - tw) / 2, y + 1.5);
+  doc.setLineWidth(0.8);
+  doc.rect(bx, y - 8, tw + 20, 14);
+  doc.text(title, (PAGE_W - tw) / 2, y + 2);
   doc.setLineWidth(0.2);
   doc.setFont('helvetica', 'normal');
-  return y + 20;
+  return y + 22;
 }
 
-/** Bloc signature "Fait à Abidjan, le..." + "Médecin :" */
+/** Bloc signature */
 function drawSignature(doc: jsPDF, y: number): number {
-  doc.setFontSize(FONT_LABEL);
+  doc.setFontSize(FONT_BODY);
   doc.setFont('helvetica', 'normal');
-  doc.text('Fait \u00e0 Abidjan, le ................', 105, y);
-  y += 16;
+  doc.setTextColor(COLOR_VALUE);
+  doc.text(`Fait \u00e0 Abidjan, le ${formatDateLong()}`, 95, y);
+  y += 18;
   doc.setFont('helvetica', 'bold');
-  doc.text('Le M\u00e9decin :', 120, y);
+  doc.text('Le M\u00e9decin :', 130, y);
   doc.setFont('helvetica', 'normal');
   return y;
 }
 
 // ════════════════════════════════════════════════════════════════
-// EN-TÊTE SIFCA (partagé par les 6 documents)
+// EN-TETE SIFCA (partage par les 6 documents certificats)
 // ════════════════════════════════════════════════════════════════
 
 function drawSifcaHeader(doc: jsPDF): number {
-  // Logo
+  // Logo grand et bien visible
   doc.addImage(SIFCA_LOGO_BW, 'PNG', M, 8, LOGO_W, LOGO_H);
 
-  // Infos société sous le logo
-  doc.setFontSize(FONT_SMALL);
+  // Coordonnees societe sous le logo (plus grosses)
+  doc.setFontSize(FONT_COORD);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60);
-  doc.text('S.A au capital de 4 002 935 000 FCFA', M, 36);
-  doc.text('01 BP 1289 ABIDJAN 01 \u2013 RC: ABIDJAN N\u00b04254', M, 40);
-  doc.text('T\u00e9l: (225) 27 21 75 75 75 \u2013 Fax: (225) 27 21 75 75 99', M, 44);
+  doc.text('S.A au capital de 4 002 935 000 FCFA', M, 48);
+  doc.text('01 BP 1289 ABIDJAN 01 \u2013 RC: ABIDJAN N\u00b04254', M, 53);
+  doc.text('T\u00e9l: (225) 27 21 75 75 75 \u2013 Fax: (225) 27 21 75 75 99', M, 58);
   doc.setTextColor(0);
 
-  // CENTRE MEDICO-SOCIAL (en haut à droite, à côté du logo)
-  doc.setFontSize(FONT_SUBTITLE);
+  // CENTRE MEDICO-SOCIAL (en haut a droite, grand)
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.text('CENTRE MEDICO-SOCIAL', PAGE_W - M, 18, { align: 'right' });
-  doc.setFont('helvetica', 'normal');
+  doc.text('CENTRE MEDICO-SOCIAL', PAGE_W - M, 20, { align: 'right' });
 
-  // Date en haut à droite
+  // Date en haut a droite
   doc.setFontSize(FONT_BODY);
-  doc.text('Date : ' + formatDate(), PAGE_W - M, 26, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date : ${formatDate()}`, PAGE_W - M, 30, { align: 'right' });
 
-  // Séparateur
-  drawSeparator(doc, 48, 0.5);
+  // Separateur
+  drawSeparator(doc, 63, 0.6);
 
-  return 48;
+  return 63;
 }
 
 // ════════════════════════════════════════════════════════════════
-// 1. FICHE CMS (Centre Médico-Social)
+// 1. FICHE CMS (Centre Medico-Social)
 // ════════════════════════════════════════════════════════════════
 
 export const generateSifcaPDF = (patient: PatientData): void => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-  // ─── EN-TÊTE ─────────────────────────────────────
+  // ─── EN-TETE ─────────────────────────────────────
   doc.addImage(SIFCA_LOGO_BW, 'PNG', M, 8, LOGO_W, LOGO_H);
 
-  doc.setFontSize(FONT_SMALL);
+  // Coordonnees
+  doc.setFontSize(FONT_COORD);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60);
-  doc.text('CENTRE MEDICO-SOCIAL', M, 36);
+  doc.text('CENTRE MEDICO-SOCIAL', M, 48);
+  doc.text('S.A au capital de 4 002 935 000 FCFA', M, 53);
   doc.setTextColor(0);
 
   // Date (droite)
   doc.setFontSize(FONT_BODY);
-  doc.text('Date :  ' + formatDate(), 140, 14);
+  doc.text(`Date :  ${formatDate()}`, PAGE_W - M, 14, { align: 'right' });
 
-  // Médecin
+  // Medecin
   doc.setFontSize(FONT_LABEL);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(COLOR_LABEL);
+  doc.text('MEDECIN', M, 58);
+  doc.setFontSize(FONT_VALUE);
   doc.setFont('helvetica', 'bold');
-  doc.text('MEDECIN', M, 42);
+  doc.setTextColor(COLOR_VALUE);
   if (patient.medecin) {
-    doc.setFont('helvetica', 'normal');
-    doc.text(patient.medecin, M + 24, 42);
+    doc.text(patient.medecin, M + 22, 58);
   }
 
-  drawSeparator(doc, 47, 0.6);
+  drawSeparator(doc, 62, 0.6);
 
   // ─── TYPES DE VISITE + FILIALES ──────────────────
   const col2X = 108;
 
   // Titre FILIALES
-  doc.setFontSize(FONT_LABEL);
+  doc.setFontSize(FONT_SECTION);
   doc.setFont('helvetica', 'bold');
-  doc.text('FILIALES', col2X + 18, 53);
+  doc.setTextColor(COLOR_VALUE);
+  doc.text('FILIALES', col2X + 15, 69);
 
   // Filiales (colonne droite)
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(FONT_BODY);
   const filiales = ['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'];
   const cbX = PAGE_W - M - 6;
-  let fy = 59;
+  let fy = 76;
   filiales.forEach((f) => {
     doc.text(f, col2X + 8, fy);
-    doc.rect(cbX, fy - 3.5, 3.5, 3.5);
+    doc.rect(cbX, fy - 3.5, 4, 4);
     if (patient.filiale === f) {
       doc.setFont('helvetica', 'bold');
-      doc.text('X', cbX + 0.7, fy - 0.3);
+      doc.text('X', cbX + 0.8, fy);
       doc.setFont('helvetica', 'normal');
     }
     fy += 7;
@@ -239,65 +271,71 @@ export const generateSifcaPDF = (patient: PatientData): void => {
     { label: 'Visite Syst\u00e9matique', key: 'systematique' },
     { label: "Visite d'embauche", key: 'embauche' },
   ];
-  let vy = 59;
+  let vy = 76;
   visits.forEach((v) => {
-    doc.rect(M, vy - 3.5, 3.5, 3.5);
+    doc.rect(M, vy - 3.5, 4, 4);
     if (patient.visitType === v.key) {
       doc.setFont('helvetica', 'bold');
-      doc.text('X', M + 0.7, vy - 0.3);
+      doc.text('X', M + 0.8, vy);
       doc.setFont('helvetica', 'normal');
     }
-    doc.text(v.label, M + 6, vy - 0.3);
-    vy += 9;
+    doc.text(v.label, M + 7, vy);
+    vy += 10;
   });
 
-  drawSeparator(doc, 110, 0.6);
+  drawSeparator(doc, 128, 0.6);
 
   // ─── INFORMATIONS PATIENT ────────────────────────
-  let py = 118;
+  let py = 136;
 
   const lastName = patient.last_name || patient.name?.split(' ').slice(1).join(' ') || '';
   const firstName = patient.first_name || patient.name?.split(' ')[0] || '';
 
-  py = drawFieldUnderline(doc, 'Nom du malade', lastName.toUpperCase(), py);
-  py = drawFieldUnderline(doc, 'Pr\u00e9noms', firstName, py);
-  py = drawFieldUnderline(doc, 'Temp\u00e9rature', patient.temperature != null ? `${patient.temperature} \u00b0C` : '', py);
-  py = drawFieldUnderline(doc, 'Age', calculateAge(patient.date_of_birth), py);
-  py = drawFieldUnderline(doc, 'Poids', patient.poids != null ? `${patient.poids} kg` : '', py);
-  py = drawFieldUnderline(doc, 'T.A', patient.tension_arterielle || '', py);
-  py = drawFieldUnderline(doc, 'Glyc\u00e9mie', patient.glycemie != null ? `${patient.glycemie} g/L` : '', py);
+  py = drawMedicalField(doc, 'Nom du malade', lastName.toUpperCase(), py);
+  py = drawMedicalField(doc, 'Pr\u00e9noms', firstName, py);
+  py = drawMedicalField(doc, 'Temp\u00e9rature', patient.temperature != null ? `${patient.temperature} \u00b0C` : '', py);
+  py = drawMedicalField(doc, 'Age', calculateAge(patient.date_of_birth), py);
+  py = drawMedicalField(doc, 'Poids', patient.poids != null ? `${patient.poids} kg` : '', py);
+  py = drawMedicalField(doc, 'T.A (Tension Art\u00e9rielle)', patient.tension_arterielle || '', py);
+  py = drawMedicalField(doc, 'Glyc\u00e9mie', patient.glycemie != null ? `${patient.glycemie} g/L` : '', py);
 
   py += 4;
   drawSeparator(doc, py, 0.6);
 
   // ─── URINES ──────────────────────────────────────
-  py += 8;
-  doc.setFontSize(FONT_SUBTITLE);
+  py += 10;
+  doc.setFontSize(FONT_SECTION);
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
   const urLabel = 'URINES';
   const urW = doc.getTextWidth(urLabel);
-  const urX = (PAGE_W - urW) / 2;
-  doc.text(urLabel, urX, py);
+  doc.text(urLabel, (PAGE_W - urW) / 2, py);
 
   py += SECTION_GAP;
-  doc.setFontSize(FONT_LABEL);
 
   const halfW = CONTENT_W / 2;
-  // Albumine
-  doc.setFont('helvetica', 'bold');
-  doc.text('Albumine :', M + 5, py);
-  const albStart = M + 5 + doc.getTextWidth('Albumine :') + 3;
-  doc.setFont('helvetica', 'normal');
-  const albumineVal = formatUrines(patient.urines_albumine);
-  if (albumineVal) doc.text(albumineVal, albStart, py);
 
-  // Sucre
-  doc.setFont('helvetica', 'bold');
-  doc.text('Sucre :', M + halfW + 5, py);
-  const sucStart = M + halfW + 5 + doc.getTextWidth('Sucre :') + 3;
+  // Albumine - label + valeur
+  doc.setFontSize(FONT_LABEL);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(COLOR_LABEL);
+  doc.text('Albumine', M + 5, py);
+  doc.setFontSize(FONT_VALUE);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
+  const albumineVal = formatUrines(patient.urines_albumine);
+  doc.text(albumineVal || '—', M + 5, py + 5.5);
+
+  // Sucre - label + valeur
+  doc.setFontSize(FONT_LABEL);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(COLOR_LABEL);
+  doc.text('Sucre', M + halfW + 5, py);
+  doc.setFontSize(FONT_VALUE);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
   const sucreVal = formatUrines(patient.urines_sucre);
-  if (sucreVal) doc.text(sucreVal, sucStart, py);
+  doc.text(sucreVal || '—', M + halfW + 5, py + 5.5);
 
   // ─── SAUVEGARDE ──────────────────────────────────
   const safeName = (patient.name || 'patient').replace(/\s+/g, '_');
@@ -355,15 +393,15 @@ interface SifcaDocData extends PatientData {
 
 function genCertificatTension(doc: jsPDF, d: SifcaDocData) {
   const headerY = drawSifcaHeader(doc);
-  let y = drawTitle(doc, 'CERTIFICAT DE PRISE DE TENSION', headerY + 10);
+  let y = drawTitle(doc, 'CERTIFICAT DE PRISE DE TENSION', headerY + 12);
 
+  y += 8;
+  y = drawInlineField(doc, 'Je soussign\u00e9(e), Docteur : ', d.medecin || '', y);
   y += 6;
-  y = drawField(doc, 'Je soussign\u00e9(e), Docteur :', d.medecin || '', y);
-  y += 4;
-  y = drawField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de M/ Mme/ Mlle :', d.name || '', y);
-  y += SECTION_GAP;
+  y = drawInlineField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de M/ Mme/ Mlle : ', d.name || '', y);
+  y += 6;
 
-  doc.setFontSize(FONT_LABEL);
+  doc.setFontSize(FONT_BODY);
   doc.setFont('helvetica', 'bold');
   doc.text('Est satisfaisant.', M, y);
   y += SECTION_GAP;
@@ -372,84 +410,84 @@ function genCertificatTension(doc: jsPDF, d: SifcaDocData) {
   doc.text('Sa tension art\u00e9rielle de ce jour est :', M, y);
   y += SECTION_GAP;
 
-  y = drawField(doc, 'Tension art\u00e9rielle bras droit :', d.tensionDroit || d.tension_arterielle || '', y);
-  y += 2;
-  y = drawField(doc, 'Tension art\u00e9rielle bras gauche :', d.tensionGauche || '', y);
+  y = drawInlineField(doc, 'Tension art\u00e9rielle bras droit : ', d.tensionDroit || d.tension_arterielle || '', y);
+  y += 4;
+  y = drawInlineField(doc, 'Tension art\u00e9rielle bras gauche : ', d.tensionGauche || '', y);
 
-  y += 20;
+  y += 24;
   drawSignature(doc, y);
 }
 
 // ════════════════════════════════════════════════════════════════
-// 3. CERTIFICAT MÉDICAL
+// 3. CERTIFICAT MEDICAL
 // ════════════════════════════════════════════════════════════════
 
 function genCertificatMedical(doc: jsPDF, d: SifcaDocData) {
   const headerY = drawSifcaHeader(doc);
-  let y = drawTitle(doc, 'CERTIFICAT MEDICAL', headerY + 10);
+  let y = drawTitle(doc, 'CERTIFICAT MEDICAL', headerY + 12);
 
+  y += 8;
+  y = drawInlineField(doc, 'Je soussign\u00e9, Dr : ', d.medecin || '', y);
   y += 6;
-  y = drawField(doc, 'Je soussign\u00e9, Dr :', d.medecin || '', y);
-  y += 4;
 
-  doc.setFontSize(FONT_LABEL);
+  doc.setFontSize(FONT_BODY);
   doc.setFont('helvetica', 'bold');
   doc.text('Certifie avoir examin\u00e9 :', M, y);
-  y += LINE_GAP;
+  y += 10;
 
-  y = drawField(doc, 'M/ Mme/ Mlle :', d.name || '', y);
+  y = drawInlineField(doc, 'M/ Mme/ Mlle : ', d.name || '', y);
   y += SECTION_GAP + 4;
 
-  doc.setFontSize(FONT_LABEL);
+  doc.setFontSize(FONT_BODY);
   doc.setFont('helvetica', 'bold');
   doc.text('Atteste qu\u2019il ou elle est en bonne sant\u00e9.', M, y);
-  y += SECTION_GAP + 4;
+  y += SECTION_GAP + 6;
 
   doc.setFontSize(FONT_BODY);
   doc.setFont('helvetica', 'normal');
   doc.text('En foi de quoi, je d\u00e9livre ce certificat pour servir et valoir ce que de droit.', M, y);
 
-  y += 24;
-  doc.setFontSize(FONT_SUBTITLE);
+  y += 28;
+  doc.setFontSize(FONT_SECTION);
   doc.setFont('helvetica', 'bold');
   doc.text('LE MEDECIN', PAGE_W - M, y, { align: 'right' });
 }
 
 // ════════════════════════════════════════════════════════════════
-// 4. ARRÊT DE TRAVAIL
+// 4. ARRET DE TRAVAIL
 // ════════════════════════════════════════════════════════════════
 
 function genArretTravail(doc: jsPDF, d: SifcaDocData) {
   const headerY = drawSifcaHeader(doc);
-  let y = drawTitle(doc, 'ARRET DE TRAVAIL', headerY + 10);
+  let y = drawTitle(doc, 'ARRET DE TRAVAIL', headerY + 12);
 
+  y += 8;
+  y = drawInlineField(doc, 'Je soussign\u00e9(e), Docteur : ', d.medecin || '', y);
   y += 6;
-  y = drawField(doc, 'Je soussign\u00e9(e), Docteur :', d.medecin || '', y);
-  y += 4;
-  y = drawField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de :', d.name || '', y);
-  y += LINE_GAP;
+  y = drawInlineField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de : ', d.name || '', y);
+  y += 6;
 
-  // Matricule + Direction sur même ligne
-  doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'bold');
+  // Matricule + Direction sur meme ligne
+  doc.setFontSize(FONT_BODY);
+  doc.setFont('helvetica', 'normal');
   doc.text('Matricule :', M, y);
   const matW = doc.getTextWidth('Matricule :');
   if (d.matricule) {
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('helvetica', 'bold');
     doc.text(d.matricule, M + matW + 3, y);
   }
 
-  doc.setFont('helvetica', 'bold');
+  doc.setFont('helvetica', 'normal');
   doc.text('Direction :', 105, y);
-  y += LINE_GAP + 4;
+  y += 12;
 
-  y = drawField(doc, '1) N\u00e9cessite un arr\u00eat de travail de :', d.arret || '', y);
-  y += 2;
-  y = drawField(doc, '2) N\u00e9cessite une prolongation de :', d.prolongation || '', y);
-  y += 2;
-  y = drawField(doc, 'Sauf complication, \u00e0 dater du :', d.dateComplication || '', y);
+  y = drawInlineField(doc, '1) N\u00e9cessite un arr\u00eat de travail de : ', d.arret || '', y);
+  y += 4;
+  y = drawInlineField(doc, '2) N\u00e9cessite une prolongation de : ', d.prolongation || '', y);
+  y += 4;
+  y = drawInlineField(doc, 'Sauf complication, \u00e0 dater du : ', d.dateComplication || '', y);
 
-  y += 20;
+  y += 24;
   drawSignature(doc, y);
 }
 
@@ -459,62 +497,68 @@ function genArretTravail(doc: jsPDF, d: SifcaDocData) {
 
 function genCertificatGrossesse(doc: jsPDF, d: SifcaDocData) {
   const headerY = drawSifcaHeader(doc);
-  let y = drawTitle(doc, 'CERTIFICAT DE GROSSESSE', headerY + 10);
+  let y = drawTitle(doc, 'CERTIFICAT DE GROSSESSE', headerY + 12);
 
+  y += 8;
+  y = drawInlineField(doc, 'Je soussign\u00e9, Docteur : ', d.medecin || '', y);
   y += 6;
-  y = drawField(doc, 'Je soussign\u00e9, Docteur :', d.medecin || '', y);
-  y += 4;
-  y = drawField(doc, 'Certifie que Madame :', d.name || '', y);
-  y += 4;
-  y = drawField(doc, 'Est actuellement en cours d\u2019une grossesse de :', d.dureeGrossesse || '', y);
-  y += 4;
-  y = drawField(doc, 'Dont le terme est fix\u00e9 le :', d.terme || '', y);
+  y = drawInlineField(doc, 'Certifie que Madame : ', d.name || '', y);
+  y += 6;
+  y = drawInlineField(doc, 'Est actuellement en cours d\u2019une grossesse de : ', d.dureeGrossesse || '', y);
+  y += 6;
+  y = drawInlineField(doc, 'Dont le terme est fix\u00e9 le : ', d.terme || '', y);
 
-  y += 20;
+  y += 24;
   drawSignature(doc, y);
 }
 
 // ════════════════════════════════════════════════════════════════
-// 6. ORDONNANCE MÉDICALE
+// 6. ORDONNANCE MEDICALE
 // ════════════════════════════════════════════════════════════════
 
 function genOrdonnanceMedicale(doc: jsPDF, d: SifcaDocData) {
   const headerY = drawSifcaHeader(doc);
-  let y = drawTitle(doc, 'ORDONNANCE MEDICALE', headerY + 10);
+  let y = drawTitle(doc, 'ORDONNANCE MEDICALE', headerY + 12);
 
-  y += 6;
+  y += 8;
+  // Docteur
   doc.setFontSize(FONT_LABEL);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(COLOR_LABEL);
+  doc.text('Docteur', M, y);
+  doc.setFontSize(FONT_VALUE);
   doc.setFont('helvetica', 'bold');
-  doc.text('Docteur :', M, y);
-  if (d.medecin) {
-    doc.setFont('helvetica', 'normal');
-    doc.text(d.medecin, M + doc.getTextWidth('Docteur :') + 3, y);
-  }
-  y += LINE_GAP;
+  doc.setTextColor(COLOR_VALUE);
+  doc.text(d.medecin || '', M, y + 5.5);
+  y += FIELD_GAP;
 
+  // Patient
   if (d.name) {
-    doc.setFont('helvetica', 'bold');
-    doc.text('Patient :', M, y);
+    doc.setFontSize(FONT_LABEL);
     doc.setFont('helvetica', 'normal');
-    doc.text(d.name, M + doc.getTextWidth('Patient :') + 3, y);
-    y += LINE_GAP;
+    doc.setTextColor(COLOR_LABEL);
+    doc.text('Patient', M, y);
+    doc.setFontSize(FONT_VALUE);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLOR_VALUE);
+    doc.text(d.name, M, y + 5.5);
+    y += FIELD_GAP;
   }
 
   y += 4;
   drawSeparator(doc, y, 0.3);
-  y += 8;
+  y += 10;
 
   if (d.prescriptions && d.prescriptions.length > 0) {
-    doc.setFontSize(FONT_LABEL);
+    doc.setFontSize(FONT_BODY);
     d.prescriptions.forEach((rx, i) => {
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(COLOR_VALUE);
       doc.text(`${i + 1}.`, M + 5, y);
+      doc.setFont('helvetica', 'normal');
       doc.text(rx, M + 14, y);
-      y += LINE_GAP + 2;
+      y += 10;
     });
-  } else {
-    // Espace vide pour prescription manuscrite
-    y += 120;
   }
 }
 
@@ -524,48 +568,50 @@ function genOrdonnanceMedicale(doc: jsPDF, d: SifcaDocData) {
 
 function genBulletinConsultation(doc: jsPDF, d: SifcaDocData) {
   const headerY = drawSifcaHeader(doc);
-  let y = drawTitle(doc, 'BULLETIN DE CONSULTATION', headerY + 10);
+  let y = drawTitle(doc, 'BULLETIN DE CONSULTATION', headerY + 12);
 
   y += 6;
-  y = drawField(doc, 'SERVICE :', d.service || '', y);
+  y = drawMedicalField(doc, 'SERVICE', d.service || '', y);
 
   const lastName = d.last_name || d.name?.split(' ').slice(-1)[0] || '';
   const firstName = d.first_name || d.name?.split(' ').slice(0, -1).join(' ') || '';
 
-  y = drawField(doc, 'NOM :', lastName.toUpperCase(), y);
-  y = drawField(doc, 'PRENOM :', firstName, y);
+  y = drawMedicalField(doc, 'NOM', lastName.toUpperCase(), y);
+  y = drawMedicalField(doc, 'PRENOM', firstName, y);
 
-  // AGE + SEXE sur même ligne
+  // AGE + SEXE cote a cote
   doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'bold');
-  doc.text('AGE :', M, y);
-  const age = calculateAge(d.date_of_birth);
-  if (age) { doc.setFont('helvetica', 'normal'); doc.text(age, M + 15, y); }
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(COLOR_LABEL);
+  doc.text('AGE', M, y);
+  doc.text('SEXE', 100, y);
 
+  doc.setFontSize(FONT_VALUE);
   doc.setFont('helvetica', 'bold');
-  doc.text('SEXE :', 100, y);
-  const sexe = d.gender || '';
-  if (sexe) { doc.setFont('helvetica', 'normal'); doc.text(sexe, 118, y); }
-  y += LINE_GAP;
+  doc.setTextColor(COLOR_VALUE);
+  doc.text(calculateAge(d.date_of_birth) || '', M, y + 5.5);
+  doc.text(d.gender || '', 100, y + 5.5);
+  y += FIELD_GAP;
 
-  y = drawField(doc, 'CONSULTATION EN :', d.consultationEn || '', y);
+  y = drawMedicalField(doc, 'CONSULTATION EN', d.consultationEn || '', y);
 
   y += 8;
-  doc.setFontSize(FONT_SUBTITLE);
+  doc.setFontSize(FONT_SECTION);
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
   doc.text('RENSEIGNEMENTS CLINIQUES', M, y);
-  y += LINE_GAP;
+  y += 10;
 
   if (d.renseignementsCliniques) {
     doc.setFontSize(FONT_BODY);
     doc.setFont('helvetica', 'normal');
     const lines = doc.splitTextToSize(d.renseignementsCliniques, CONTENT_W);
     doc.text(lines, M, y);
-    y += lines.length * 5;
+    y += lines.length * 6;
   }
 
-  y += 10;
-  doc.setFontSize(FONT_LABEL);
+  y += 16;
+  doc.setFontSize(FONT_BODY);
   doc.setFont('helvetica', 'bold');
   doc.text('Signature et cachet du M\u00e9decin', PAGE_W - M, y, { align: 'right' });
 }
