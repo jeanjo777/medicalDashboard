@@ -54,6 +54,8 @@ function recordLoginAttempt(ip) {
 }
 
 // Fail fast if required secrets are missing
+const { Resend } = require('resend');
+
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
   console.error('FATAL: JWT_SECRET environment variable is required');
@@ -65,6 +67,11 @@ if (!DB_PASSWORD) {
   process.exit(1);
 }
 const REGISTRATION_SECRET = process.env.REGISTRATION_SECRET || 'MEDICARE2026';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'MediCare Pro <onboarding@resend.dev>';
+const APP_URL = process.env.APP_URL || 'https://medical.simpliceake.com';
+
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 const pool = new Pool({
   host: 'db',
@@ -340,24 +347,194 @@ app.post('/functions/v1/get-patient-summary', async (req, res) => {
 });
 
 // ============================================================
-// SEND EMAIL (stub - returns success)
+// SEND EMAIL (via Resend)
 // ============================================================
 app.post('/functions/v1/send-email', async (req, res) => {
   const claims = verifyAuth(req);
   if (!claims) return res.status(401).json({ error: 'Non autorise' });
-  // TODO: Integrate with N8N or SMTP
-  res.json({ success: true, message: 'Email envoye (stub)' });
+
+  if (!resend) {
+    return res.status(503).json({ error: 'Service email non configure (RESEND_API_KEY manquant)' });
+  }
+
+  try {
+    const { to, subject, html, text } = req.body;
+    if (!to || !subject) {
+      return res.status(400).json({ error: 'Destinataire (to) et sujet (subject) requis' });
+    }
+
+    const { data, error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html: html || `<p>${text || ''}</p>`,
+    });
+
+    if (error) {
+      await pool.query(
+        `INSERT INTO emails (to_email, subject, body, status, error_message) VALUES ($1, $2, $3, 'failed', $4)`,
+        [Array.isArray(to) ? to[0] : to, subject, html || text || '', error.message]
+      );
+      return res.status(500).json({ error: 'Echec envoi email', details: error.message });
+    }
+
+    await pool.query(
+      `INSERT INTO emails (to_email, subject, body, status, resend_id, sent_at) VALUES ($1, $2, $3, 'sent', $4, NOW())`,
+      [Array.isArray(to) ? to[0] : to, subject, html || text || '', data.id]
+    );
+
+    res.json({ success: true, messageId: data.id });
+  } catch (err) {
+    console.error('send-email error:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
 // ============================================================
-// PASSWORD RESET (stubs)
+// PASSWORD RESET (real implementation with Resend)
 // ============================================================
 app.post('/functions/v1/send-reset-password', async (req, res) => {
-  res.json({ success: true, message: 'Email de reinitialisation envoye' });
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email requis' });
+    }
+
+    // Rate limit: max 3 reset attempts per email per hour
+    const recentAttempts = await pool.query(
+      `SELECT count(*)::int AS c FROM password_reset_attempts
+       WHERE email = $1 AND created_at > NOW() - INTERVAL '1 hour'`,
+      [email]
+    );
+    if (recentAttempts.rows[0].c >= 3) {
+      return res.status(429).json({ error: 'Trop de tentatives. Reessayez dans 1 heure.' });
+    }
+
+    // Log attempt
+    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    await pool.query(
+      `INSERT INTO password_reset_attempts (email, ip_address, user_agent, success) VALUES ($1, $2, $3, false)`,
+      [email, clientIp, req.headers['user-agent'] || '']
+    );
+
+    // Find user (check medics)
+    const userResult = await pool.query(
+      'SELECT id, username, email FROM medics WHERE email = $1 AND is_active = true',
+      [email]
+    );
+
+    // Always return success to prevent email enumeration
+    if (userResult.rows.length === 0) {
+      return res.json({ success: true, message: 'Si cet email existe, un lien de reinitialisation a ete envoye.' });
+    }
+
+    const user = userResult.rows[0];
+
+    // Generate secure token
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Invalidate previous tokens for this user
+    await pool.query(
+      'UPDATE password_reset_tokens SET used = true WHERE user_id = $1 AND used = false',
+      [user.id]
+    );
+
+    // Store token
+    await pool.query(
+      `INSERT INTO password_reset_tokens (user_id, user_type, token, email, expires_at)
+       VALUES ($1, 'medic', $2, $3, $4)`,
+      [user.id, token, email, expiresAt]
+    );
+
+    // Send email
+    if (resend) {
+      const resetLink = `${APP_URL}/reset-password?token=${token}`;
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: [email],
+        subject: 'Reinitialisation de votre mot de passe - MediCare Pro',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #1e293b;">Reinitialisation de mot de passe</h2>
+            <p>Bonjour <strong>${user.username}</strong>,</p>
+            <p>Vous avez demande la reinitialisation de votre mot de passe MediCare Pro.</p>
+            <p>Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe :</p>
+            <a href="${resetLink}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin: 16px 0;">
+              Reinitialiser mon mot de passe
+            </a>
+            <p style="color: #64748b; font-size: 14px;">Ce lien expire dans 1 heure.</p>
+            <p style="color: #64748b; font-size: 14px;">Si vous n'avez pas demande cette reinitialisation, ignorez cet email.</p>
+            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+            <p style="color: #94a3b8; font-size: 12px;">MediCare Pro - Centre Medical SIFCA</p>
+          </div>
+        `,
+      });
+    }
+
+    // Mark attempt as successful
+    await pool.query(
+      `UPDATE password_reset_attempts SET success = true
+       WHERE email = $1 ORDER BY created_at DESC LIMIT 1`,
+      [email]
+    );
+
+    res.json({ success: true, message: 'Si cet email existe, un lien de reinitialisation a ete envoye.' });
+  } catch (err) {
+    console.error('send-reset-password error:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
 });
 
 app.post('/functions/v1/validate-reset-token', async (req, res) => {
-  res.json({ valid: false, error: 'Fonctionnalite non disponible en mode self-hosted' });
+  try {
+    const { token, newPassword } = req.body;
+    if (!token) {
+      return res.status(400).json({ valid: false, error: 'Token requis' });
+    }
+
+    // Find valid token
+    const tokenResult = await pool.query(
+      `SELECT * FROM password_reset_tokens
+       WHERE token = $1 AND used = false AND expires_at > NOW()`,
+      [token]
+    );
+
+    if (tokenResult.rows.length === 0) {
+      return res.status(400).json({ valid: false, error: 'Token invalide ou expire' });
+    }
+
+    const resetToken = tokenResult.rows[0];
+
+    // If no newPassword provided, just validate the token
+    if (!newPassword) {
+      return res.json({ valid: true, email: resetToken.email });
+    }
+
+    // Validate new password
+    if (newPassword.length < 8) {
+      return res.status(400).json({ valid: false, error: 'Le mot de passe doit contenir au moins 8 caracteres' });
+    }
+
+    // Hash and update password
+    const hash = await bcrypt.hash(newPassword, 12);
+    await pool.query(
+      'UPDATE medics SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+      [hash, resetToken.user_id]
+    );
+
+    // Mark token as used
+    await pool.query(
+      'UPDATE password_reset_tokens SET used = true, used_at = NOW() WHERE id = $1',
+      [resetToken.id]
+    );
+
+    res.json({ valid: true, message: 'Mot de passe reinitialise avec succes' });
+  } catch (err) {
+    console.error('validate-reset-token error:', err);
+    res.status(500).json({ valid: false, error: 'Erreur serveur' });
+  }
 });
 
 // ============================================================
@@ -922,7 +1099,88 @@ app.get('/health', async (req, res) => {
   }
 });
 
+// ============================================================
+// APPOINTMENT REMINDERS CRON (runs every 30 min)
+// ============================================================
+async function sendAppointmentReminders() {
+  if (!resend) return;
+
+  try {
+    // Find appointments in the next 24h that haven't been reminded
+    const upcoming = await pool.query(`
+      SELECT a.id, a.patient_name, a.patient_email, a.appointment_date, a.appointment_time,
+             a.type_consultation, a.motif
+      FROM appointments a
+      WHERE a.appointment_date = CURRENT_DATE + INTERVAL '1 day'
+        AND a.status NOT IN ('cancelled', 'annule', 'no_show')
+        AND a.patient_email IS NOT NULL
+        AND a.patient_email != ''
+        AND NOT EXISTS (
+          SELECT 1 FROM appointment_reminders ar
+          WHERE ar.appointment_id = a.id AND ar.status = 'sent'
+        )
+    `);
+
+    for (const appt of upcoming.rows) {
+      try {
+        const timeStr = appt.appointment_time
+          ? new Date(`2000-01-01T${appt.appointment_time}`).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+          : '';
+        const dateStr = new Date(appt.appointment_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: [appt.patient_email],
+          subject: `Rappel: Votre rendez-vous du ${dateStr} - MediCare Pro`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #1e293b;">Rappel de rendez-vous</h2>
+              <p>Bonjour <strong>${appt.patient_name}</strong>,</p>
+              <p>Nous vous rappelons votre rendez-vous :</p>
+              <div style="background: #f1f5f9; border-radius: 8px; padding: 16px; margin: 16px 0;">
+                <p style="margin: 4px 0;"><strong>Date :</strong> ${dateStr}</p>
+                ${timeStr ? `<p style="margin: 4px 0;"><strong>Heure :</strong> ${timeStr}</p>` : ''}
+                ${appt.type_consultation ? `<p style="margin: 4px 0;"><strong>Type :</strong> ${appt.type_consultation}</p>` : ''}
+                ${appt.motif ? `<p style="margin: 4px 0;"><strong>Motif :</strong> ${appt.motif}</p>` : ''}
+              </div>
+              <p style="color: #64748b; font-size: 14px;">En cas d'empechement, merci de nous prevenir a l'avance.</p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+              <p style="color: #94a3b8; font-size: 12px;">MediCare Pro - Centre Medical SIFCA</p>
+            </div>
+          `,
+        });
+
+        // Record successful reminder
+        await pool.query(
+          `INSERT INTO appointment_reminders (appointment_id, reminder_type, scheduled_for, status, sent_at)
+           VALUES ($1, 'email', NOW(), 'sent', NOW())`,
+          [appt.id]
+        );
+      } catch (emailErr) {
+        console.error(`Reminder failed for appointment ${appt.id}:`, emailErr.message);
+        await pool.query(
+          `INSERT INTO appointment_reminders (appointment_id, reminder_type, scheduled_for, status, error_message)
+           VALUES ($1, 'email', NOW(), 'failed', $2)`,
+          [appt.id, emailErr.message]
+        );
+      }
+    }
+
+    if (upcoming.rows.length > 0) {
+      console.log(`[Reminders] Sent ${upcoming.rows.length} appointment reminders`);
+    }
+  } catch (err) {
+    console.error('[Reminders] Cron error:', err.message);
+  }
+}
+
+// Run reminders every 30 minutes
+setInterval(sendAppointmentReminders, 30 * 60 * 1000);
+// Run once on startup after 10 seconds (let DB connect first)
+setTimeout(sendAppointmentReminders, 10 * 1000);
+
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Medicare Functions service running on port ${PORT}`);
+  console.log(`Email service: ${resend ? 'ACTIVE (Resend)' : 'DISABLED (no RESEND_API_KEY)'}`);
 });
