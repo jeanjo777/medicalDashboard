@@ -102,7 +102,7 @@ export const GlobalSearch: React.FC = () => {
           subtitle: patient.email || patient.phone || 'Aucun contact',
           date: new Date(patient.created_at).toLocaleDateString('fr-FR'),
           icon: <User size={18} className="text-blue-500" />,
-          path: `/patients/${patient.id}`
+          path: `/patients-enhanced`
         });
       });
 
@@ -115,7 +115,7 @@ export const GlobalSearch: React.FC = () => {
           subtitle: apt.message || 'Rendez-vous',
           date: `${apt.appointment_date} ${apt.appointment_time}`,
           icon: <Calendar size={18} className="text-purple-500" />,
-          path: `/appointments/${apt.id}`
+          path: `/appointments`
         });
       });
 

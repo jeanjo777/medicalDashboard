@@ -77,9 +77,7 @@ CREATE TABLE IF NOT EXISTS patients (
     name text,
     first_name text DEFAULT '',
     last_name text DEFAULT '',
-    prenom text,
     date_of_birth date,
-    date_naissance date,
     age integer,
     gender text CHECK (gender IN ('male', 'female', 'other', 'M', 'F')),
     phone text DEFAULT '',
@@ -92,7 +90,6 @@ CREATE TABLE IF NOT EXISTS patients (
     primary_pathology text,
     status text DEFAULT 'active' CHECK (status IN ('active', 'in_treatment', 'recovered', 'inactive', 'actif', 'inactif', 'archived')),
     "riskScore" integer DEFAULT 0,
-    risk_score integer DEFAULT 0,
     notes text,
     last_visit date,
     visit_type varchar(50),
@@ -129,7 +126,6 @@ CREATE TABLE IF NOT EXISTS medics (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     username text UNIQUE NOT NULL,
     email text UNIQUE,
-    password text,
     password_hash text,
     nom text DEFAULT '',
     prenom text DEFAULT '',
@@ -624,13 +620,12 @@ $$ LANGUAGE plpgsql;
 -- SEED: Default admin medic
 -- ============================================================
 
-INSERT INTO medics (username, nom, prenom, specialite, password, password_hash, is_active)
+INSERT INTO medics (username, nom, prenom, specialite, password_hash, is_active)
 VALUES (
     'medecin',
     'Admin',
     'MediCare',
     'Administrateur',
-    'Medical@2026',
     '$2b$12$MXgIzLwNof8kkPkkL0apie.tEfl8/y7gPLXPwB47MHrHIUfKEGwhq',
     true
 )

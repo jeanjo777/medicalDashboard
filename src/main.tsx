@@ -26,14 +26,10 @@ const LoginPage = lazy(() => import('./pages/LoginPage.tsx'));
 const QuickRDVLoginPage = lazy(() => import('./pages/QuickRDVLoginPage.tsx'));
 const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage.tsx'));
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage.tsx'));
-const ModernDashboardPageClassic = lazy(() => import('./pages/ModernDashboardPage.tsx'));
 const PatientDashboardPage = lazy(() => import('./pages/PatientDashboardPage.tsx'));
-const PatientsManagementPage = lazy(() => import('./pages/PatientsManagementPage.tsx'));
 const PatientRegisterPage = lazy(() => import('./pages/PatientRegisterPage.tsx'));
 const MedicRegisterPage = lazy(() => import('./pages/MedicRegisterPage.tsx'));
 const PatientTreatmentPage = lazy(() => import('./pages/PatientTreatmentPage.tsx'));
-const PatientsViewPage = lazy(() => import('./pages/PatientsViewPage.tsx'));
-const AppointmentsViewPage = lazy(() => import('./pages/AppointmentsViewPage.tsx'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage.tsx'));
 const AIAssistantPage = lazy(() => import('./pages/AIAssistantPage.tsx'));
 const EmailPage = lazy(() => import('./pages/EmailPage.tsx'));
@@ -62,16 +58,13 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/dashboard" element={<ProtectedRoute><ModernDashboardPage /></ProtectedRoute>} />
-              <Route path="/dashboard-classic" element={<ProtectedRoute><ModernDashboardPageClassic /></ProtectedRoute>} />
               <Route path="/patient-dashboard" element={<ProtectedRoute><PatientDashboardPage /></ProtectedRoute>} />
-              <Route path="/patients" element={<ProtectedRoute><PatientsManagementPage /></ProtectedRoute>} />
+              <Route path="/patients-enhanced" element={<ProtectedRoute><PatientsViewPageEnhanced /></ProtectedRoute>} />
+              <Route path="/patients" element={<Navigate to="/patients-enhanced" replace />} />
               <Route path="/register-patient" element={<ProtectedRoute><PatientRegisterPage /></ProtectedRoute>} />
               <Route path="/treatment/:patientId" element={<ProtectedRoute><PatientTreatmentPage /></ProtectedRoute>} />
-              <Route path="/patients-view" element={<ProtectedRoute><PatientsViewPage /></ProtectedRoute>} />
-              <Route path="/appointments-view" element={<ProtectedRoute><AppointmentsViewPage /></ProtectedRoute>} />
               <Route path="/appointments" element={<ProtectedRoute><AppointmentsPage /></ProtectedRoute>} />
               <Route path="/calendar" element={<ProtectedRoute><CalendarViewPage /></ProtectedRoute>} />
-              <Route path="/patients-enhanced" element={<ProtectedRoute><PatientsViewPageEnhanced /></ProtectedRoute>} />
               <Route path="/analytics-advanced" element={<ProtectedRoute><AnalyticsPageAdvanced /></ProtectedRoute>} />
               <Route path="/predictions" element={<ProtectedRoute><AnalyticsPageAdvanced /></ProtectedRoute>} />
               <Route path="/correlations" element={<ProtectedRoute><AnalyticsPageAdvanced /></ProtectedRoute>} />

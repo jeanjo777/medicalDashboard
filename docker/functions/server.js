@@ -6,7 +6,35 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
+
+// ============================================================
+// RATE LIMITING (in-memory, per IP)
+// ============================================================
+const loginAttempts = new Map();
+const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
+const MAX_LOGIN_ATTEMPTS = 5;
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = loginAttempts.get(ip);
+  if (!record) return true;
+  if (now - record.firstAttempt > RATE_LIMIT_WINDOW) {
+    loginAttempts.delete(ip);
+    return true;
+  }
+  return record.count < MAX_LOGIN_ATTEMPTS;
+}
+
+function recordLoginAttempt(ip) {
+  const now = Date.now();
+  const record = loginAttempts.get(ip);
+  if (!record || now - record.firstAttempt > RATE_LIMIT_WINDOW) {
+    loginAttempts.set(ip, { count: 1, firstAttempt: now });
+  } else {
+    record.count++;
+  }
+}
 
 const JWT_SECRET = process.env.JWT_SECRET || 'medicare-pro-jwt-secret-2026-production-key!!';
 const REGISTRATION_SECRET = process.env.REGISTRATION_SECRET || 'MEDICARE2026';
@@ -41,28 +69,32 @@ app.post('/functions/v1/auth-login', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Username et password requis' });
     }
 
+    // Rate limiting
+    const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+    if (!checkRateLimit(clientIp)) {
+      return res.status(429).json({ success: false, error: 'Trop de tentatives. Réessayez dans 15 minutes.' });
+    }
+
     const result = await pool.query(
       'SELECT * FROM medics WHERE username = $1 AND is_active = true',
       [username]
     );
 
     if (result.rows.length === 0) {
+      recordLoginAttempt(clientIp);
       return res.status(401).json({ success: false, error: 'Identifiant ou mot de passe incorrect' });
     }
 
     const user = result.rows[0];
 
-    // Check password (bcrypt hash or plain text fallback)
+    // Check password (bcrypt only - no plaintext fallback)
     let valid = false;
     if (user.password_hash) {
       valid = await bcrypt.compare(password, user.password_hash);
     }
-    if (!valid && user.password === password) {
-      valid = true;
-    }
 
     if (!valid) {
-      // Increment login attempts
+      recordLoginAttempt(clientIp);
       await pool.query('UPDATE medics SET login_attempts = login_attempts + 1 WHERE id = $1', [user.id]);
       return res.status(401).json({ success: false, error: 'Identifiant ou mot de passe incorrect' });
     }
@@ -169,8 +201,8 @@ app.post('/functions/v1/register-medic', async (req, res) => {
 
     const hash = await bcrypt.hash(password, 12);
     await pool.query(
-      `INSERT INTO medics (username, password, password_hash, nom, prenom, specialite, is_active) VALUES ($1, $2, $3, $1, '', 'Medecin', true)`,
-      [username, password, hash]
+      `INSERT INTO medics (username, password_hash, nom, prenom, specialite, is_active) VALUES ($1, $2, $1, '', 'Medecin', true)`,
+      [username, hash]
     );
 
     res.json({ success: true });
@@ -334,9 +366,9 @@ async function fetchClinicSummary() {
     ] = await Promise.all([
       pool.query('SELECT count(*)::int AS total FROM patients'),
       pool.query(
-        `SELECT first_name, last_name, name, risk_score, "riskScore", primary_pathology
-         FROM patients WHERE risk_score >= 70 OR "riskScore" >= 70
-         ORDER BY COALESCE(risk_score, "riskScore") DESC LIMIT 10`
+        `SELECT first_name, last_name, name, "riskScore", primary_pathology
+         FROM patients WHERE "riskScore" >= 70
+         ORDER BY "riskScore" DESC LIMIT 10`
       ),
       pool.query(
         `SELECT patient_name, appointment_time, type_consultation, motif, status
@@ -397,7 +429,7 @@ async function fetchClinicSummary() {
       summary += `\nPatients a risque eleve (${highRisk.length}):\n`;
       highRisk.forEach(p => {
         const name = p.first_name && p.last_name ? `${p.first_name} ${p.last_name}` : p.name;
-        const score = p.risk_score || p.riskScore;
+        const score = p.riskScore || p.risk_score;
         summary += `  - ${name}: score ${score}/100 - ${p.primary_pathology || 'non precise'}\n`;
       });
     }
@@ -771,6 +803,10 @@ app.get('/functions/v1/rapport/types', (req, res) => {
 
 // POST /functions/v1/rapport/generate - Generate a PDF report
 app.post('/functions/v1/rapport/generate', async (req, res) => {
+  const claims = verifyAuth(req);
+  if (!claims) {
+    return res.status(401).json({ error: 'Authentification requise' });
+  }
   try {
     const { type, patientId, data } = req.body;
 
