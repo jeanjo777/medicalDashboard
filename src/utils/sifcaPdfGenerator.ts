@@ -210,101 +210,141 @@ function drawSifcaHeader(doc: jsPDF): number {
 export const generateSifcaPDF = (patient: PatientData): void => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
+  const VAL_X = 65; // x position where values start (aligned)
+
+  /** Draw a form row: label ........ value (with dotted underline) */
+  const drawFormRow = (label: string, value: string, y: number, opts?: { half?: 'left' | 'right' }): number => {
+    const startX = opts?.half === 'right' ? PAGE_W / 2 + 5 : M;
+    const endX = opts?.half === 'left' ? PAGE_W / 2 - 5 : PAGE_W - M;
+    const valX = opts?.half ? startX + 40 : VAL_X;
+
+    doc.setFontSize(FONT_BODY);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(COLOR_VALUE);
+    doc.text(label, startX, y);
+
+    // Dotted underline from value start to end
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.3);
+    const dots = [];
+    for (let x = valX; x < endX; x += 1.5) {
+      dots.push(x);
+    }
+    dots.forEach(x => doc.line(x, y + 1, x + 0.5, y + 1));
+    doc.setDrawColor(0);
+
+    if (value) {
+      doc.setFont('helvetica', 'bold');
+      doc.text(value, valX + 2, y);
+    }
+    doc.setFont('helvetica', 'normal');
+    return y;
+  };
+
   // ─── EN-TETE ─────────────────────────────────────
   doc.addImage(SIFCA_LOGO_BW, 'PNG', M, 8, LOGO_W, LOGO_H);
 
-  // Coordonnees
+  // Coordonnees societe
   doc.setFontSize(FONT_COORD);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(60);
-  doc.text('CENTRE MEDICO-SOCIAL', M, 48);
-  doc.text('S.A au capital de 4 002 935 000 FCFA', M, 53);
+  doc.text('S.A au capital de 4 002 935 000 FCFA', M, 48);
+  doc.text('CENTRE MEDICO-SOCIAL', M, 53);
   doc.setTextColor(0);
 
   // Date (droite)
   doc.setFontSize(FONT_BODY);
-  doc.text(`Date :  ${formatDate()}`, PAGE_W - M, 14, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Date : ${formatDate()}`, PAGE_W - M, 14, { align: 'right' });
 
   // Medecin
-  doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(COLOR_LABEL);
-  doc.text('MEDECIN', M, 58);
-  doc.setFontSize(FONT_VALUE);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(COLOR_VALUE);
-  if (patient.medecin) {
-    doc.text(patient.medecin, M + 22, 58);
-  }
+  drawFormRow('MEDECIN :', patient.medecin || '', 58);
 
-  drawSeparator(doc, 62, 0.6);
+  drawSeparator(doc, 63, 0.6);
 
   // ─── TYPES DE VISITE + FILIALES ──────────────────
-  const col2X = 108;
+  const col2X = 110;
 
-  // Titre FILIALES
-  doc.setFontSize(FONT_SECTION);
+  // Titre colonne gauche
+  doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(COLOR_VALUE);
-  doc.text('FILIALES', col2X + 15, 69);
+  doc.text('TYPE DE VISITE', M, 70);
 
-  // Filiales (colonne droite)
+  // Titre FILIALES
+  doc.text('FILIALES', col2X, 70);
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(FONT_BODY);
-  const filiales = ['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'];
-  const cbX = PAGE_W - M - 6;
-  let fy = 76;
-  filiales.forEach((f) => {
-    doc.text(f, col2X + 8, fy);
-    doc.rect(cbX, fy - 3.5, 4, 4);
-    if (patient.filiale === f) {
+
+  // Types de visite (colonne gauche) — checkboxes
+  const visits = [
+    { label: 'Consultation', key: 'consultation' },
+    { label: 'Visite Systématique', key: 'systematique' },
+    { label: "Visite d'embauche", key: 'embauche' },
+  ];
+  let vy = 78;
+  visits.forEach((v) => {
+    doc.rect(M, vy - 3.2, 3.5, 3.5);
+    if (patient.visitType === v.key) {
       doc.setFont('helvetica', 'bold');
-      doc.text('X', cbX + 0.8, fy);
+      doc.text('X', M + 0.6, vy);
       doc.setFont('helvetica', 'normal');
     }
+    doc.text(v.label, M + 6, vy);
+    vy += 8;
+  });
+
+  // Filiales (colonne droite) — checkboxes
+  const filiales = ['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'];
+  fy = 78;
+  filiales.forEach((f) => {
+    doc.rect(col2X, fy - 3.2, 3.5, 3.5);
+    if (patient.filiale === f) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('X', col2X + 0.6, fy);
+      doc.setFont('helvetica', 'normal');
+    }
+    doc.text(f, col2X + 6, fy);
     fy += 7;
   });
 
-  // Types de visite (colonne gauche)
-  doc.setFontSize(FONT_BODY);
-  const visits = [
-    { label: 'Consultation', key: 'consultation' },
-    { label: 'Visite Syst\u00e9matique', key: 'systematique' },
-    { label: "Visite d'embauche", key: 'embauche' },
-  ];
-  let vy = 76;
-  visits.forEach((v) => {
-    doc.rect(M, vy - 3.5, 4, 4);
-    if (patient.visitType === v.key) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('X', M + 0.8, vy);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.text(v.label, M + 7, vy);
-    vy += 10;
-  });
-
-  drawSeparator(doc, 128, 0.6);
+  drawSeparator(doc, 130, 0.6);
 
   // ─── INFORMATIONS PATIENT ────────────────────────
-  let py = 136;
+  let py = 140;
 
   const lastName = patient.last_name || patient.name?.split(' ').slice(1).join(' ') || '';
   const firstName = patient.first_name || patient.name?.split(' ')[0] || '';
 
-  py = drawMedicalField(doc, 'Nom du malade', lastName.toUpperCase(), py);
-  py = drawMedicalField(doc, 'Pr\u00e9noms', firstName, py);
-  py = drawMedicalField(doc, 'Temp\u00e9rature', patient.temperature != null ? `${patient.temperature} \u00b0C` : '', py);
-  py = drawMedicalField(doc, 'Age', calculateAge(patient.date_of_birth), py);
-  py = drawMedicalField(doc, 'Poids', patient.poids != null ? `${patient.poids} kg` : '', py);
-  py = drawMedicalField(doc, 'T.A (Tension Art\u00e9rielle)', patient.tension_arterielle || '', py);
-  py = drawMedicalField(doc, 'Glyc\u00e9mie', patient.glycemie != null ? `${patient.glycemie} g/L` : '', py);
+  drawFormRow('Nom du malade :', lastName.toUpperCase(), py);
+  py += 10;
+  drawFormRow('Prénoms :', firstName, py);
+  py += 10;
 
-  py += 4;
-  drawSeparator(doc, py, 0.6);
+  // Age + Sexe on same line (two halves)
+  drawFormRow('Age :', calculateAge(patient.date_of_birth), py, { half: 'left' });
+  drawFormRow('Sexe :', patient.gender === 'male' ? 'M' : patient.gender === 'female' ? 'F' : (patient.gender || ''), py, { half: 'right' });
+  py += 10;
+
+  drawFormRow('Température :', patient.temperature != null ? `${patient.temperature} °C` : '', py);
+  py += 10;
+
+  // Poids + Taille on same line
+  drawFormRow('Poids :', patient.poids != null ? `${patient.poids} kg` : '', py, { half: 'left' });
+  drawFormRow('Taille :', patient.taille != null ? `${patient.taille} cm` : '', py, { half: 'right' });
+  py += 10;
+
+  drawFormRow('T.A (Tension Artérielle) :', patient.tension_arterielle || '', py);
+  py += 10;
+
+  drawFormRow('Glycémie :', patient.glycemie != null ? `${patient.glycemie} g/L` : '', py);
+  py += 6;
+
+  drawSeparator(doc, py + 4, 0.6);
 
   // ─── URINES ──────────────────────────────────────
-  py += 10;
+  py += 14;
   doc.setFontSize(FONT_SECTION);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(COLOR_VALUE);
@@ -312,31 +352,13 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   const urW = doc.getTextWidth(urLabel);
   doc.text(urLabel, (PAGE_W - urW) / 2, py);
 
-  py += SECTION_GAP;
+  py += 10;
 
-  const halfW = CONTENT_W / 2;
-
-  // Albumine - label + valeur
-  doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(COLOR_LABEL);
-  doc.text('Albumine', M + 5, py);
-  doc.setFontSize(FONT_VALUE);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(COLOR_VALUE);
   const albumineVal = formatUrines(patient.urines_albumine);
-  doc.text(albumineVal || '—', M + 5, py + 5.5);
-
-  // Sucre - label + valeur
-  doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(COLOR_LABEL);
-  doc.text('Sucre', M + halfW + 5, py);
-  doc.setFontSize(FONT_VALUE);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(COLOR_VALUE);
   const sucreVal = formatUrines(patient.urines_sucre);
-  doc.text(sucreVal || '—', M + halfW + 5, py + 5.5);
+
+  drawFormRow('Albumine :', albumineVal, py, { half: 'left' });
+  drawFormRow('Sucre :', sucreVal, py, { half: 'right' });
 
   // ─── SAUVEGARDE ──────────────────────────────────
   const safeName = (patient.name || 'patient').replace(/\s+/g, '_');
