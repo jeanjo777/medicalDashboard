@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS patients (
     test_dengue varchar(20),
     urines_albumine varchar(50),
     urines_sucre varchar(50),
+    glycemie numeric,
     registered_at timestamptz DEFAULT now(),
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
