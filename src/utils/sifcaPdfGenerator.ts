@@ -168,25 +168,38 @@ function drawSignature(doc: jsPDF, y: number): number {
   doc.text('Le M\u00e9decin :', 130, y);
   y += 10;
 
-  // Cachet du m\u00e9decin
-  const cachetX = 120;
+  // Cachet du m\u00e9decin (rectangle bleu avec texte centr\u00e9)
+  const stampW = 62;
+  const stampH = 28;
+  const stampX = 135;
+  const stampY = y - 2;
+  const stampCenterX = stampX + stampW / 2;
+
+  // Rectangle du cachet
+  doc.setDrawColor(0, 0, 150);
+  doc.setLineWidth(0.7);
+  doc.rect(stampX, stampY, stampW, stampH);
+
+  // Texte centr\u00e9 dans le cachet
+  let ty = stampY + 6;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 0, 120);
-  doc.text('AKE ACHI SIMPLICE', cachetX, y, { align: 'left' });
-  y += 5;
-  doc.setFontSize(8);
+  doc.setTextColor(0, 0, 150);
+  doc.text('AKE ACHI SIMPLICE', stampCenterX, ty, { align: 'center' });
+  ty += 5;
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
-  doc.text('INFIRMIER CHEF', cachetX, y, { align: 'left' });
-  y += 5;
-  doc.text('CMS PALM-CI SIEGE', cachetX, y, { align: 'left' });
-  y += 5;
-  doc.text('18 BP 3321 ABIDJAN 18', cachetX, y, { align: 'left' });
-  y += 5;
-  doc.text('TEL : 27 21 75 75 75 POSTE 6060', cachetX, y, { align: 'left' });
+  doc.text('INFIRMIER CHEF', stampCenterX, ty, { align: 'center' });
+  ty += 4.5;
+  doc.text('CMS PALM-CI SIEGE', stampCenterX, ty, { align: 'center' });
+  ty += 4.5;
+  doc.text('18 BP 3321 ABIDJAN 18', stampCenterX, ty, { align: 'center' });
+  ty += 4.5;
+  doc.setFontSize(6.5);
+  doc.text('TEL : 27 21 75 75 75 POSTE 6060', stampCenterX, ty, { align: 'center' });
   doc.setTextColor(COLOR_VALUE);
   doc.setFont('helvetica', 'normal');
-  return y;
+  return stampY + stampH;
 }
 
 // ════════════════════════════════════════════════════════════════
