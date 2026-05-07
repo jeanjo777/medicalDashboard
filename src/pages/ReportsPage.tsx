@@ -21,6 +21,7 @@ interface Patient {
   filiale?: string | null;
   poids?: number | null;
   taille?: number | null;
+  tension_arterielle?: string | null;
   urines_albumine?: string | null;
   urines_sucre?: string | null;
 }
@@ -54,6 +55,13 @@ const ReportsPage: React.FC = () => {
   const [filiale, setFiliale] = useState('');
   const [selectedDocType, setSelectedDocType] = useState<SifcaDocType>('fiche-cms');
 
+  // Arrêt de travail fields
+  const [matricule, setMatricule] = useState('');
+  const [direction, setDirection] = useState('');
+  const [arret, setArret] = useState('');
+  const [prolongation, setProlongation] = useState('');
+  const [dateComplication, setDateComplication] = useState('');
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounce search input — 300 ms
@@ -70,7 +78,7 @@ const ReportsPage: React.FC = () => {
     let query = supabase
       .from('patients')
       .select(
-        'id, name, first_name, last_name, date_of_birth, gender, status, visit_type, filiale, poids, taille, urines_albumine, urines_sucre',
+        'id, name, first_name, last_name, date_of_birth, gender, status, visit_type, filiale, poids, taille, tension_arterielle, urines_albumine, urines_sucre',
         { count: 'exact' }
       )
       .order('name', { ascending: true })
@@ -127,6 +135,11 @@ const ReportsPage: React.FC = () => {
     setFiliale(patient.filiale || '');
     setMedecin('');
     setSelectedDocType('fiche-cms');
+    setMatricule('');
+    setDirection('');
+    setArret('');
+    setProlongation('');
+    setDateComplication('');
     setDialogOpen(true);
   };
 
@@ -142,8 +155,14 @@ const ReportsPage: React.FC = () => {
       medecin: medecin || undefined,
       poids: selectedPatient.poids,
       taille: selectedPatient.taille,
+      tension_arterielle: selectedPatient.tension_arterielle,
       urines_albumine: selectedPatient.urines_albumine || undefined,
       urines_sucre: selectedPatient.urines_sucre || undefined,
+      matricule: matricule || undefined,
+      direction: direction || undefined,
+      arret: arret || undefined,
+      prolongation: prolongation || undefined,
+      dateComplication: dateComplication || undefined,
     });
     setDialogOpen(false);
   };
@@ -438,6 +457,64 @@ const ReportsPage: React.FC = () => {
                   className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
                 />
               </div>
+
+              {selectedDocType === 'arret-travail' && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium theme-text-primary mb-1.5">Matricule</label>
+                      <input
+                        type="text"
+                        value={matricule}
+                        onChange={(e) => setMatricule(e.target.value)}
+                        placeholder="N° matricule"
+                        className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium theme-text-primary mb-1.5">Direction</label>
+                      <input
+                        type="text"
+                        value={direction}
+                        onChange={(e) => setDirection(e.target.value)}
+                        placeholder="Direction / Service"
+                        className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Durée arrêt de travail</label>
+                    <input
+                      type="text"
+                      value={arret}
+                      onChange={(e) => setArret(e.target.value)}
+                      placeholder="Ex: 5 jours, 2 semaines..."
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Prolongation</label>
+                    <input
+                      type="text"
+                      value={prolongation}
+                      onChange={(e) => setProlongation(e.target.value)}
+                      placeholder="Ex: 3 jours (optionnel)"
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Sauf complication, à dater du</label>
+                    <input
+                      type="date"
+                      value={dateComplication}
+                      onChange={(e) => setDateComplication(e.target.value)}
+                      title="Date de début"
+                      aria-label="Sauf complication, à dater du"
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                </>
+              )}
 
               {selectedDocType === 'fiche-cms' && (
                 <>

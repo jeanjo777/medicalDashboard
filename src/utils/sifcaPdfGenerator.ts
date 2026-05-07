@@ -379,6 +379,7 @@ interface SifcaDocData extends PatientData {
   dureeGrossesse?: string;
   terme?: string;
   matricule?: string;
+  direction?: string;
   arret?: string;
   prolongation?: string;
   dateComplication?: string;
@@ -485,6 +486,11 @@ function genArretTravail(doc: jsPDF, d: SifcaDocData) {
 
   doc.setFont('helvetica', 'normal');
   doc.text('Direction :', 105, y);
+  const dirW = doc.getTextWidth('Direction :');
+  if (d.direction) {
+    doc.setFont('helvetica', 'bold');
+    doc.text(d.direction, 105 + dirW + 3, y);
+  }
   y += 12;
 
   y = drawInlineField(doc, '1) N\u00e9cessite un arr\u00eat de travail de : ', d.arret || '', y);
