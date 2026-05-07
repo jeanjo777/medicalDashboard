@@ -143,11 +143,14 @@ export function useAdvancedSearch<T = any>({
   }, [table, selectFields, searchFields, filters, onSuccess]);
 
   const setFilters = useCallback((newFilters: Partial<SearchFilters>) => {
-    setFiltersState((prev) => ({
-      ...prev,
-      ...newFilters,
-      page: newFilters.query !== undefined && newFilters.query !== prev.query ? 1 : prev.page,
-    }));
+    setFiltersState((prev) => {
+      const isNewQuery = newFilters.query !== undefined && newFilters.query !== prev.query;
+      return {
+        ...prev,
+        ...newFilters,
+        ...(isNewQuery ? { page: 1 } : {}),
+      };
+    });
   }, []);
 
   const resetFilters = useCallback(() => {

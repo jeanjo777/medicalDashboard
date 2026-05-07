@@ -73,7 +73,7 @@ interface FormErrors {
 }
 
 const statusOptions = [
-  { value: 'active', label: 'En consultation' },
+  { value: 'active', label: 'Actif' },
   { value: 'inactive', label: 'Sorti' },
   { value: 'in_treatment', label: 'En traitement' },
   { value: 'recovered', label: 'Guéri' }
@@ -248,7 +248,7 @@ const EditPatientModal: React.FC<EditPatientModalProps> = ({ isOpen, onClose, on
       if (err.message?.includes('unique constraint')) {
         errorMessage = 'Un patient avec cet email ou téléphone existe déjà.';
       } else if (err.message?.includes('patients_status_check') || err.message?.includes('check constraint')) {
-        errorMessage = 'Statut invalide. Les valeurs autorisées sont: En consultation, Sorti, En traitement, Guéri.';
+        errorMessage = 'Statut invalide. Les valeurs autorisées sont: Actif, Sorti, En traitement, Guéri.';
       } else if (err.message) {
         errorMessage = `Erreur: ${err.message}`;
       }

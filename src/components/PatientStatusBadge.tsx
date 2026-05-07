@@ -10,7 +10,7 @@ interface PatientStatusBadgeProps {
 const PatientStatusBadge: React.FC<PatientStatusBadgeProps> = ({ status, size = 'md' }) => {
   const statusConfig = {
     active: {
-      label: 'En consultation',
+      label: 'Actif',
       bgColor: 'bg-blue-500/10',
       textColor: 'text-blue-500',
       borderColor: 'border-blue-500/20',

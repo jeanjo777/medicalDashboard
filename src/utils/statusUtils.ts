@@ -4,6 +4,7 @@ export const normalizeAppointmentStatus = (status: string): string => {
     'scheduled': 'a_venir',
     'confirmed': 'a_venir',
     'pending': 'a_venir',
+    'in_progress': 'en_cours',
     'completed': 'termine',
     'cancelled': 'annule',
     'no-show': 'annule',
@@ -54,7 +55,7 @@ export const normalizePatientStatus = (status: string): string => {
 export const getPatientStatusLabel = (status: string): string => {
   const normalized = normalizePatientStatus(status);
   const labels: Record<string, string> = {
-    'active': 'En consultation',
+    'active': 'Actif',
     'inactive': 'Sorti',
     'in_treatment': 'En traitement',
     'recovered': 'Rétabli',

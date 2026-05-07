@@ -20,7 +20,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   onReset,
   statusOptions = [
     { value: 'all', label: 'Tous' },
-    { value: 'active', label: 'En consultation' },
+    { value: 'active', label: 'Actif' },
     { value: 'inactive', label: 'Sorti' },
   ],
   sortOptions = [

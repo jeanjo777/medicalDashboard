@@ -187,7 +187,7 @@ const AppointmentsPage: React.FC = () => {
 
 
   const filterAndSortAppointments = useCallback(() => {
-    const dataSource = appointments;
+    const dataSource = displayedAppointments;
     let filtered = [...dataSource];
 
     // Filtre par date sélectionnée si activé
@@ -220,7 +220,7 @@ const AppointmentsPage: React.FC = () => {
     });
 
     setFilteredAppointments(filtered);
-  }, [appointments, searchTerm, statusFilter, typeFilter, sortOrder, selectedDate, dateFilterActive]);
+  }, [displayedAppointments, searchTerm, statusFilter, typeFilter, sortOrder, selectedDate, dateFilterActive]);
 
   useEffect(() => {
     filterAndSortAppointments();

@@ -179,28 +179,38 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
         }
       }
 
-      // Process Query 3: Patients without recent activity
+      // Process Query 3: Patients without recent consultation (cross-reference with consultations)
       if (results[2].status === 'fulfilled') {
         const { data: allPatients, error: err } = results[2].value;
         if (!err && allPatients && allPatients.length > 0) {
-          // Check patients created more than 30 days ago without recent consultation
-          allPatients.forEach((patient) => {
-            const daysSinceCreation = calculateDaysOverdue(patient.created_at);
-            if (daysSinceCreation > 30) {
-              allAlerts.push({
-                id: generateAlertId('no_recent', patient.id),
-                type: 'no_recent_consultation',
-                priority: 'medium',
-                patient_id: patient.id,
-                patient_name: `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'Patient inconnu',
-                title: 'Patient sans activité récente',
-                message: `Aucune activité depuis ${daysSinceCreation} jours`,
-                metadata: {},
-                created_at: new Date().toISOString(),
-                is_acknowledged: false,
-              });
-            }
-          });
+          // Only check patients created more than 30 days ago
+          const oldPatients = allPatients.filter(p => calculateDaysOverdue(p.created_at) > 30);
+          if (oldPatients.length > 0) {
+            // Fetch recent consultations to avoid false positives
+            const { data: recentConsultations } = await supabase
+              .from('consultations')
+              .select('patient_id')
+              .gte('created_at', thirtyDaysAgo);
+            const recentPatientIds = new Set((recentConsultations || []).map(c => c.patient_id));
+
+            oldPatients.forEach((patient) => {
+              if (!recentPatientIds.has(patient.id)) {
+                const daysSinceCreation = calculateDaysOverdue(patient.created_at);
+                allAlerts.push({
+                  id: generateAlertId('no_recent', patient.id),
+                  type: 'no_recent_consultation',
+                  priority: 'medium',
+                  patient_id: patient.id,
+                  patient_name: `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'Patient inconnu',
+                  title: 'Patient sans activité récente',
+                  message: `Aucune consultation depuis ${daysSinceCreation} jours`,
+                  metadata: {},
+                  created_at: new Date().toISOString(),
+                  is_acknowledged: false,
+                });
+              }
+            });
+          }
         }
       }
 

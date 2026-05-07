@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import SearchFilters from '../components/Common/SearchFilters';
@@ -7,6 +7,7 @@ import PatientDetailModal from '../components/Patients/PatientDetailModal';
 import PatientCardMobile from '../components/Patients/PatientCardMobile';
 import AddPatientModal from '../components/AddPatientModal';
 import { useAdvancedSearch } from '../hooks/useAdvancedSearch';
+import { usePatientStats } from '../hooks/usePatientStats';
 import {
   Bell, Plus, Eye, Users, Activity, Clock,
   RefreshCw, WifiOff, Download, AlertTriangle, LayoutGrid, List,
@@ -183,18 +184,12 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const displayedPatients = patients;
   const displayedTotal = total;
 
-  // Calcul des statistiques
-  const stats = useMemo(() => {
-    const activeCount = patients.filter(p => p.status === 'active').length;
-    const inTreatmentCount = patients.filter(p => p.status === 'in_treatment').length;
-    const recoveredCount = patients.filter(p => p.status === 'recovered').length;
-    const highRiskCount = patients.filter(p => (p.riskScore ?? 0) > 60).length;
-    return { activeCount, inTreatmentCount, recoveredCount, highRiskCount };
-  }, [patients]);
+  // Statistiques globales (toute la base, pas seulement la page courante)
+  const { data: stats = { activeCount: 0, inTreatmentCount: 0, recoveredCount: 0, highRiskCount: 0 } } = usePatientStats();
 
   const statusOptions = [
     { value: 'all', label: 'Tous les statuts' },
-    { value: 'active', label: 'En consultation' },
+    { value: 'active', label: 'Actif' },
     { value: 'in_treatment', label: 'En traitement' },
     { value: 'recovered', label: 'Rétabli' },
     { value: 'inactive', label: 'Sorti' },
@@ -220,7 +215,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      active: 'En consultation',
+      active: 'Actif',
       'in_treatment': 'En traitement',
       recovered: 'Rétabli',
       inactive: 'Sorti',

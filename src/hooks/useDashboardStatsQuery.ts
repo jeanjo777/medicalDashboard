@@ -134,7 +134,6 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
     appointmentsToday,
     patientsInTreatment: treatmentPercentage,
     consultationsThisWeek,
-    totalPatients,
     newPatientsThisMonth
   });
 
