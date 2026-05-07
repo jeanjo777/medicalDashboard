@@ -75,12 +75,33 @@ export const generateSifcaPDF = (patient: PatientData): void => {
 
   doc.line(margin, 58, pageW - margin, 58); // séparateur
 
-  // ─── TYPE DE VISITE + FILIALES ────────────────────────────────────────────
+  // ─── TYPE DE VISITE + FILIALES (both below separator) ─────────────────────
   const col1X = margin;
-  const col2X = 100;
-  let y = 66;
+  const col2X = 110;
+
+  // Colonne droite: filiales header + items
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('FILIALES', col2X + 15, 63);
+  doc.setFont('helvetica', 'normal');
+
+  const filiales = ['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'];
+  let fy = 70;
+  const checkboxX = pageW - margin - 6;
+
+  filiales.forEach((f) => {
+    doc.text(f, col2X + 5, fy);
+    doc.rect(checkboxX, fy - 4, 4, 4);
+    if (patient.filiale === f) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('X', checkboxX + 0.8, fy - 0.5);
+      doc.setFont('helvetica', 'normal');
+    }
+    fy += 8;
+  });
 
   // Colonne gauche: types de visite
+  let y = 70;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
 
@@ -101,28 +122,7 @@ export const generateSifcaPDF = (patient: PatientData): void => {
     y += 10;
   });
 
-  // Colonne droite: filiales
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('FILIALES', col2X + 20, 50);
-  doc.setFont('helvetica', 'normal');
-
-  const filiales = ['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'];
-  let fy = 56;
-  const checkboxX = pageW - margin - 6;
-
-  filiales.forEach((f) => {
-    doc.text(f, col2X + 10, fy);
-    doc.rect(checkboxX, fy - 4, 4, 4);
-    if (patient.filiale === f) {
-      doc.setFont('helvetica', 'bold');
-      doc.text('X', checkboxX + 0.8, fy - 0.5);
-      doc.setFont('helvetica', 'normal');
-    }
-    fy += 8;
-  });
-
-  doc.line(margin, 122, pageW - margin, 122); // séparateur
+  doc.line(margin, 128, pageW - margin, 128); // séparateur
 
   // ─── INFORMATIONS PATIENT ─────────────────────────────────────────────────
   const lineY = (label: string, value: string, yPos: number) => {
@@ -138,8 +138,8 @@ export const generateSifcaPDF = (patient: PatientData): void => {
     }
   };
 
-  let py = 134;
-  const gap = 14;
+  let py = 138;
+  const gap = 12;
 
   // Nom & Prénom
   const lastName = patient.last_name || patient.name?.split(' ').slice(1).join(' ') || '';
