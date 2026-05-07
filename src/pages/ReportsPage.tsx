@@ -59,8 +59,6 @@ const ReportsPage: React.FC = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setDebouncedSearch(search.trim());
-      setOffset(0);         // reset pagination on new search
-      setPatients([]);      // clear list immediately
     }, 300);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [search]);
