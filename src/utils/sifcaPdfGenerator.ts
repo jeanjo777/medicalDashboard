@@ -157,7 +157,7 @@ function drawTitle(doc: jsPDF, title: string, y: number): number {
   return y + 22;
 }
 
-/** Bloc signature */
+/** Bloc signature + cachet du m\u00e9decin */
 function drawSignature(doc: jsPDF, y: number): number {
   doc.setFontSize(FONT_BODY);
   doc.setFont('helvetica', 'normal');
@@ -166,6 +166,25 @@ function drawSignature(doc: jsPDF, y: number): number {
   y += 18;
   doc.setFont('helvetica', 'bold');
   doc.text('Le M\u00e9decin :', 130, y);
+  y += 10;
+
+  // Cachet du m\u00e9decin
+  const cachetX = 120;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 120);
+  doc.text('AKE ACHI SIMPLICE', cachetX, y, { align: 'left' });
+  y += 5;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('INFIRMIER CHEF', cachetX, y, { align: 'left' });
+  y += 5;
+  doc.text('CMS PALM-CI SIEGE', cachetX, y, { align: 'left' });
+  y += 5;
+  doc.text('18 BP 3321 ABIDJAN 18', cachetX, y, { align: 'left' });
+  y += 5;
+  doc.text('TEL : 27 21 75 75 75 POSTE 6060', cachetX, y, { align: 'left' });
+  doc.setTextColor(COLOR_VALUE);
   doc.setFont('helvetica', 'normal');
   return y;
 }
@@ -297,7 +316,7 @@ export const generateSifcaPDF = (patient: PatientData): void => {
 
   // Filiales (colonne droite) — checkboxes
   const filiales = ['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'];
-  fy = 78;
+  let fy = 78;
   filiales.forEach((f) => {
     doc.rect(col2X, fy - 3.2, 3.5, 3.5);
     if (patient.filiale === f) {
@@ -595,6 +614,9 @@ function genOrdonnanceMedicale(doc: jsPDF, d: SifcaDocData) {
       y += 10;
     });
   }
+
+  y += 24;
+  drawSignature(doc, y);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -646,9 +668,7 @@ function genBulletinConsultation(doc: jsPDF, d: SifcaDocData) {
   }
 
   y += 16;
-  doc.setFontSize(FONT_BODY);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Signature et cachet du M\u00e9decin', PAGE_W - M, y, { align: 'right' });
+  drawSignature(doc, y);
 }
 
 // ════════════════════════════════════════════════════════════════
