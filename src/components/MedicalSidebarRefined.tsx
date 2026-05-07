@@ -156,10 +156,10 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
     },
     {
       id: 'reports',
-      label: 'Rapports',
+      label: 'Rapports / SIFCA',
       icon: <FileText size={22} strokeWidth={2} />,
       path: '/reports',
-      section: 'analytics'
+      section: 'management'
     },
     {
       id: 'email',
