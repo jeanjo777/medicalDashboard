@@ -86,19 +86,8 @@ function drawSeparator(doc: jsPDF, y: number, weight = 0.4) {
   doc.setLineWidth(0.2);
 }
 
-/** Ligne pointillée pour remplissage de champ */
-function drawDots(doc: jsPDF, x1: number, x2: number, y: number) {
-  doc.setLineWidth(0.15);
-  doc.setDrawColor(150);
-  for (let x = x1; x < x2; x += 1.5) {
-    doc.circle(x, y + 0.3, 0.15, 'F');
-  }
-  doc.setDrawColor(0);
-}
-
-/** Champ: label (bold) + valeur + pointillés de remplissage */
-function drawField(doc: jsPDF, label: string, value: string, y: number, maxX?: number): number {
-  const endX = maxX || (PAGE_W - M);
+/** Champ: label (bold) + valeur */
+function drawField(doc: jsPDF, label: string, value: string, y: number): number {
   doc.setFontSize(FONT_LABEL);
   doc.setFont('helvetica', 'bold');
   doc.text(label, M, y);
@@ -107,30 +96,21 @@ function drawField(doc: jsPDF, label: string, value: string, y: number, maxX?: n
   if (value) {
     doc.setFont('helvetica', 'normal');
     doc.text(value, M + lw + 3, y);
-    const vw = doc.getTextWidth(value);
-    drawDots(doc, M + lw + 3 + vw + 2, endX, y);
-  } else {
-    drawDots(doc, M + lw + 3, endX, y);
   }
   doc.setFont('helvetica', 'normal');
   return y + LINE_GAP;
 }
 
-/** Champ avec soulignement continu */
+/** Champ: label (bold) + valeur (bold) */
 function drawFieldUnderline(doc: jsPDF, label: string, value: string, y: number): number {
   doc.setFontSize(FONT_LABEL);
   doc.setFont('helvetica', 'bold');
   doc.text(label, M, y);
   const lw = doc.getTextWidth(label);
-  const lineStart = M + lw + 3;
-
-  doc.setLineWidth(0.3);
-  doc.line(lineStart, y + 1, PAGE_W - M, y + 1);
-  doc.setLineWidth(0.2);
 
   if (value) {
     doc.setFont('helvetica', 'bold');
-    doc.text(value, lineStart + 2, y);
+    doc.text(value, M + lw + 3, y);
   }
   doc.setFont('helvetica', 'normal');
   return y + LINE_GAP + 2;
@@ -155,8 +135,7 @@ function drawTitle(doc: jsPDF, title: string, y: number): number {
 function drawSignature(doc: jsPDF, y: number): number {
   doc.setFontSize(FONT_LABEL);
   doc.setFont('helvetica', 'normal');
-  doc.text('Fait \u00e0 Abidjan, le', 105, y);
-  drawDots(doc, 150, PAGE_W - M, y);
+  doc.text('Fait \u00e0 Abidjan, le ................', 105, y);
   y += 16;
   doc.setFont('helvetica', 'bold');
   doc.text('Le M\u00e9decin :', 120, y);
@@ -215,17 +194,12 @@ export const generateSifcaPDF = (patient: PatientData): void => {
 
   // Date (droite)
   doc.setFontSize(FONT_BODY);
-  doc.text('Date :', 140, 14);
-  doc.setLineWidth(0.3);
-  doc.line(152, 15, PAGE_W - M, 15);
-  doc.text(formatDate(), 154, 14);
+  doc.text('Date :  ' + formatDate(), 140, 14);
 
   // Médecin
   doc.setFontSize(FONT_LABEL);
   doc.setFont('helvetica', 'bold');
   doc.text('MEDECIN', M, 42);
-  doc.setLineWidth(0.3);
-  doc.line(M + 22, 43, PAGE_W - M, 43);
   if (patient.medecin) {
     doc.setFont('helvetica', 'normal');
     doc.text(patient.medecin, M + 24, 42);
@@ -304,13 +278,9 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   const urW = doc.getTextWidth(urLabel);
   const urX = (PAGE_W - urW) / 2;
   doc.text(urLabel, urX, py);
-  doc.setLineWidth(0.5);
-  doc.line(urX - 2, py + 1.5, urX + urW + 2, py + 1.5);
-  doc.setLineWidth(0.2);
 
   py += SECTION_GAP;
   doc.setFontSize(FONT_LABEL);
-  doc.setFont('helvetica', 'normal');
 
   const halfW = CONTENT_W / 2;
   // Albumine
@@ -320,7 +290,6 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   doc.setFont('helvetica', 'normal');
   const albumineVal = formatUrines(patient.urines_albumine);
   if (albumineVal) doc.text(albumineVal, albStart, py);
-  drawDots(doc, albStart + (albumineVal ? doc.getTextWidth(albumineVal) + 2 : 0), M + halfW - 5, py);
 
   // Sucre
   doc.setFont('helvetica', 'bold');
@@ -329,7 +298,6 @@ export const generateSifcaPDF = (patient: PatientData): void => {
   doc.setFont('helvetica', 'normal');
   const sucreVal = formatUrines(patient.urines_sucre);
   if (sucreVal) doc.text(sucreVal, sucStart, py);
-  drawDots(doc, sucStart + (sucreVal ? doc.getTextWidth(sucreVal) + 2 : 0), PAGE_W - M - 5, py);
 
   // ─── SAUVEGARDE ──────────────────────────────────
   const safeName = (patient.name || 'patient').replace(/\s+/g, '_');
@@ -393,7 +361,6 @@ function genCertificatTension(doc: jsPDF, d: SifcaDocData) {
   y = drawField(doc, 'Je soussign\u00e9(e), Docteur :', d.medecin || '', y);
   y += 4;
   y = drawField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de M/ Mme/ Mlle :', d.name || '', y);
-  drawDots(doc, M, PAGE_W - M, y);
   y += SECTION_GAP;
 
   doc.setFontSize(FONT_LABEL);
@@ -431,7 +398,6 @@ function genCertificatMedical(doc: jsPDF, d: SifcaDocData) {
   y += LINE_GAP;
 
   y = drawField(doc, 'M/ Mme/ Mlle :', d.name || '', y);
-  drawDots(doc, M, PAGE_W - M, y);
   y += SECTION_GAP + 4;
 
   doc.setFontSize(FONT_LABEL);
@@ -461,7 +427,6 @@ function genArretTravail(doc: jsPDF, d: SifcaDocData) {
   y = drawField(doc, 'Je soussign\u00e9(e), Docteur :', d.medecin || '', y);
   y += 4;
   y = drawField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de :', d.name || '', y);
-  drawDots(doc, M, PAGE_W - M, y);
   y += LINE_GAP;
 
   // Matricule + Direction sur même ligne
@@ -473,11 +438,9 @@ function genArretTravail(doc: jsPDF, d: SifcaDocData) {
     doc.setFont('helvetica', 'normal');
     doc.text(d.matricule, M + matW + 3, y);
   }
-  drawDots(doc, M + matW + 3 + (d.matricule ? doc.getTextWidth(d.matricule) + 2 : 0), 100, y);
 
   doc.setFont('helvetica', 'bold');
   doc.text('Direction :', 105, y);
-  drawDots(doc, 130, PAGE_W - M, y);
   y += LINE_GAP + 4;
 
   y = drawField(doc, '1) N\u00e9cessite un arr\u00eat de travail de :', d.arret || '', y);
@@ -550,15 +513,8 @@ function genOrdonnanceMedicale(doc: jsPDF, d: SifcaDocData) {
       y += LINE_GAP + 2;
     });
   } else {
-    // Lignes vides pour prescription manuscrite
-    doc.setFontSize(FONT_BODY);
-    for (let i = 0; i < 12; i++) {
-      doc.setLineWidth(0.15);
-      doc.setDrawColor(180);
-      doc.line(M, y, PAGE_W - M, y);
-      y += 10;
-    }
-    doc.setDrawColor(0);
+    // Espace vide pour prescription manuscrite
+    y += 120;
   }
 }
 
@@ -585,28 +541,16 @@ function genBulletinConsultation(doc: jsPDF, d: SifcaDocData) {
   doc.text('AGE :', M, y);
   const age = calculateAge(d.date_of_birth);
   if (age) { doc.setFont('helvetica', 'normal'); doc.text(age, M + 15, y); }
-  drawDots(doc, M + 15 + (age ? doc.getTextWidth(age) + 2 : 0), 95, y);
 
   doc.setFont('helvetica', 'bold');
   doc.text('SEXE :', 100, y);
   const sexe = d.gender || '';
   if (sexe) { doc.setFont('helvetica', 'normal'); doc.text(sexe, 118, y); }
-  drawDots(doc, 118 + (sexe ? doc.getTextWidth(sexe) + 2 : 0), PAGE_W - M, y);
   y += LINE_GAP;
 
   y = drawField(doc, 'CONSULTATION EN :', d.consultationEn || '', y);
 
-  y += 4;
-  // Lignes pour notes
-  for (let i = 0; i < 6; i++) {
-    doc.setLineWidth(0.15);
-    doc.setDrawColor(180);
-    doc.line(M, y, PAGE_W - M, y);
-    doc.setDrawColor(0);
-    y += 8;
-  }
-
-  y += 4;
+  y += 8;
   doc.setFontSize(FONT_SUBTITLE);
   doc.setFont('helvetica', 'bold');
   doc.text('RENSEIGNEMENTS CLINIQUES', M, y);
@@ -618,15 +562,6 @@ function genBulletinConsultation(doc: jsPDF, d: SifcaDocData) {
     const lines = doc.splitTextToSize(d.renseignementsCliniques, CONTENT_W);
     doc.text(lines, M, y);
     y += lines.length * 5;
-  }
-
-  // Lignes pour notes cliniques
-  for (let i = 0; i < 4; i++) {
-    doc.setLineWidth(0.15);
-    doc.setDrawColor(180);
-    doc.line(M, y, PAGE_W - M, y);
-    doc.setDrawColor(0);
-    y += 8;
   }
 
   y += 10;
