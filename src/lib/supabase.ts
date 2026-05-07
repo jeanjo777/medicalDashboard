@@ -239,6 +239,18 @@ class PostgrestBuilder<T = unknown> {
           return { data: null, error: null, count };
         }
         const body = await res.json().catch(() => ({ message: res.statusText }));
+        // Clear stale auth token on JWT signature errors and retry with ANON_KEY
+        if (body.code === 'PGRST301' || body.message?.includes('JWSInvalidSignature')) {
+          try { localStorage.removeItem('auth_token'); } catch { /* SSR guard */ }
+          const retryRes = await fetch(url, { ...init, headers: { ...headers, Authorization: `Bearer ${ANON_KEY}` } });
+          if (retryRes.ok) {
+            const retryText = await retryRes.text();
+            const retryCr = retryRes.headers.get('content-range');
+            let retryCount: number | null = null;
+            if (retryCr) { const rm = retryCr.match(/\/(\d+)/); if (rm) retryCount = parseInt(rm[1], 10); }
+            return { data: retryText ? JSON.parse(retryText) : (this._single || this._maybeSingle ? null : []) as T, error: null, count: retryCount };
+          }
+        }
         return { data: null, error: { message: body.message || res.statusText, code: body.code }, count: null };
       }
 
