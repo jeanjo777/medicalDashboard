@@ -41,6 +41,7 @@ interface PatientData {
   gender?: string;
   temperature?: number | null;
   poids?: number | null;
+  taille?: number | null;
   tension_arterielle?: string | null;
   glycemie?: number | null;
   visitType?: 'consultation' | 'systematique' | 'embauche';
@@ -399,6 +400,11 @@ function genCertificatTension(doc: jsPDF, d: SifcaDocData) {
   y = drawInlineField(doc, 'Je soussign\u00e9(e), Docteur : ', d.medecin || '', y);
   y += 6;
   y = drawInlineField(doc, 'Certifie que l\u2019\u00e9tat de sant\u00e9 de M/ Mme/ Mlle : ', d.name || '', y);
+  y += 6;
+
+  y = drawInlineField(doc, 'Poids : ', d.poids ? `${d.poids} kg` : '', y);
+  y += 4;
+  y = drawInlineField(doc, 'Taille : ', d.taille ? `${d.taille} cm` : '', y);
   y += 6;
 
   doc.setFontSize(FONT_BODY);

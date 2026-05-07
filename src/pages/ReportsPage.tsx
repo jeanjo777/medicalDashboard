@@ -19,6 +19,8 @@ interface Patient {
   status?: string;
   visit_type?: string | null;
   filiale?: string | null;
+  poids?: number | null;
+  taille?: number | null;
   urines_albumine?: string | null;
   urines_sucre?: string | null;
 }
@@ -68,7 +70,7 @@ const ReportsPage: React.FC = () => {
     let query = supabase
       .from('patients')
       .select(
-        'id, name, first_name, last_name, date_of_birth, gender, status, visit_type, filiale, urines_albumine, urines_sucre',
+        'id, name, first_name, last_name, date_of_birth, gender, status, visit_type, filiale, poids, taille, urines_albumine, urines_sucre',
         { count: 'exact' }
       )
       .order('name', { ascending: true })
@@ -138,6 +140,8 @@ const ReportsPage: React.FC = () => {
       visitType: visitType as 'consultation' | 'systematique' | 'embauche' | undefined,
       filiale: filiale || undefined,
       medecin: medecin || undefined,
+      poids: selectedPatient.poids,
+      taille: selectedPatient.taille,
       urines_albumine: selectedPatient.urines_albumine || undefined,
       urines_sucre: selectedPatient.urines_sucre || undefined,
     });
