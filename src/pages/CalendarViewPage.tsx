@@ -97,6 +97,8 @@ const getPatientInitials = (name: string) => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 };
 
+const formatTime = (time: string) => time.slice(0, 5);
+
 // Current Time Indicator
 const CurrentTimeIndicator: React.FC<{ startHour: number }> = ({ startHour }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -227,7 +229,7 @@ const UpcomingAppointments: React.FC<{
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Clock size={10} className="theme-text-muted shrink-0" />
                     <span className="text-[10px] theme-text-secondary">
-                      {isToday ? "Aujourd'hui" : format(parseISO(apt.appointment_date), 'dd MMM', { locale: fr })} · {apt.appointment_time}
+                      {isToday ? "Aujourd'hui" : format(parseISO(apt.appointment_date), 'dd MMM', { locale: fr })} · {formatTime(apt.appointment_time)}
                     </span>
                   </div>
                 </div>
@@ -519,7 +521,7 @@ const MonthlyView: React.FC<{
                       }}
                       className={`bg-gradient-to-r ${status.gradient} text-white text-[10px] px-2 py-0.5 rounded-md truncate cursor-pointer hover:shadow-md transition-shadow font-medium`}
                     >
-                      {apt.appointment_time} {apt.patient_name.split(' ')[0]}
+                      {formatTime(apt.appointment_time)} {apt.patient_name.split(' ')[0]}
                     </div>
                   );
                 })}
@@ -622,7 +624,7 @@ const DayView: React.FC<{
                         <div className="text-right shrink-0">
                           <div className="flex items-center gap-1 text-xs font-semibold">
                             <Clock size={12} />
-                            <span>{appointment.appointment_time}</span>
+                            <span>{formatTime(appointment.appointment_time)}</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs opacity-80 mt-0.5">
                             <Timer size={12} />
@@ -658,29 +660,31 @@ const AppointmentCard: React.FC<{
   appointment: Appointment;
   onClick: () => void;
   index: number;
-}> = React.memo(({ appointment, onClick, index }) => {
+  total: number;
+}> = React.memo(({ appointment, onClick, index, total }) => {
   const status = STATUS_CONFIG[appointment.status] || STATUS_CONFIG.a_venir;
-  const height = Math.min(Math.max((appointment.duration || 30) / 60 * 76, 38), 150);
 
   return (
     <div
-      className={`absolute inset-x-0.5 bg-gradient-to-r ${status.gradient} text-white rounded-lg p-1.5 shadow-md hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer border-l-[3px] border-l-white/40 z-10 overflow-hidden`}
+      className={`absolute bg-gradient-to-r ${status.gradient} text-white rounded-lg p-1.5 shadow-md hover:shadow-lg hover:z-20 transition-all cursor-pointer border-l-[3px] border-l-white/40 z-10 overflow-hidden`}
       style={{
-        height: `${height}px`,
-        top: `${index * 2 + 2}px`,
+        top: '2px',
+        bottom: '2px',
+        left: `calc(${(index / total) * 100}% + 2px)`,
+        width: `calc(${(1 / total) * 100}% - 4px)`,
       }}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
     >
-      <div className="flex items-start gap-1.5">
+      <div className="flex items-start gap-1">
         <div className="w-5 h-5 rounded-md bg-[var(--bg-secondary)]/20 flex items-center justify-center flex-shrink-0">
           <span className="text-[8px] font-bold">{getPatientInitials(appointment.patient_name)}</span>
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-[10px] font-bold truncate leading-tight">{appointment.patient_name}</div>
-          <div className="text-[9px] opacity-75 truncate">{appointment.appointment_time} · {appointment.duration || 30}min</div>
+          <div className="text-[9px] opacity-75 truncate">{formatTime(appointment.appointment_time)} · {appointment.duration || 30}min</div>
         </div>
       </div>
     </div>
@@ -1189,6 +1193,7 @@ const CalendarViewPage: React.FC = () => {
                                       appointment={appointment}
                                       onClick={() => handleAppointmentClick(appointment)}
                                       index={aptIndex}
+                                      total={hourAppointments.length}
                                     />
                                   ))}
 

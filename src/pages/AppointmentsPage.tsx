@@ -595,7 +595,7 @@ const AppointmentsPage: React.FC = () => {
                       'Email': apt.patient_email,
                       'Téléphone': apt.patient_phone,
                       'Date': apt.appointment_date,
-                      'Heure': apt.appointment_time,
+                      'Heure': apt.appointment_time.slice(0, 5),
                       'Motif': apt.motif || 'Non spécifié',
                       'Type': apt.type_consultation || 'Consultation',
                       'Statut': apt.status,
@@ -736,7 +736,7 @@ const AppointmentsPage: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 <Clock size={14} className="theme-text-muted" />
                                 <span className="text-sm theme-text-secondary">
-                                  {appointment.appointment_time}
+                                  {appointment.appointment_time.slice(0, 5)}
                                 </span>
                               </div>
                               {getDurationBadge(appointment.duration)}
@@ -894,7 +894,7 @@ const AppointmentsPage: React.FC = () => {
         onConfirm={handleConfirmCancel}
         title="Annuler le rendez-vous"
         message={selectedAppointment
-          ? `Êtes-vous sûr de vouloir annuler le rendez-vous de ${selectedAppointment.patient_name} prévu le ${formatDate(selectedAppointment.appointment_date)} à ${selectedAppointment.appointment_time} ?`
+          ? `Êtes-vous sûr de vouloir annuler le rendez-vous de ${selectedAppointment.patient_name} prévu le ${formatDate(selectedAppointment.appointment_date)} à ${selectedAppointment.appointment_time.slice(0, 5)} ?`
           : 'Êtes-vous sûr de vouloir annuler ce rendez-vous ?'
         }
         confirmText="Oui, annuler"

@@ -166,7 +166,7 @@ const AppointmentDetailModal: React.FC<AppointmentDetailModalProps> = ({
                   <Clock size={16} />
                   Heure
                 </label>
-                <p className="theme-text-primary text-lg font-medium">{appointment.appointment_time}</p>
+                <p className="theme-text-primary text-lg font-medium">{appointment.appointment_time.slice(0, 5)}</p>
               </div>
 
               {appointment.duration && (
