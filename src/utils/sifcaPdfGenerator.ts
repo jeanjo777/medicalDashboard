@@ -52,11 +52,11 @@ export const generateSifcaPDF = (patient: PatientData): void => {
 
   // ─── HEADER ──────────────────────────────────────────────────────────────
   // Logo SIFCA (image PNG noir et blanc)
-  doc.addImage(SIFCA_LOGO_BW, 'PNG', margin, 8, 35, 25);
+  doc.addImage(SIFCA_LOGO_BW, 'PNG', margin, 5, 56, 40);
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('CENTRE MEDICO-SOCIAL', margin, 36);
+  doc.text('CENTRE MEDICO-SOCIAL', margin, 48);
 
   // Date
   doc.setFontSize(10);
@@ -67,18 +67,18 @@ export const generateSifcaPDF = (patient: PatientData): void => {
 
   // Médecin
   doc.setFontSize(10);
-  doc.text('MEDECIN', margin, 38);
-  doc.line(margin + 22, 38, pageW - margin, 38);
+  doc.text('MEDECIN', margin, 54);
+  doc.line(margin + 22, 54, pageW - margin, 54);
   if (patient.medecin) {
-    doc.text(patient.medecin, margin + 24, 37.5);
+    doc.text(patient.medecin, margin + 24, 53.5);
   }
 
-  doc.line(margin, 42, pageW - margin, 42); // séparateur
+  doc.line(margin, 58, pageW - margin, 58); // séparateur
 
   // ─── TYPE DE VISITE + FILIALES ────────────────────────────────────────────
   const col1X = margin;
   const col2X = 100;
-  let y = 52;
+  let y = 66;
 
   // Colonne gauche: types de visite
   doc.setFontSize(10);
@@ -247,13 +247,13 @@ interface SifcaDocData extends PatientData {
 // ─── SIFCA Header for all 6 docs ──────────────────────────────────────
 function drawSifcaHeader(doc: jsPDF, m: number) {
   // Logo SIFCA (image PNG noir et blanc)
-  doc.addImage(SIFCA_LOGO_BW, 'PNG', m, 8, 35, 25);
+  doc.addImage(SIFCA_LOGO_BW, 'PNG', m, 5, 56, 40);
 
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text('S.A au capital de 4 002 935 000', m, 36);
-  doc.text('01 BP 1289 ABIDJAN 01 - RC: ABIDJAN N\u00b04254', m, 40);
-  doc.text('Tel: (225) 27 21 75 75 75 - Fax: (225) 27 21 75 75 99', m, 44);
+  doc.text('S.A au capital de 4 002 935 000', m, 48);
+  doc.text('01 BP 1289 ABIDJAN 01 - RC: ABIDJAN N\u00b04254', m, 52);
+  doc.text('Tel: (225) 27 21 75 75 75 - Fax: (225) 27 21 75 75 99', m, 56);
 }
 
 function drawDocTitle(doc: jsPDF, title: string, y: number) {
@@ -302,7 +302,7 @@ function drawSignatureLine(doc: jsPDF, y: number) {
 function genCertificatTension(doc: jsPDF, d: SifcaDocData) {
   const m = 20;
   drawSifcaHeader(doc, m);
-  let y = drawDocTitle(doc, 'CERTIFICAT DE PRISE DE TENSION', 55);
+  let y = drawDocTitle(doc, 'CERTIFICAT DE PRISE DE TENSION', 68);
   y += 5;
   y = drawFieldLine(doc, 'Je soussign\u00e9 (e), Docteur :', d.medecin || '', m, y);
   y += 2;
@@ -326,8 +326,8 @@ function genCertificatMedical(doc: jsPDF, d: SifcaDocData) {
   drawSifcaHeader(doc, m);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Date ' + formatDate(), 140, 20);
-  let y = drawDocTitle(doc, 'CERTIFICAT MEDICAL', 55);
+  doc.text('Date ' + formatDate(), 140, 30);
+  let y = drawDocTitle(doc, 'CERTIFICAT MEDICAL', 68);
   y += 5;
   y = drawFieldLine(doc, 'Je soussign\u00e9 Dr ', d.medecin || '', m, y);
   y += 2;
@@ -351,7 +351,7 @@ function genCertificatMedical(doc: jsPDF, d: SifcaDocData) {
 function genArretTravail(doc: jsPDF, d: SifcaDocData) {
   const m = 20;
   drawSifcaHeader(doc, m);
-  let y = drawDocTitle(doc, 'ARRET DE TRAVAIL', 55);
+  let y = drawDocTitle(doc, 'ARRET DE TRAVAIL', 68);
   y += 5;
   y = drawFieldLine(doc, 'Je soussign\u00e9 (e), Docteur :', d.medecin || '', m, y);
   y += 2;
@@ -375,7 +375,7 @@ function genArretTravail(doc: jsPDF, d: SifcaDocData) {
 function genCertificatGrossesse(doc: jsPDF, d: SifcaDocData) {
   const m = 20;
   drawSifcaHeader(doc, m);
-  let y = drawDocTitle(doc, 'CERTIFICAT DE GROSSESSE', 55);
+  let y = drawDocTitle(doc, 'CERTIFICAT DE GROSSESSE', 68);
   y += 5;
   y = drawFieldLine(doc, 'Je soussign\u00e9, Docteur :', d.medecin || '', m, y);
   y += 2;
@@ -397,8 +397,8 @@ function genOrdonnanceMedicale(doc: jsPDF, d: SifcaDocData) {
   drawSifcaHeader(doc, m);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Date ' + formatDate(), 140, 20);
-  let y = drawDocTitle(doc, 'ORDONNANCE MEDICALE', 55);
+  doc.text('Date ' + formatDate(), 140, 30);
+  let y = drawDocTitle(doc, 'ORDONNANCE MEDICALE', 68);
   y += 5;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -426,8 +426,8 @@ function genBulletinConsultation(doc: jsPDF, d: SifcaDocData) {
   drawSifcaHeader(doc, m);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Date ' + formatDate(), 140, 20);
-  let y = drawDocTitle(doc, 'BULLETIN DE CONSULTATION', 55);
+  doc.text('Date ' + formatDate(), 140, 30);
+  let y = drawDocTitle(doc, 'BULLETIN DE CONSULTATION', 68);
   y += 5;
   y = drawFieldLine(doc, 'SERVICE :', d.service || '', m, y);
   const lastName = d.last_name || d.name?.split(' ').slice(-1)[0] || '';
