@@ -102,6 +102,12 @@ CREATE TABLE IF NOT EXISTS patients (
     urines_albumine varchar(50),
     urines_sucre varchar(50),
     glycemie numeric,
+    temperature numeric,
+    poids numeric,
+    taille integer,
+    tension_arterielle varchar(20),
+    pouls integer,
+    test_palu varchar(20),
     registered_at timestamptz DEFAULT now(),
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
