@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TrendingUp, TrendingDown, Activity, DollarSign, Clock, Star } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Clock, Star } from 'lucide-react';
 import { useDashboardStatsQuery } from '../../hooks/useDashboardStatsQuery';
 import { useMedecinPerformance } from '../../hooks/useAnalyticsData';
 
@@ -34,11 +34,11 @@ const KPIPerformanceWidget: React.FC = () => {
         color: 'bg-blue-500/10 text-blue-600',
       },
       {
-        label: 'Revenus du mois',
-        value: `${stats.totalRevenue.toLocaleString('fr-FR')} FCFA`,
-        change: `${stats.totalRevenueChange > 0 ? '+' : ''}${stats.totalRevenueChange}%`,
-        trend: stats.totalRevenueChange >= 0 ? 'up' as const : 'down' as const,
-        icon: <DollarSign className="h-4 w-4" />,
+        label: 'Consultations semaine',
+        value: String(stats.consultationsThisWeek),
+        change: `${stats.consultationsThisWeekChange > 0 ? '+' : ''}${stats.consultationsThisWeekChange}%`,
+        trend: stats.consultationsThisWeekChange >= 0 ? 'up' as const : 'down' as const,
+        icon: <Activity className="h-4 w-4" />,
         color: 'bg-emerald-500/10 text-emerald-600',
       },
       {

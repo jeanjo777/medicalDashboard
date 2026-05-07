@@ -71,10 +71,10 @@ const DashboardStatsCards: React.FC = () => {
       color: 'green',
     },
     {
-      id: 'total-revenue',
+      id: 'consultations-week',
       title: 'Consultations Semaine',
-      value: Math.round(dashboardStats.totalRevenue / 150),
-      change: dashboardStats.totalRevenueChange,
+      value: dashboardStats.consultationsThisWeek,
+      change: dashboardStats.consultationsThisWeekChange,
       icon: TrendingUp,
       color: 'blue',
     },

@@ -67,6 +67,3 @@ export const getPatientStatusLabel = (status: string): string => {
 export const COMPLETED_STATUSES = ['completed', 'termine', 'honore'];
 export const CANCELLED_STATUSES = ['cancelled', 'no_show', 'annule', 'no-show'];
 export const IN_TREATMENT_STATUSES = ['in_treatment', 'in-treatment'];
-
-// Consultation revenue per consultation in FCFA
-export const CONSULTATION_REVENUE_FCFA = 150;

@@ -19,8 +19,8 @@ export interface DashboardStats {
   appointmentsTodayChange: number;
   patientsInTreatment: number;
   patientsInTreatmentChange: number;
-  totalRevenue: number;
-  totalRevenueChange: number;
+  consultationsThisWeek: number;
+  consultationsThisWeekChange: number;
   newPatientsThisMonth: number;
   newPatientsThisMonthChange: number;
 }
@@ -125,9 +125,6 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
     ? Number(((patientsInTreatmentLastWeek / totalPatients) * 100).toFixed(1))
     : 0;
 
-  const revenueThisWeek = consultationsThisWeek * 150;
-  const revenueLastWeek = consultationsLastWeek * 150;
-
   logger.info('[useDashboardStatsQuery] Stats calculated:', {
     appointmentsToday,
     patientsInTreatment: treatmentPercentage,
@@ -147,10 +144,10 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
       treatmentPercentage,
       treatmentPercentageLastWeek
     ),
-    totalRevenue: revenueThisWeek,
-    totalRevenueChange: calculatePercentageChange(
-      revenueThisWeek,
-      revenueLastWeek
+    consultationsThisWeek,
+    consultationsThisWeekChange: calculatePercentageChange(
+      consultationsThisWeek,
+      consultationsLastWeek
     ),
     newPatientsThisMonth,
     newPatientsThisMonthChange: calculatePercentageChange(
@@ -176,8 +173,8 @@ export const useDashboardStatsQuery = () => {
       appointmentsTodayChange: 0,
       patientsInTreatment: 0,
       patientsInTreatmentChange: 0,
-      totalRevenue: 0,
-      totalRevenueChange: 0,
+      consultationsThisWeek: 0,
+      consultationsThisWeekChange: 0,
       newPatientsThisMonth: 0,
       newPatientsThisMonthChange: 0,
     },

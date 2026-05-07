@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS appointments (
     patient_email text,
     patient_phone text,
     appointment_date date,
-    appointment_time text,
+    appointment_time time,
     message text,
     status text DEFAULT 'a_venir',
     patient_id uuid REFERENCES patients(id) ON DELETE CASCADE,
@@ -251,16 +251,7 @@ CREATE INDEX IF NOT EXISTS idx_appointment_requests_created ON appointment_reque
 -- AUTH & SECURITY TABLES
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS medical_users (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    email text UNIQUE NOT NULL,
-    username text UNIQUE NOT NULL,
-    password_hash text NOT NULL,
-    role text DEFAULT 'doctor',
-    is_active boolean DEFAULT true,
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now()
-);
+-- NOTE: medical_users table removed (was duplicate of medics, never used)
 
 CREATE TABLE IF NOT EXISTS login_attempts (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -635,8 +626,26 @@ ON CONFLICT (username) DO NOTHING;
 -- GRANT PERMISSIONS TO ROLES
 -- ============================================================
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+-- Anon: read-only on non-sensitive tables, write on appointment_requests (public form)
+GRANT SELECT ON patients, appointments, consultations, consultation_messages,
+    notifications, activity_log, analytics_stats, analytics_departement,
+    analytics_medecins, analytics_flux_patients, analytics_pathologies,
+    analytics_recuperation, analytics_systemes, analytics_alerts,
+    emails, received_emails, reminder_templates TO anon;
+GRANT SELECT, INSERT ON appointment_requests TO anon;
+GRANT SELECT (id, username, nom, prenom, specialite, telephone, phone, avatar_url, is_active) ON medics TO anon;
+
+-- Authenticated: full CRUD on clinical tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON patients, appointments, consultations,
+    consultation_messages, notifications, activity_log, emails, received_emails,
+    appointment_reminders, appointment_requests, login_attempts,
+    password_reset_tokens, password_reset_attempts,
+    analytics_stats, analytics_departement, analytics_medecins,
+    analytics_flux_patients, analytics_pathologies, analytics_recuperation,
+    analytics_systemes, analytics_alerts, reminder_templates TO authenticated;
+GRANT SELECT, UPDATE ON medics TO authenticated;
+
+-- Service role: full access
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;
@@ -647,5 +656,82 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO service_role;
 
+-- ============================================================
+-- ROW LEVEL SECURITY (RLS)
+-- ============================================================
+
+-- Enable RLS on all sensitive tables
+ALTER TABLE patients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE medics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE consultations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE consultation_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE emails ENABLE ROW LEVEL SECURITY;
+ALTER TABLE received_emails ENABLE ROW LEVEL SECURITY;
+ALTER TABLE appointment_reminders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE login_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE password_reset_tokens ENABLE ROW LEVEL SECURITY;
+
+-- Anon: can only read non-sensitive data, insert appointment requests
+ALTER TABLE appointment_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY anon_insert_requests ON appointment_requests FOR INSERT TO anon WITH CHECK (true);
+CREATE POLICY anon_read_requests ON appointment_requests FOR SELECT TO anon USING (true);
+
+-- Patients: authenticated can do everything
+CREATE POLICY auth_all_patients ON patients FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_patients ON patients FOR SELECT TO anon USING (true);
+
+-- Medics: authenticated can read all, update own
+CREATE POLICY auth_read_medics ON medics FOR SELECT TO authenticated USING (true);
+CREATE POLICY auth_update_own_medic ON medics FOR UPDATE TO authenticated USING (true);
+CREATE POLICY anon_read_medics ON medics FOR SELECT TO anon USING (true);
+
+-- Appointments: authenticated full access, anon read-only
+CREATE POLICY auth_all_appointments ON appointments FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_appointments ON appointments FOR SELECT TO anon USING (true);
+
+-- Consultations: authenticated only
+CREATE POLICY auth_all_consultations ON consultations FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_all_consultation_msgs ON consultation_messages FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Notifications: authenticated only
+CREATE POLICY auth_all_notifications ON notifications FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Activity log: authenticated only
+CREATE POLICY auth_all_activity ON activity_log FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Emails: authenticated only
+CREATE POLICY auth_all_emails ON emails FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_all_received_emails ON received_emails FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Reminders: authenticated only
+CREATE POLICY auth_all_reminders ON appointment_reminders FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Security tables: authenticated only (for functions service)
+CREATE POLICY auth_all_login_attempts ON login_attempts FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY auth_all_reset_tokens ON password_reset_tokens FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Analytics: authenticated full, anon read
+CREATE POLICY auth_all_analytics_stats ON analytics_stats FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_stats ON analytics_stats FOR SELECT TO anon USING (true);
+CREATE POLICY auth_all_analytics_dept ON analytics_departement FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_dept ON analytics_departement FOR SELECT TO anon USING (true);
+CREATE POLICY auth_all_analytics_med ON analytics_medecins FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_med ON analytics_medecins FOR SELECT TO anon USING (true);
+CREATE POLICY auth_all_analytics_flux ON analytics_flux_patients FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_flux ON analytics_flux_patients FOR SELECT TO anon USING (true);
+CREATE POLICY auth_all_analytics_patho ON analytics_pathologies FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_patho ON analytics_pathologies FOR SELECT TO anon USING (true);
+CREATE POLICY auth_all_analytics_recup ON analytics_recuperation FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_recup ON analytics_recuperation FOR SELECT TO anon USING (true);
+CREATE POLICY auth_all_analytics_sys ON analytics_systemes FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_sys ON analytics_systemes FOR SELECT TO anon USING (true);
+CREATE POLICY auth_all_analytics_alerts ON analytics_alerts FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY anon_read_analytics_alerts ON analytics_alerts FOR SELECT TO anon USING (true);
+
+-- service_role bypasses RLS by default (BYPASSRLS), no policies needed
+
 -- Done
-SELECT 'MediCare Pro database initialized successfully' AS status;
+SELECT 'MediCare Pro database initialized successfully (with RLS)' AS status;

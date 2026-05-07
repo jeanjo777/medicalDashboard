@@ -5,7 +5,24 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// CORS: restrict to known origins
+const ALLOWED_ORIGINS = [
+  'https://medical.simpliceake.com',
+  'http://localhost:5173',
+  'http://localhost:4173',
+];
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, mobile apps)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: '5mb' }));
 
 // ============================================================
@@ -36,7 +53,17 @@ function recordLoginAttempt(ip) {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'medicare-pro-jwt-secret-2026-production-key!!';
+// Fail fast if required secrets are missing
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+const DB_PASSWORD = process.env.DB_PASSWORD;
+if (!DB_PASSWORD) {
+  console.error('FATAL: DB_PASSWORD environment variable is required');
+  process.exit(1);
+}
 const REGISTRATION_SECRET = process.env.REGISTRATION_SECRET || 'MEDICARE2026';
 
 const pool = new Pool({
@@ -44,7 +71,7 @@ const pool = new Pool({
   port: 5432,
   database: 'medicare',
   user: 'medicare',
-  password: process.env.DB_PASSWORD || 'MediCarePg2026',
+  password: DB_PASSWORD,
 });
 
 // Helper: extract and verify JWT from Authorization header
@@ -558,11 +585,13 @@ app.post('/functions/v1/ai-doctor-assistant', async (req, res) => {
 
     if (stream) {
       // ===== SSE STREAMING =====
+      const origin = req.headers.origin;
+      const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': allowedOrigin,
       });
 
       let fullResponse = '';

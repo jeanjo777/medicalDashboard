@@ -216,7 +216,7 @@ const ModernDashboardPageHybrid: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 sm:gap-3">
                       <QuickStat label="Nouveaux patients" value={String(dashStats.newPatientsThisMonth)} change={`${dashStats.newPatientsThisMonthChange > 0 ? '+' : ''}${dashStats.newPatientsThisMonthChange}%`} positive={dashStats.newPatientsThisMonthChange >= 0} />
                       <QuickStat label="RDV aujourd'hui" value={String(dashStats.appointmentsToday)} change={`${dashStats.appointmentsTodayChange > 0 ? '+' : ''}${dashStats.appointmentsTodayChange}%`} positive={dashStats.appointmentsTodayChange >= 0} />
-                      <QuickStat label="Revenus" value={dashStats.totalRevenue.toLocaleString('fr-FR')} change={`${dashStats.totalRevenueChange > 0 ? '+' : ''}${dashStats.totalRevenueChange}%`} positive={dashStats.totalRevenueChange >= 0} suffix=" FCFA" />
+                      <QuickStat label="Consultations" value={String(dashStats.consultationsThisWeek)} change={`${dashStats.consultationsThisWeekChange > 0 ? '+' : ''}${dashStats.consultationsThisWeekChange}%`} positive={dashStats.consultationsThisWeekChange >= 0} suffix=" cette sem." />
                       <QuickStat label="En traitement" value={`${dashStats.patientsInTreatment}%`} change={`${dashStats.patientsInTreatmentChange > 0 ? '+' : ''}${dashStats.patientsInTreatmentChange}%`} positive={dashStats.patientsInTreatmentChange >= 0} />
                     </div>
                   </div>
