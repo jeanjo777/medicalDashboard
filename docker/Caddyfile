@@ -1,5 +1,7 @@
 {
     email jeanjo@simpliceake.com
+    acme_ca https://acme-v02.api.letsencrypt.org/directory
+    ocsp_stapling off
 }
 
 medical.simpliceake.com {
