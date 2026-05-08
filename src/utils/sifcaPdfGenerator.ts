@@ -484,10 +484,8 @@ function genCertificatMedical(doc: jsPDF, d: SifcaDocData) {
   doc.setFont('helvetica', 'normal');
   doc.text('En foi de quoi, je d\u00e9livre ce certificat pour servir et valoir ce que de droit.', M, y);
 
-  y += 28;
-  doc.setFontSize(FONT_SECTION);
-  doc.setFont('helvetica', 'bold');
-  doc.text('LE MEDECIN', PAGE_W - M, y, { align: 'right' });
+  y += 24;
+  drawSignature(doc, y);
 }
 
 // ════════════════════════════════════════════════════════════════

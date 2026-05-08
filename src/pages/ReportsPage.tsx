@@ -69,6 +69,11 @@ const ReportsPage: React.FC = () => {
   const [dureeGrossesse, setDureeGrossesse] = useState('');
   const [terme, setTerme] = useState('');
 
+  // Bulletin de consultation fields
+  const [service, setService] = useState('');
+  const [consultationEn, setConsultationEn] = useState('');
+  const [renseignementsCliniques, setRenseignementsCliniques] = useState('');
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounce search input — 300 ms
@@ -150,6 +155,9 @@ const ReportsPage: React.FC = () => {
     setPrescriptionText('');
     setDureeGrossesse('');
     setTerme('');
+    setService('');
+    setConsultationEn('');
+    setRenseignementsCliniques('');
     setDialogOpen(true);
   };
 
@@ -177,6 +185,9 @@ const ReportsPage: React.FC = () => {
       prescriptions: prescriptionText.trim() ? prescriptionText.trim().split('\n').filter(Boolean) : undefined,
       dureeGrossesse: dureeGrossesse || undefined,
       terme: terme || undefined,
+      service: service || undefined,
+      consultationEn: consultationEn || undefined,
+      renseignementsCliniques: renseignementsCliniques || undefined,
     });
     setDialogOpen(false);
   };
@@ -565,6 +576,41 @@ const ReportsPage: React.FC = () => {
                       title="Date du terme"
                       aria-label="Date du terme de la grossesse"
                       className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                </>
+              )}
+
+              {selectedDocType === 'bulletin-consultation' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Service</label>
+                    <input
+                      type="text"
+                      value={service}
+                      onChange={(e) => setService(e.target.value)}
+                      placeholder="Ex: Médecine générale, Urgences..."
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Consultation en</label>
+                    <input
+                      type="text"
+                      value={consultationEn}
+                      onChange={(e) => setConsultationEn(e.target.value)}
+                      placeholder="Ex: Médecine du travail, Pédiatrie..."
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Renseignements cliniques</label>
+                    <textarea
+                      value={renseignementsCliniques}
+                      onChange={(e) => setRenseignementsCliniques(e.target.value)}
+                      placeholder="Observations, symptômes, diagnostic..."
+                      rows={5}
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition resize-none"
                     />
                   </div>
                 </>
