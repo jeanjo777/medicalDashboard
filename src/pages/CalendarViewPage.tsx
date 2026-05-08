@@ -1121,7 +1121,7 @@ const CalendarViewPage: React.FC = () => {
                 /* Week View */
                 <div className="theme-bg-secondary rounded-2xl border theme-border overflow-hidden shadow-sm">
                   <div className="overflow-x-auto">
-                    <div className="min-w-[800px]">
+                    <div className="min-w-[600px] sm:min-w-[800px]">
                       {/* Day Headers */}
                       <div className="grid grid-cols-8 border-b border-[var(--border-color)]">
                         <div className="p-3 bg-[var(--bg-input)] border-r border-[var(--border-color)] flex items-center justify-center">

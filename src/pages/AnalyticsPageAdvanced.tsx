@@ -151,10 +151,10 @@ const AnalyticsPageAdvanced: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen theme-bg-primary overflow-hidden transition-colors duration-300">
+    <div className="flex min-h-screen theme-bg-primary transition-colors duration-300">
       <MedicalSidebarRefined activeItem={pageConfig.sidebarId} onCollapsedChange={setSidebarCollapsed} />
 
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <header className="theme-bg-secondary border-b theme-border px-3 sm:px-4 md:px-6 py-3 sm:py-4 transition-colors duration-300">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="min-w-0 ml-12 lg:ml-0">

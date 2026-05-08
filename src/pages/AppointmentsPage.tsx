@@ -620,7 +620,7 @@ const AppointmentsPage: React.FC = () => {
 
               {/* Filters Row */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4">
-                <div className="relative flex-1 max-w-md">
+                <div className="relative flex-1 sm:max-w-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 theme-text-muted" size={18} aria-hidden="true" />
                   <input
                     type="search"

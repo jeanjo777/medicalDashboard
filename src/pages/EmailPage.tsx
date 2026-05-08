@@ -402,8 +402,8 @@ const EmailPage: React.FC = () => {
         </header>
 
         {/* Tab bar */}
-        <div className="bg-[#1e293b]/80 border-b border-[#334155]/50 px-4 lg:px-8">
-          <div className="flex">
+        <div className="bg-[#1e293b]/80 border-b border-[#334155]/50 px-2 sm:px-4 lg:px-8">
+          <div className="flex overflow-x-auto scrollbar-hide">
             {(
               [
                 { id: 'composer', label: 'Composer', icon: <Plus size={15} /> },
