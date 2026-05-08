@@ -636,7 +636,8 @@ function genBulletinConsultation(doc: jsPDF, d: SifcaDocData) {
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(COLOR_VALUE);
   doc.text(calculateAge(d.date_of_birth) || '', M, y + 5.5);
-  doc.text(d.gender || '', 100, y + 5.5);
+  const sexLabel = d.gender === 'male' ? 'Masculin' : d.gender === 'female' ? 'Féminin' : (d.gender || '');
+  doc.text(sexLabel, 100, y + 5.5);
   y += FIELD_GAP;
 
   y = drawMedicalField(doc, 'CONSULTATION EN', d.consultationEn || '', y);

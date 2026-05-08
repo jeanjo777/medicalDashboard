@@ -160,6 +160,7 @@ const ReportsPage: React.FC = () => {
       first_name: selectedPatient.first_name,
       last_name: selectedPatient.last_name,
       date_of_birth: selectedPatient.date_of_birth,
+      gender: selectedPatient.gender,
       visitType: visitType as 'consultation' | 'systematique' | 'embauche' | undefined,
       filiale: filiale || undefined,
       medecin: medecin || undefined,
