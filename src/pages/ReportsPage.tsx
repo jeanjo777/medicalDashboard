@@ -97,7 +97,7 @@ const ReportsPage: React.FC = () => {
         'id, name, first_name, last_name, date_of_birth, gender, status, visit_type, filiale, poids, taille, tension_arterielle, urines_albumine, urines_sucre',
         { count: 'exact' }
       )
-      .order('name', { ascending: true })
+      .order('created_at', { ascending: false })
       .range(from, from + PAGE_SIZE - 1);
 
     if (q) {
