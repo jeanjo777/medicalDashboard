@@ -65,6 +65,10 @@ const ReportsPage: React.FC = () => {
   // Ordonnance fields
   const [prescriptionText, setPrescriptionText] = useState('');
 
+  // Certificat de tension fields
+  const [tensionDroit, setTensionDroit] = useState('');
+  const [tensionGauche, setTensionGauche] = useState('');
+
   // Certificat de grossesse fields
   const [dureeGrossesse, setDureeGrossesse] = useState('');
   const [terme, setTerme] = useState('');
@@ -153,6 +157,8 @@ const ReportsPage: React.FC = () => {
     setProlongation('');
     setDateComplication('');
     setPrescriptionText('');
+    setTensionDroit('');
+    setTensionGauche('');
     setDureeGrossesse('');
     setTerme('');
     setService('');
@@ -183,6 +189,8 @@ const ReportsPage: React.FC = () => {
       prolongation: prolongation || undefined,
       dateComplication: dateComplication || undefined,
       prescriptions: prescriptionText.trim() ? prescriptionText.trim().split('\n').filter(Boolean) : undefined,
+      tensionDroit: tensionDroit || undefined,
+      tensionGauche: tensionGauche || undefined,
       dureeGrossesse: dureeGrossesse || undefined,
       terme: terme || undefined,
       service: service || undefined,
@@ -482,6 +490,31 @@ const ReportsPage: React.FC = () => {
                   className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
                 />
               </div>
+
+              {selectedDocType === 'certificat-tension' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Tension bras droit</label>
+                    <input
+                      type="text"
+                      value={tensionDroit}
+                      onChange={(e) => setTensionDroit(e.target.value)}
+                      placeholder={selectedPatient?.tension_arterielle || 'Ex: 12/8'}
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Tension bras gauche</label>
+                    <input
+                      type="text"
+                      value={tensionGauche}
+                      onChange={(e) => setTensionGauche(e.target.value)}
+                      placeholder="Ex: 12/8"
+                      className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                    />
+                  </div>
+                </div>
+              )}
 
               {selectedDocType === 'arret-travail' && (
                 <>
