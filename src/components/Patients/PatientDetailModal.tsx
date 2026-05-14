@@ -1000,7 +1000,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
       {/* SIFCA Report Dialog */}
       {showSifcaDialog && patient && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#1e293b] border border-[#334155] rounded-2xl w-full max-w-sm mx-4 shadow-2xl">
+          <div className="bg-[#1e293b] border border-[#334155] rounded-2xl w-full max-w-md mx-4 shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[#334155]">
               <div className="flex items-center gap-2">
                 <Printer size={18} className="text-emerald-400" />
@@ -1015,7 +1015,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
               {/* Type de document */}
               <div>
                 <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Type de document</label>
-                <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
                   {SIFCA_DOC_TYPES.map((dt) => (
                     <label
                       key={dt.id}
