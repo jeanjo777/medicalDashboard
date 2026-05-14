@@ -129,6 +129,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const [sendConsultationEn, setSendConsultationEn] = useState('');
   const [sendRenseignements, setSendRenseignements] = useState('');
   const [customEmail, setCustomEmail] = useState('');
+  const [transferError, setTransferError] = useState('');
 
   useEffect(() => {
     if (showTransferDialog && doctors.length === 0) {
@@ -145,6 +146,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
     if (!toEmail) return;
 
     setTransferring(true);
+    setTransferError('');
     const p = transferPatient;
     const age = p.date_of_birth ? `${Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / 31557600000)} ans` : 'N/A';
 
@@ -223,13 +225,17 @@ const PatientsViewPageEnhanced: React.FC = () => {
           setShowTransferDialog(false);
           setTransferPatient(null);
           setSelectedDoctorId('');
-          setSendDocType('');
+          setSendDocType('fiche-cms');
           setSendIncludeInfo(true);
+          setCustomEmail('');
           setTransferSuccess(false);
         }, 1500);
+      } else {
+        setTransferError(result.error || 'Erreur envoi email');
       }
-    } catch {
+    } catch (err) {
       setTransferring(false);
+      setTransferError('Impossible de contacter le serveur');
     }
   };
   const {
@@ -838,7 +844,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
                   <p className="theme-text-secondary text-xs">{transferPatient.name}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType('fiche-cms'); setCustomEmail(''); }} className="theme-text-secondary hover:theme-text-primary transition-colors" aria-label="Fermer">
+              <button type="button" onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType('fiche-cms'); setCustomEmail(''); setTransferError(''); }} className="theme-text-secondary hover:theme-text-primary transition-colors" aria-label="Fermer">
                 <X size={18} />
               </button>
             </div>
@@ -1022,10 +1028,16 @@ const PatientsViewPageEnhanced: React.FC = () => {
               </div>
             </div>
 
+            {transferError && (
+              <div className="mx-5 mb-0 p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                {transferError}
+              </div>
+            )}
+
             <div className="flex items-center justify-end gap-2 px-5 py-4 border-t theme-border flex-shrink-0">
               <button
                 type="button"
-                onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType('fiche-cms'); setCustomEmail(''); }}
+                onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType('fiche-cms'); setCustomEmail(''); setTransferError(''); }}
                 className="px-4 py-2 text-sm theme-text-secondary hover:theme-text-primary rounded-xl transition-all"
               >
                 Annuler
