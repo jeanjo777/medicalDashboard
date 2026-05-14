@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 import logger from '../utils/logger';
 
 export interface Notification {
@@ -25,9 +26,11 @@ export function useNotifications() {
   useEffect(() => {
     fetchNotifications();
 
-    // Poll for new notifications every 30s
-    const id = setInterval(fetchNotifications, 30_000);
-    return () => clearInterval(id);
+    // Poll for new notifications every 15s + refresh on focus
+    const id = setInterval(fetchNotifications, 15_000);
+    const onFocus = () => fetchNotifications();
+    window.addEventListener('focus', onFocus);
+    return () => { clearInterval(id); window.removeEventListener('focus', onFocus); };
   }, []);
 
   const fetchNotifications = async () => {
@@ -35,16 +38,27 @@ export function useNotifications() {
       setIsLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
+      const medicId = getCurrentMedicId();
+      let query = supabase
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(50);
 
+      if (medicId) query = query.eq('user_id', medicId);
+
+      const { data, error: fetchError } = await query;
+
       if (fetchError) throw fetchError;
 
-      setNotifications(data || []);
-      setUnreadCount((data || []).filter((n) => !n.is_read).length);
+      // Map DB column 'read' to 'is_read' for the interface
+      const mapped = (data || []).map((n: any) => ({
+        ...n,
+        is_read: n.read ?? n.is_read ?? false,
+      }));
+
+      setNotifications(mapped);
+      setUnreadCount(mapped.filter((n) => !n.is_read).length);
     } catch (err) {
       logger.error('[Notifications] Fetch error:', err);
       setError(err as Error);
@@ -57,7 +71,7 @@ export function useNotifications() {
     try {
       const { error: updateError } = await supabase
         .from('notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
+        .update({ read: true, read_at: new Date().toISOString() })
         .eq('id', notificationId);
 
       if (updateError) throw updateError;
@@ -86,7 +100,7 @@ export function useNotifications() {
 
       const { error: updateError } = await supabase
         .from('notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
+        .update({ read: true, read_at: new Date().toISOString() })
         .in('id', unreadIds);
 
       if (updateError) throw updateError;
@@ -128,22 +142,22 @@ export function useNotifications() {
 
   const createNotification = async (notification: Omit<Notification, 'id' | 'user_id' | 'created_at' | 'is_read'>) => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      const medicId = getCurrentMedicId();
+      if (!medicId) throw new Error('User not authenticated');
 
       const { data, error: insertError } = await supabase
         .from('notifications')
         .insert({
           ...notification,
-          user_id: userData.user.id,
-          is_read: false
+          user_id: medicId,
+          read: false,
         })
-        .select()
-        .single();
+        .select();
 
       if (insertError) throw insertError;
 
-      return data as Notification;
+      const created = Array.isArray(data) ? data[0] : data;
+      return { ...created, is_read: false } as Notification;
     } catch (err) {
       logger.error('[Notifications] Create error:', err);
       throw err;
