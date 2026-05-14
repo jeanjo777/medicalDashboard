@@ -1,6 +1,9 @@
 import { jsPDF } from 'jspdf';
 import { SIFCA_LOGO_BW } from './sifcaLogoBw';
 import { DOCTOR_STAMP } from './doctorStamp';
+import { STAMP_KARAMA } from './stampKarama';
+import { STAMP_ZAGO } from './stampZago';
+import { getUser } from './auth';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTES DE DESIGN
@@ -169,12 +172,26 @@ function drawSignature(doc: jsPDF, y: number): number {
   doc.text('Le M\u00e9decin :', 130, y);
   y += 10;
 
-  // Cachet du médecin (image du tampon physique)
-  const stampW = 55;
-  const stampH = 22;
+  // Cachet du médecin (image du tampon physique selon le médecin connecté)
+  const user = getUser();
+  const username = user?.username || '';
+  let stampImg = DOCTOR_STAMP;
+  let stampW = 55;
+  let stampH = 22;
+
+  if (username === 'pr.karama' || username.includes('karama')) {
+    stampImg = STAMP_KARAMA;
+    stampW = 45;
+    stampH = 38;
+  } else if (username === 'dr.zago' || username.includes('zago')) {
+    stampImg = STAMP_ZAGO;
+    stampW = 55;
+    stampH = 22;
+  }
+
   const stampX = 140;
   const stampY = y - 2;
-  doc.addImage(DOCTOR_STAMP, 'PNG', stampX, stampY, stampW, stampH);
+  doc.addImage(stampImg, 'PNG', stampX, stampY, stampW, stampH);
   return stampY + stampH;
 }
 
