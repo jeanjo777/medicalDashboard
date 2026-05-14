@@ -134,7 +134,8 @@ function drawHeader(doc: jsPDF, data: ReportData): number {
 
   const user = getUser();
   doc.setFontSize(9);
-  doc.text(`Médecin : ${user?.username || 'N/A'}`, PAGE_W - M, 12, { align: 'right' });
+  const medicName = user ? `${user.prenom || ''} ${user.nom || ''}`.trim() || user.username : 'N/A';
+  doc.text(`Médecin : ${medicName}`, PAGE_W - M, 12, { align: 'right' });
   doc.text(`Date : ${new Date().toLocaleDateString('fr-FR')}`, PAGE_W - M, 17, { align: 'right' });
 
   const titleY = 58;
