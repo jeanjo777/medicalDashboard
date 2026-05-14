@@ -69,7 +69,7 @@ if (!DB_PASSWORD) {
 }
 const REGISTRATION_SECRET = process.env.REGISTRATION_SECRET || 'MEDICARE2026';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const EMAIL_FROM = process.env.EMAIL_FROM || 'MediCare Pro <onboarding@resend.dev>';
+const EMAIL_FROM = process.env.EMAIL_FROM || 'MediCare Pro <noreply@simpliceake.com>';
 const APP_URL = process.env.APP_URL || 'https://medical.simpliceake.com';
 
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
