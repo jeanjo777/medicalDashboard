@@ -89,6 +89,19 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
   const [sifcaVisitType, setSifcaVisitType] = useState<'consultation' | 'systematique' | 'embauche' | ''>('');
   const [sifcaFiliale, setSifcaFiliale] = useState('');
   const [sifcaMedecin, setSifcaMedecin] = useState('');
+  const [sifcaTensionDroit, setSifcaTensionDroit] = useState('');
+  const [sifcaTensionGauche, setSifcaTensionGauche] = useState('');
+  const [sifcaMatricule, setSifcaMatricule] = useState('');
+  const [sifcaDirection, setSifcaDirection] = useState('');
+  const [sifcaArret, setSifcaArret] = useState('');
+  const [sifcaProlongation, setSifcaProlongation] = useState('');
+  const [sifcaDateComplication, setSifcaDateComplication] = useState('');
+  const [sifcaDureeGrossesse, setSifcaDureeGrossesse] = useState('');
+  const [sifcaTerme, setSifcaTerme] = useState('');
+  const [sifcaPrescriptions, setSifcaPrescriptions] = useState('');
+  const [sifcaService, setSifcaService] = useState('');
+  const [sifcaConsultationEn, setSifcaConsultationEn] = useState('');
+  const [sifcaRenseignements, setSifcaRenseignements] = useState('');
   const [sifcaSendEmail, setSifcaSendEmail] = useState(false);
   const [sifcaDoctors, setSifcaDoctors] = useState<{ id: string; nom: string; prenom: string; email: string; specialite: string }[]>([]);
   const [sifcaTargetDoctor, setSifcaTargetDoctor] = useState('');
@@ -1106,6 +1119,89 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                 </div>
               )}
 
+              {/* Champs Certificat de Tension */}
+              {sifcaDocType === 'certificat-tension' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Tension bras droit</label>
+                    <input type="text" value={sifcaTensionDroit} onChange={(e) => setSifcaTensionDroit(e.target.value)} placeholder={patient?.tension_arterielle || 'Ex: 12/8'} className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Tension bras gauche</label>
+                    <input type="text" value={sifcaTensionGauche} onChange={(e) => setSifcaTensionGauche(e.target.value)} placeholder="Ex: 12/8" className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                </div>
+              )}
+
+              {/* Champs Arret de Travail */}
+              {sifcaDocType === 'arret-travail' && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Matricule</label>
+                      <input type="text" value={sifcaMatricule} onChange={(e) => setSifcaMatricule(e.target.value)} placeholder="N° matricule" className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Direction</label>
+                      <input type="text" value={sifcaDirection} onChange={(e) => setSifcaDirection(e.target.value)} placeholder="Direction / Service" className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Duree arret de travail</label>
+                    <input type="text" value={sifcaArret} onChange={(e) => setSifcaArret(e.target.value)} placeholder="Ex: 5 jours, 2 semaines..." className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Prolongation</label>
+                    <input type="text" value={sifcaProlongation} onChange={(e) => setSifcaProlongation(e.target.value)} placeholder="Ex: 3 jours (optionnel)" className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Sauf complication, a dater du</label>
+                    <input type="date" value={sifcaDateComplication} onChange={(e) => setSifcaDateComplication(e.target.value)} title="Date" className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                </>
+              )}
+
+              {/* Champs Certificat de Grossesse */}
+              {sifcaDocType === 'certificat-grossesse' && (
+                <>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Duree de grossesse</label>
+                    <input type="text" value={sifcaDureeGrossesse} onChange={(e) => setSifcaDureeGrossesse(e.target.value)} placeholder="Ex: 6 mois, 28 semaines..." className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Dont le terme est fixe le</label>
+                    <input type="date" value={sifcaTerme} onChange={(e) => setSifcaTerme(e.target.value)} title="Date du terme" className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                </>
+              )}
+
+              {/* Champs Ordonnance Medicale */}
+              {sifcaDocType === 'ordonnance-medicale' && (
+                <div>
+                  <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Prescriptions</label>
+                  <textarea value={sifcaPrescriptions} onChange={(e) => setSifcaPrescriptions(e.target.value)} placeholder={"Une prescription par ligne :\nParacetamol 1g x3/jour\nAmoxicilline 500mg x2/jour"} rows={6} className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none" />
+                  <p className="text-xs text-gray-500 mt-1">Une prescription par ligne</p>
+                </div>
+              )}
+
+              {/* Champs Bulletin de Consultation */}
+              {sifcaDocType === 'bulletin-consultation' && (
+                <>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Service</label>
+                    <input type="text" value={sifcaService} onChange={(e) => setSifcaService(e.target.value)} placeholder="Ex: Medecine generale, Urgences..." className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Consultation en</label>
+                    <input type="text" value={sifcaConsultationEn} onChange={(e) => setSifcaConsultationEn(e.target.value)} placeholder="Ex: Medecine du travail, Pediatrie..." className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Renseignements cliniques</label>
+                    <textarea value={sifcaRenseignements} onChange={(e) => setSifcaRenseignements(e.target.value)} placeholder="Observations, symptomes, diagnostic..." rows={4} className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-colors resize-none" />
+                  </div>
+                </>
+              )}
+
               {/* Option envoyer par email */}
               <div className="mt-2 pt-3 border-t border-[#334155]">
                 <label className="flex items-center gap-2.5 cursor-pointer">
@@ -1174,6 +1270,19 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     visitType: sifcaVisitType || undefined,
                     filiale: sifcaFiliale || undefined,
                     medecin: sifcaMedecin || undefined,
+                    tensionDroit: sifcaTensionDroit || undefined,
+                    tensionGauche: sifcaTensionGauche || undefined,
+                    matricule: sifcaMatricule || undefined,
+                    direction: sifcaDirection || undefined,
+                    arret: sifcaArret || undefined,
+                    prolongation: sifcaProlongation || undefined,
+                    dateComplication: sifcaDateComplication || undefined,
+                    dureeGrossesse: sifcaDureeGrossesse || undefined,
+                    terme: sifcaTerme || undefined,
+                    prescriptions: sifcaPrescriptions.trim() ? sifcaPrescriptions.trim().split('\n').filter(Boolean) : undefined,
+                    service: sifcaService || undefined,
+                    consultationEn: sifcaConsultationEn || undefined,
+                    renseignementsCliniques: sifcaRenseignements || undefined,
                   };
 
                   // Generate and download PDF
