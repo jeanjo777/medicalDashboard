@@ -379,15 +379,15 @@ app.post('/functions/v1/send-email', async (req, res) => {
 
     if (error) {
       await pool.query(
-        `INSERT INTO emails (to_email, subject, body, status, error_message) VALUES ($1, $2, $3, 'failed', $4)`,
-        [Array.isArray(to) ? to[0] : to, subject, html || text || '', error.message]
+        `INSERT INTO emails (to_email, subject, body, status, error_message, medic_id) VALUES ($1, $2, $3, 'failed', $4, $5)`,
+        [Array.isArray(to) ? to[0] : to, subject, html || text || '', error.message, claims.sub]
       );
       return res.status(500).json({ error: 'Echec envoi email', details: error.message });
     }
 
     await pool.query(
-      `INSERT INTO emails (to_email, subject, body, status, resend_id, sent_at) VALUES ($1, $2, $3, 'sent', $4, NOW())`,
-      [Array.isArray(to) ? to[0] : to, subject, html || text || '', data.id]
+      `INSERT INTO emails (to_email, subject, body, status, resend_id, sent_at, medic_id) VALUES ($1, $2, $3, 'sent', $4, NOW(), $5)`,
+      [Array.isArray(to) ? to[0] : to, subject, html || text || '', data.id, claims.sub]
     );
 
     res.json({ success: true, messageId: data.id });

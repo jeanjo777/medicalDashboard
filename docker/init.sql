@@ -73,7 +73,7 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 -- Patients
 CREATE TABLE IF NOT EXISTS patients (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    email text UNIQUE,
+    email text,
     name text,
     first_name text DEFAULT '',
     last_name text DEFAULT '',
@@ -357,8 +357,11 @@ CREATE TABLE IF NOT EXISTS emails (
     template_used text,
     error_message text,
     sent_at timestamptz,
-    created_at timestamptz NOT NULL DEFAULT now()
+    created_at timestamptz NOT NULL DEFAULT now(),
+    medic_id uuid REFERENCES medics(id) ON DELETE SET NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_emails_medic_id ON emails(medic_id);
 
 CREATE TABLE IF NOT EXISTS received_emails (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -373,8 +376,11 @@ CREATE TABLE IF NOT EXISTS received_emails (
     headers jsonb,
     attachments jsonb,
     is_read boolean NOT NULL DEFAULT false,
-    received_at timestamptz NOT NULL DEFAULT now()
+    received_at timestamptz NOT NULL DEFAULT now(),
+    medic_id uuid REFERENCES medics(id) ON DELETE SET NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_received_emails_medic_id ON received_emails(medic_id);
 
 -- ============================================================
 -- REMINDERS

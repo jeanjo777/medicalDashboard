@@ -290,6 +290,7 @@ const EmailPage: React.FC = () => {
       const { data, error } = await supabase
         .from('emails')
         .select('*')
+        .eq('medic_id', getCurrentMedicId()!)
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -313,6 +314,7 @@ const EmailPage: React.FC = () => {
       const { data, error } = await supabase
         .from('received_emails')
         .select('*')
+        .eq('medic_id', getCurrentMedicId()!)
         .order('received_at', { ascending: false })
         .limit(100);
       if (error) throw error;
