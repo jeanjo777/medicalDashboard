@@ -110,8 +110,24 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [transferring, setTransferring] = useState(false);
   const [transferSuccess, setTransferSuccess] = useState(false);
-  const [sendDocType, setSendDocType] = useState<SifcaDocType | ''>('');
+  const [sendDocType, setSendDocType] = useState<SifcaDocType>('fiche-cms');
   const [sendIncludeInfo, setSendIncludeInfo] = useState(true);
+  const [sendMedecin, setSendMedecin] = useState('');
+  const [sendVisitType, setSendVisitType] = useState('');
+  const [sendFiliale, setSendFiliale] = useState('');
+  const [sendTensionDroit, setSendTensionDroit] = useState('');
+  const [sendTensionGauche, setSendTensionGauche] = useState('');
+  const [sendMatricule, setSendMatricule] = useState('');
+  const [sendDirection, setSendDirection] = useState('');
+  const [sendArret, setSendArret] = useState('');
+  const [sendProlongation, setSendProlongation] = useState('');
+  const [sendDateComplication, setSendDateComplication] = useState('');
+  const [sendDureeGrossesse, setSendDureeGrossesse] = useState('');
+  const [sendTerme, setSendTerme] = useState('');
+  const [sendPrescriptions, setSendPrescriptions] = useState('');
+  const [sendService, setSendService] = useState('');
+  const [sendConsultationEn, setSendConsultationEn] = useState('');
+  const [sendRenseignements, setSendRenseignements] = useState('');
 
   useEffect(() => {
     if (showTransferDialog && doctors.length === 0) {
@@ -148,12 +164,28 @@ const PatientsViewPageEnhanced: React.FC = () => {
         </div>`;
     }
 
-    // Generate PDF attachment if doc type selected
+    // Generate PDF attachment
     const attachments: { filename: string; content: string }[] = [];
     if (sendDocType) {
       const result = generateSifcaDocumentBase64(sendDocType, {
         name: p.name, first_name: p.first_name, last_name: p.last_name,
         date_of_birth: p.date_of_birth, gender: p.gender,
+        medecin: sendMedecin || undefined,
+        visitType: sendVisitType as any || undefined,
+        filiale: sendFiliale || undefined,
+        tensionDroit: sendTensionDroit || undefined,
+        tensionGauche: sendTensionGauche || undefined,
+        matricule: sendMatricule || undefined,
+        direction: sendDirection || undefined,
+        arret: sendArret || undefined,
+        prolongation: sendProlongation || undefined,
+        dateComplication: sendDateComplication || undefined,
+        dureeGrossesse: sendDureeGrossesse || undefined,
+        terme: sendTerme || undefined,
+        prescriptions: sendPrescriptions.trim() ? sendPrescriptions.trim().split('\n').filter(Boolean) : undefined,
+        service: sendService || undefined,
+        consultationEn: sendConsultationEn || undefined,
+        renseignementsCliniques: sendRenseignements || undefined,
       });
       if (result) {
         attachments.push({ filename: result.filename, content: result.base64.split(',')[1] });
@@ -813,7 +845,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
               {/* Type de document */}
               <div>
                 <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Type de document</label>
-                <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-[180px] overflow-y-auto pr-1">
                   {SIFCA_DOC_TYPES.map((dt) => (
                     <label
                       key={dt.id}
@@ -833,11 +865,126 @@ const PatientsViewPageEnhanced: React.FC = () => {
                 </div>
               </div>
 
-              {/* Options */}
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={sendIncludeInfo} onChange={(e) => setSendIncludeInfo(e.target.checked)} className="accent-blue-500" />
-                <span className="text-sm theme-text-secondary">Inclure la fiche patient dans l'email</span>
-              </label>
+              {/* Médecin */}
+              <div>
+                <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Medecin</label>
+                <input type="text" value={sendMedecin} onChange={(e) => setSendMedecin(e.target.value)} placeholder="Nom du médecin (optionnel)" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+              </div>
+
+              {/* Champs Fiche CMS */}
+              {sendDocType === 'fiche-cms' && (
+                <>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Type de visite</label>
+                    <div className="space-y-1.5">
+                      {[{ value: 'consultation', label: 'Consultation' }, { value: 'systematique', label: 'Visite Systématique' }, { value: 'embauche', label: "Visite d'embauche" }].map((v) => (
+                        <label key={v.value} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all ${sendVisitType === v.value ? 'bg-blue-500/15 border border-blue-500/40' : 'theme-bg-primary border theme-border'}`}>
+                          <input type="radio" name="sendVisitType" value={v.value} checked={sendVisitType === v.value} onChange={() => setSendVisitType(v.value)} className="accent-blue-500" />
+                          <span className="text-sm theme-text-primary">{v.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Filiale</label>
+                    <select value={sendFiliale} onChange={(e) => setSendFiliale(e.target.value)} title="Filiale" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition">
+                      <option value="">— Sélectionner —</option>
+                      {['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'].map((f) => (<option key={f} value={f}>{f}</option>))}
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {/* Champs Certificat de Tension */}
+              {sendDocType === 'certificat-tension' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Tension bras droit</label>
+                    <input type="text" value={sendTensionDroit} onChange={(e) => setSendTensionDroit(e.target.value)} placeholder="Ex: 12/8" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Tension bras gauche</label>
+                    <input type="text" value={sendTensionGauche} onChange={(e) => setSendTensionGauche(e.target.value)} placeholder="Ex: 12/8" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                </div>
+              )}
+
+              {/* Champs Arrêt de Travail */}
+              {sendDocType === 'arret-travail' && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Matricule</label>
+                      <input type="text" value={sendMatricule} onChange={(e) => setSendMatricule(e.target.value)} placeholder="N° matricule" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                    </div>
+                    <div>
+                      <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Direction</label>
+                      <input type="text" value={sendDirection} onChange={(e) => setSendDirection(e.target.value)} placeholder="Direction / Service" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Durée arrêt de travail</label>
+                    <input type="text" value={sendArret} onChange={(e) => setSendArret(e.target.value)} placeholder="Ex: 5 jours, 2 semaines..." className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Prolongation</label>
+                    <input type="text" value={sendProlongation} onChange={(e) => setSendProlongation(e.target.value)} placeholder="Ex: 3 jours (optionnel)" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Sauf complication, à dater du</label>
+                    <input type="date" value={sendDateComplication} onChange={(e) => setSendDateComplication(e.target.value)} title="Date" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                </>
+              )}
+
+              {/* Champs Certificat de Grossesse */}
+              {sendDocType === 'certificat-grossesse' && (
+                <>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Durée de grossesse</label>
+                    <input type="text" value={sendDureeGrossesse} onChange={(e) => setSendDureeGrossesse(e.target.value)} placeholder="Ex: 6 mois, 28 semaines..." className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Dont le terme est fixé le</label>
+                    <input type="date" value={sendTerme} onChange={(e) => setSendTerme(e.target.value)} title="Date du terme" className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                </>
+              )}
+
+              {/* Champs Ordonnance Médicale */}
+              {sendDocType === 'ordonnance-medicale' && (
+                <div>
+                  <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Prescriptions</label>
+                  <textarea value={sendPrescriptions} onChange={(e) => setSendPrescriptions(e.target.value)} placeholder={"Une prescription par ligne :\nParacétamol 1g x3/jour\nAmoxicilline 500mg x2/jour"} rows={6} className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition resize-none" />
+                  <p className="text-xs theme-text-secondary mt-1">Une prescription par ligne</p>
+                </div>
+              )}
+
+              {/* Champs Bulletin de Consultation */}
+              {sendDocType === 'bulletin-consultation' && (
+                <>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Service</label>
+                    <input type="text" value={sendService} onChange={(e) => setSendService(e.target.value)} placeholder="Ex: Médecine générale, Urgences..." className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Consultation en</label>
+                    <input type="text" value={sendConsultationEn} onChange={(e) => setSendConsultationEn(e.target.value)} placeholder="Ex: Médecine du travail, Pédiatrie..." className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition" />
+                  </div>
+                  <div>
+                    <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Renseignements cliniques</label>
+                    <textarea value={sendRenseignements} onChange={(e) => setSendRenseignements(e.target.value)} placeholder="Observations, symptômes, diagnostic..." rows={4} className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition resize-none" />
+                  </div>
+                </>
+              )}
+
+              {/* Envoyer par email */}
+              <div className="pt-3 border-t theme-border">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={sendIncludeInfo} onChange={(e) => setSendIncludeInfo(e.target.checked)} className="accent-blue-500" />
+                  <span className="text-sm theme-text-secondary">Inclure la fiche patient dans l'email</span>
+                </label>
+              </div>
 
               {/* Médecin destinataire */}
               <div>
