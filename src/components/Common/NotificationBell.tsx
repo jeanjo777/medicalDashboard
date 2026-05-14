@@ -67,6 +67,10 @@ export const NotificationBell: React.FC = () => {
   // Fetch notifications on mount
   useEffect(() => {
     fetchNotifications();
+    const interval = setInterval(fetchNotifications, 20_000);
+    const onFocus = () => fetchNotifications();
+    window.addEventListener('focus', onFocus);
+    return () => { clearInterval(interval); window.removeEventListener('focus', onFocus); };
   }, []);
 
   // Click outside to close

@@ -174,9 +174,10 @@ export const useDashboardStatsQuery = () => {
   const query = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: fetchDashboardStats,
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 15 * 1000, // 15 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes (cache)
-    refetchInterval: 60 * 1000, // Auto-refetch every minute
+    refetchInterval: 15 * 1000, // Auto-refetch every 15s
+    refetchOnWindowFocus: true,
     retry: 2,
   });
 

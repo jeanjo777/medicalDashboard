@@ -84,9 +84,17 @@ export function useSidebarBadges(): SidebarBadges {
   useEffect(() => {
     fetchBadges();
 
-    // Poll every 60s for fresh badge counts
-    const interval = setInterval(fetchBadges, 60_000);
-    return () => clearInterval(interval);
+    // Poll every 15s for fresh badge counts
+    const interval = setInterval(fetchBadges, 15_000);
+
+    // Also refresh when window regains focus
+    const onFocus = () => fetchBadges();
+    window.addEventListener('focus', onFocus);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [fetchBadges]);
 
   return badges;
