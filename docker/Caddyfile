@@ -6,6 +6,10 @@ medical.simpliceake.com {
 	reverse_proxy app:80
 }
 
+dashboard.simpliceake.com {
+	reverse_proxy app:80
+}
+
 simpliceake.com {
 	redir https://medical.simpliceake.com{uri} permanent
 }
