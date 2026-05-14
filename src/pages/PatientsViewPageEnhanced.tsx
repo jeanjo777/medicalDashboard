@@ -10,10 +10,11 @@ import { useAdvancedSearch } from '../hooks/useAdvancedSearch';
 import { usePatientStats } from '../hooks/usePatientStats';
 import { supabase } from '../lib/supabase';
 import { getCurrentMedicId } from '../utils/auth';
+import { generateSifcaDocumentBase64, SIFCA_DOC_TYPES, type SifcaDocType } from '../utils/sifcaPdfGenerator';
 import {
   Bell, Plus, Eye, Users, Activity, Clock,
   RefreshCw, WifiOff, Download, AlertTriangle, LayoutGrid, List,
-  Phone, Calendar, Send, X, Check, Loader2,
+  Phone, Calendar, Send, X, Check, Loader2, FileText, Mail,
 } from 'lucide-react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -109,6 +110,8 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [transferring, setTransferring] = useState(false);
   const [transferSuccess, setTransferSuccess] = useState(false);
+  const [sendDocType, setSendDocType] = useState<SifcaDocType | ''>('');
+  const [sendIncludeInfo, setSendIncludeInfo] = useState(true);
 
   useEffect(() => {
     if (showTransferDialog && doctors.length === 0) {
@@ -127,23 +130,48 @@ const PatientsViewPageEnhanced: React.FC = () => {
     const p = transferPatient;
     const age = p.date_of_birth ? `${Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / 31557600000)} ans` : 'N/A';
 
-    const html = `
-      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-        <h2 style="color:#1e40af;border-bottom:2px solid #3b82f6;padding-bottom:8px;">Fiche Patient</h2>
-        <table style="width:100%;border-collapse:collapse;margin-top:12px;">
-          <tr><td style="padding:8px;font-weight:bold;color:#374151;width:140px;">Nom complet</td><td style="padding:8px;">${p.name || ''}</td></tr>
-          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Date de naissance</td><td style="padding:8px;">${p.date_of_birth || 'N/A'} (${age})</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Genre</td><td style="padding:8px;">${p.gender || 'N/A'}</td></tr>
-          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Email</td><td style="padding:8px;">${p.email || 'N/A'}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Téléphone</td><td style="padding:8px;">${p.phone || 'N/A'}</td></tr>
-          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Adresse</td><td style="padding:8px;">${p.address || 'N/A'}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Pathologie</td><td style="padding:8px;">${p.primary_pathology || 'Aucune'}</td></tr>
-          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Statut</td><td style="padding:8px;">${p.status || 'N/A'}</td></tr>
-          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Contact urgence</td><td style="padding:8px;">${p.emergency_contact || 'N/A'}</td></tr>
-          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Notes</td><td style="padding:8px;">${p.notes || 'Aucune'}</td></tr>
-        </table>
-        <p style="margin-top:16px;color:#6b7280;font-size:12px;">Envoyé depuis MediCare Pro — ${new Date().toLocaleDateString('fr-FR')}</p>
-      </div>`;
+    // Build email HTML with patient info
+    let html = '';
+    if (sendIncludeInfo) {
+      html = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+          <h2 style="color:#1e40af;border-bottom:2px solid #3b82f6;padding-bottom:8px;">Fiche Patient</h2>
+          <table style="width:100%;border-collapse:collapse;margin-top:12px;">
+            <tr><td style="padding:8px;font-weight:bold;color:#374151;width:140px;">Nom</td><td style="padding:8px;">${p.name || ''}</td></tr>
+            <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Naissance</td><td style="padding:8px;">${p.date_of_birth || 'N/A'} (${age})</td></tr>
+            <tr><td style="padding:8px;font-weight:bold;color:#374151;">Genre</td><td style="padding:8px;">${p.gender || 'N/A'}</td></tr>
+            <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Email</td><td style="padding:8px;">${p.email || 'N/A'}</td></tr>
+            <tr><td style="padding:8px;font-weight:bold;color:#374151;">Téléphone</td><td style="padding:8px;">${p.phone || 'N/A'}</td></tr>
+            <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Pathologie</td><td style="padding:8px;">${p.primary_pathology || 'Aucune'}</td></tr>
+            <tr><td style="padding:8px;font-weight:bold;color:#374151;">Statut</td><td style="padding:8px;">${p.status || 'N/A'}</td></tr>
+          </table>
+        </div>`;
+    }
+
+    // Generate PDF attachment if doc type selected
+    const attachments: { filename: string; content: string }[] = [];
+    if (sendDocType) {
+      const result = generateSifcaDocumentBase64(sendDocType, {
+        name: p.name, first_name: p.first_name, last_name: p.last_name,
+        date_of_birth: p.date_of_birth, gender: p.gender,
+      });
+      if (result) {
+        attachments.push({ filename: result.filename, content: result.base64.split(',')[1] });
+      }
+    }
+
+    const docLabel = sendDocType ? SIFCA_DOC_TYPES.find(d => d.id === sendDocType)?.label : '';
+    const subject = sendDocType
+      ? `${docLabel} — ${p.name}`
+      : `Fiche Patient : ${p.name}`;
+
+    if (!html && !sendDocType) {
+      html = `<p>Informations du patient <strong>${p.name}</strong>.</p>`;
+    }
+    if (sendDocType && !sendIncludeInfo) {
+      html = `<p>Veuillez trouver ci-joint le document <strong>${docLabel}</strong> pour le patient <strong>${p.name}</strong>.</p>`;
+    }
+    html += `<p style="margin-top:16px;color:#6b7280;font-size:12px;">Envoyé depuis MediCare Pro — ${new Date().toLocaleDateString('fr-FR')}</p>`;
 
     try {
       const token = localStorage.getItem('auth_token');
@@ -151,11 +179,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({
-          to: targetDoctor.email,
-          subject: `Fiche Patient : ${p.name}`,
-          html,
-        }),
+        body: JSON.stringify({ to: targetDoctor.email, subject, html, attachments: attachments.length ? attachments : undefined }),
       });
       const result = await res.json();
       setTransferring(false);
@@ -165,6 +189,8 @@ const PatientsViewPageEnhanced: React.FC = () => {
           setShowTransferDialog(false);
           setTransferPatient(null);
           setSelectedDoctorId('');
+          setSendDocType('');
+          setSendIncludeInfo(true);
           setTransferSuccess(false);
         }, 1500);
       }
@@ -791,9 +817,35 @@ const PatientsViewPageEnhanced: React.FC = () => {
                 </div>
               </div>
 
+              {/* Options d'envoi */}
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={sendIncludeInfo} onChange={(e) => setSendIncludeInfo(e.target.checked)} className="accent-blue-500" />
+                  <span className="text-sm theme-text-secondary">Fiche patient</span>
+                </label>
+              </div>
+
+              {/* Type de document PDF */}
+              <div>
+                <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Document PDF (optionnel)</label>
+                <select
+                  value={sendDocType}
+                  onChange={(e) => setSendDocType(e.target.value as SifcaDocType | '')}
+                  aria-label="Type de document PDF"
+                  title="Type de document PDF"
+                  className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                >
+                  <option value="">— Aucun document PDF —</option>
+                  {SIFCA_DOC_TYPES.map((dt) => (
+                    <option key={dt.id} value={dt.id}>{dt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Médecin destinataire */}
               <div>
                 <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-2">Médecin destinataire</label>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                <div className="space-y-2 max-h-[150px] overflow-y-auto">
                   {doctors.map((doc) => (
                     <label
                       key={doc.id}
@@ -803,19 +855,10 @@ const PatientsViewPageEnhanced: React.FC = () => {
                           : 'theme-bg-primary border theme-border hover:border-blue-500/30'
                       }`}
                     >
-                      <input
-                        type="radio"
-                        name="targetDoctor"
-                        value={doc.id}
-                        checked={selectedDoctorId === doc.id}
-                        onChange={() => setSelectedDoctorId(doc.id)}
-                        className="accent-blue-500"
-                      />
+                      <input type="radio" name="targetDoctor" value={doc.id} checked={selectedDoctorId === doc.id} onChange={() => setSelectedDoctorId(doc.id)} className="accent-blue-500" />
                       <div>
-                        <p className={`text-sm font-medium ${selectedDoctorId === doc.id ? 'text-blue-400' : 'theme-text-primary'}`}>
-                          {doc.prenom} {doc.nom}
-                        </p>
-                        <p className="theme-text-secondary text-xs">{doc.specialite}</p>
+                        <p className={`text-sm font-medium ${selectedDoctorId === doc.id ? 'text-blue-400' : 'theme-text-primary'}`}>{doc.prenom} {doc.nom}</p>
+                        <p className="theme-text-secondary text-xs">{doc.email}</p>
                       </div>
                     </label>
                   ))}

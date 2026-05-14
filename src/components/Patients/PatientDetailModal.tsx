@@ -23,7 +23,8 @@ import {
   Printer,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { generateSifcaDocument, SIFCA_DOC_TYPES, type SifcaDocType } from '../../utils/sifcaPdfGenerator';
+import { generateSifcaDocument, generateSifcaDocumentBase64, SIFCA_DOC_TYPES, type SifcaDocType } from '../../utils/sifcaPdfGenerator';
+import { getCurrentMedicId } from '../../utils/auth';
 import { useToast } from '../Common/Toast';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import ErrorState from '../ErrorState';
@@ -88,6 +89,10 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
   const [sifcaVisitType, setSifcaVisitType] = useState<'consultation' | 'systematique' | 'embauche' | ''>('');
   const [sifcaFiliale, setSifcaFiliale] = useState('');
   const [sifcaMedecin, setSifcaMedecin] = useState('');
+  const [sifcaSendEmail, setSifcaSendEmail] = useState(false);
+  const [sifcaDoctors, setSifcaDoctors] = useState<{ id: string; nom: string; prenom: string; email: string; specialite: string }[]>([]);
+  const [sifcaTargetDoctor, setSifcaTargetDoctor] = useState('');
+  const [sifcaSending, setSifcaSending] = useState(false);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
@@ -1100,20 +1105,60 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                   </select>
                 </div>
               )}
+
+              {/* Option envoyer par email */}
+              <div className="mt-2 pt-3 border-t border-[#334155]">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sifcaSendEmail}
+                    onChange={(e) => {
+                      setSifcaSendEmail(e.target.checked);
+                      if (e.target.checked && sifcaDoctors.length === 0) {
+                        supabase.from('medics').select('id, nom, prenom, email, specialite').neq('id', getCurrentMedicId()!).then(({ data }) => {
+                          setSifcaDoctors((data || []).filter((d: any) => d.email));
+                        });
+                      }
+                    }}
+                    className="accent-blue-500"
+                  />
+                  <span className="text-sm text-gray-300">Envoyer aussi par email</span>
+                </label>
+
+                {sifcaSendEmail && (
+                  <div className="mt-2 space-y-1.5 max-h-[120px] overflow-y-auto">
+                    {sifcaDoctors.map((doc) => (
+                      <label
+                        key={doc.id}
+                        className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${
+                          sifcaTargetDoctor === doc.email ? 'bg-blue-500/20 border border-blue-500/50' : 'hover:bg-[#334155]/50 border border-transparent'
+                        }`}
+                      >
+                        <input type="radio" name="sifcaEmailTarget" value={doc.email} checked={sifcaTargetDoctor === doc.email} onChange={() => setSifcaTargetDoctor(doc.email)} className="accent-blue-500" />
+                        <div>
+                          <span className={`text-sm font-medium ${sifcaTargetDoctor === doc.email ? 'text-blue-400' : 'text-gray-300'}`}>{doc.prenom} {doc.nom}</span>
+                          <span className="text-xs text-gray-500 block">{doc.email}</span>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[#334155]">
               <button
                 type="button"
-                onClick={() => setShowSifcaDialog(false)}
+                onClick={() => { setShowSifcaDialog(false); setSifcaSendEmail(false); setSifcaTargetDoctor(''); }}
                 className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-[#334155] rounded-xl transition-all cursor-pointer"
               >
                 Annuler
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  generateSifcaDocument(sifcaDocType, {
+                disabled={sifcaSending}
+                onClick={async () => {
+                  const docData = {
                     name: patient.name,
                     first_name: patient.first_name,
                     last_name: patient.last_name,
@@ -1129,17 +1174,55 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     visitType: sifcaVisitType || undefined,
                     filiale: sifcaFiliale || undefined,
                     medecin: sifcaMedecin || undefined,
-                  });
+                  };
+
+                  // Generate and download PDF
+                  generateSifcaDocument(sifcaDocType, docData);
+
+                  // Send by email if checked
+                  if (sifcaSendEmail && sifcaTargetDoctor) {
+                    setSifcaSending(true);
+                    const result = generateSifcaDocumentBase64(sifcaDocType, docData);
+                    if (result) {
+                      const docLabel = SIFCA_DOC_TYPES.find(d => d.id === sifcaDocType)?.label || sifcaDocType;
+                      const token = localStorage.getItem('auth_token');
+                      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
+                      try {
+                        await fetch(apiUrl, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                          body: JSON.stringify({
+                            to: sifcaTargetDoctor,
+                            subject: `${docLabel} — ${patient.name}`,
+                            html: `<p>Veuillez trouver ci-joint le document <strong>${docLabel}</strong> pour le patient <strong>${patient.name}</strong>.</p><p>Document généré le ${new Date().toLocaleDateString('fr-FR')}.</p><p><em>MediCare Pro</em></p>`,
+                            attachments: [{ filename: result.filename, content: result.base64.split(',')[1] }],
+                          }),
+                        });
+                        showToast('Document envoyé par email', 'success');
+                      } catch {
+                        showToast('Erreur envoi email', 'error');
+                      }
+                    }
+                    setSifcaSending(false);
+                  }
+
                   setShowSifcaDialog(false);
                   setSifcaDocType('fiche-cms');
                   setSifcaVisitType('');
                   setSifcaFiliale('');
                   setSifcaMedecin('');
+                  setSifcaSendEmail(false);
+                  setSifcaTargetDoctor('');
                 }}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all cursor-pointer disabled:opacity-50"
               >
-                <Printer size={15} />
-                Générer PDF
+                {sifcaSending ? (
+                  <><Mail size={15} className="animate-pulse" /> Envoi...</>
+                ) : sifcaSendEmail ? (
+                  <><Mail size={15} /> Générer &amp; Envoyer</>
+                ) : (
+                  <><Printer size={15} /> Générer PDF</>
+                )}
               </button>
             </div>
           </div>

@@ -706,3 +706,51 @@ export const generateSifcaDocument = (docType: SifcaDocType, data: SifcaDocData)
   const typeLabel = docType.replace(/-/g, '_');
   doc.save(`SIFCA_${typeLabel}_${safeName}_${formatDate().replace(/\//g, '-')}.pdf`);
 };
+
+/**
+ * Generate a SIFCA document and return as base64 data URI (for email attachment)
+ */
+export const generateSifcaDocumentBase64 = (docType: SifcaDocType, data: SifcaDocData): { base64: string; filename: string } | null => {
+  if (docType === 'fiche-cms') {
+    // Fiche CMS uses generateSifcaPDF which always saves — generate separately
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const headerY = drawSifcaHeader(doc);
+    // Simplified fiche CMS for email
+    let y = drawTitle(doc, 'FICHE DE CONSULTATION CMS', headerY + 12);
+    y += 8;
+    y = drawInlineField(doc, 'Patient : ', data.name || '', y);
+    y += 6;
+    if (data.date_of_birth) y = drawInlineField(doc, 'Date de naissance : ', data.date_of_birth, y);
+    y += 6;
+    if (data.medecin) y = drawInlineField(doc, 'Médecin : ', data.medecin, y);
+    y += 20;
+    drawSignature(doc, y);
+    const safeName = (data.name || 'patient').replace(/\s+/g, '_');
+    return {
+      base64: doc.output('datauristring'),
+      filename: `SIFCA_fiche_cms_${safeName}_${formatDate().replace(/\//g, '-')}.pdf`,
+    };
+  }
+
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const generators: Record<string, (d: jsPDF, data: SifcaDocData) => void> = {
+    'certificat-tension': genCertificatTension,
+    'certificat-medical': genCertificatMedical,
+    'arret-travail': genArretTravail,
+    'certificat-grossesse': genCertificatGrossesse,
+    'ordonnance-medicale': genOrdonnanceMedicale,
+    'bulletin-consultation': genBulletinConsultation,
+  };
+
+  const gen = generators[docType];
+  if (!gen) return null;
+
+  gen(doc, data);
+
+  const safeName = (data.name || 'patient').replace(/\s+/g, '_');
+  const typeLabel = docType.replace(/-/g, '_');
+  return {
+    base64: doc.output('datauristring'),
+    filename: `SIFCA_${typeLabel}_${safeName}_${formatDate().replace(/\//g, '-')}.pdf`,
+  };
+};
