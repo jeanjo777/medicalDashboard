@@ -2,6 +2,9 @@ import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { Download, FileText, Calendar, CheckCircle, Clock, TrendingUp, Users, Activity, BarChart3, Mail, Printer } from 'lucide-react';
 import { exportData } from '../../utils/exportUtils';
 import { useDynamicAnalytics, usePredictions, useAIAlerts } from '../../hooks/useAnalyticsData';
+import { supabase } from '../../lib/supabase';
+import { getCurrentMedicId } from '../../utils/auth';
+import { generateReportPDF, type ReportData } from '../../utils/reportPdfGenerator';
 
 interface ReportsTabProps {
   filters: any;
@@ -93,18 +96,92 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
   const handleGenerateReport = async () => {
     setIsGenerating(true);
 
-    setTimeout(() => {
-      exportData(reportData, selectedFormat as 'csv' | 'json' | 'txt', {
-        filename: `rapport_${selectedReportType}_${selectedPeriod}`,
-        title: `Rapport ${selectedReportType}`,
-        metadata: {
-          period: selectedPeriod,
-          generated: new Date().toISOString()
-        }
-      });
+    if (selectedFormat === 'pdf') {
+      try {
+        const medicId = getCurrentMedicId();
+        const [year, month] = selectedPeriod.split('-');
+        const startDate = `${year}-${month}-01`;
+        const endDate = new Date(parseInt(year), parseInt(month), 0).toISOString().split('T')[0];
 
+        // Fetch patients
+        const { data: patients } = await supabase
+          .from('patients')
+          .select('name, date_of_birth, gender, status, created_at, primary_pathology')
+          .eq('medic_id', medicId!)
+          .gte('created_at', startDate)
+          .lte('created_at', endDate + 'T23:59:59');
+
+        // Fetch all patients for totals
+        const { data: allPatients } = await supabase
+          .from('patients')
+          .select('status, gender')
+          .eq('medic_id', medicId!);
+
+        // Fetch appointments
+        const { data: appointments } = await supabase
+          .from('appointments')
+          .select('patient_name, appointment_date, appointment_time, status, type_consultation')
+          .eq('medic_id', medicId!)
+          .gte('appointment_date', startDate)
+          .lte('appointment_date', endDate)
+          .order('appointment_date', { ascending: true });
+
+        // Fetch consultations count
+        const { count: consultCount } = await supabase
+          .from('consultations')
+          .select('id', { count: 'exact', head: true })
+          .eq('medic_id', medicId!)
+          .gte('created_at', startDate);
+
+        const all = allPatients || [];
+        const appts = appointments || [];
+
+        const reportData: ReportData = {
+          period: selectedPeriod,
+          reportType: selectedReportType,
+          stats: {
+            totalPatients: all.length,
+            newPatients: (patients || []).length,
+            activePatients: all.filter(p => p.status === 'active').length,
+            inTreatment: all.filter(p => p.status === 'in_treatment').length,
+            recovered: all.filter(p => p.status === 'recovered').length,
+            totalAppointments: appts.length,
+            completedAppointments: appts.filter(a => a.status === 'termine').length,
+            cancelledAppointments: appts.filter(a => a.status === 'annule').length,
+            pendingAppointments: appts.filter(a => a.status === 'a_venir').length,
+            totalConsultations: consultCount || 0,
+            maleCount: all.filter(p => p.gender === 'male' || p.gender === 'M').length,
+            femaleCount: all.filter(p => p.gender === 'female' || p.gender === 'F').length,
+          },
+          patients: (patients || []).map(p => ({ ...p, name: p.name || '', date_of_birth: p.date_of_birth || '', gender: p.gender || '', status: p.status || '', created_at: p.created_at || '', primary_pathology: p.primary_pathology || '' })),
+          appointments: appts.map(a => ({ ...a, patient_name: a.patient_name || '', appointment_date: a.appointment_date || '', appointment_time: a.appointment_time || '', status: a.status || '', type_consultation: a.type_consultation || '' })),
+        };
+
+        generateReportPDF(reportData);
+      } catch (err) {
+        // Fallback: generate with minimal data
+        generateReportPDF({
+          period: selectedPeriod,
+          reportType: selectedReportType,
+          stats: { totalPatients: 0, newPatients: 0, activePatients: 0, inTreatment: 0, recovered: 0, totalAppointments: 0, completedAppointments: 0, cancelledAppointments: 0, pendingAppointments: 0, totalConsultations: 0, maleCount: 0, femaleCount: 0 },
+          patients: [],
+          appointments: [],
+        });
+      }
       setIsGenerating(false);
-    }, 2000);
+    } else {
+      setTimeout(() => {
+        exportData(reportData, selectedFormat as 'csv' | 'json' | 'txt', {
+          filename: `rapport_${selectedReportType}_${selectedPeriod}`,
+          title: `Rapport ${selectedReportType}`,
+          metadata: {
+            period: selectedPeriod,
+            generated: new Date().toISOString()
+          }
+        });
+        setIsGenerating(false);
+      }, 2000);
+    }
   };
 
   const handleDownloadReport = useCallback((report: typeof savedReports[0]) => {
@@ -229,6 +306,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
                 className="w-full px-4 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
                 aria-label="Format d'export"
               >
+                <option value="pdf">PDF (Rapport SIFCA)</option>
                 <option value="csv">CSV</option>
                 <option value="json">JSON</option>
                 <option value="txt">TXT</option>
