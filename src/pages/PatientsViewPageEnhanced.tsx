@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import SearchFilters from '../components/Common/SearchFilters';
@@ -8,10 +8,12 @@ import PatientCardMobile from '../components/Patients/PatientCardMobile';
 import AddPatientModal from '../components/AddPatientModal';
 import { useAdvancedSearch } from '../hooks/useAdvancedSearch';
 import { usePatientStats } from '../hooks/usePatientStats';
+import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 import {
   Bell, Plus, Eye, Users, Activity, Clock,
   RefreshCw, WifiOff, Download, AlertTriangle, LayoutGrid, List,
-  Phone, Calendar,
+  Phone, Calendar, Send, X, Check, Loader2,
 } from 'lucide-react';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import ErrorBoundary from '../components/ErrorBoundary';
@@ -99,6 +101,43 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
+
+  // Transfer patient to another doctor
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [transferPatient, setTransferPatient] = useState<Patient | null>(null);
+  const [doctors, setDoctors] = useState<{ id: string; username: string; nom: string; prenom: string; specialite: string }[]>([]);
+  const [selectedDoctorId, setSelectedDoctorId] = useState('');
+  const [transferring, setTransferring] = useState(false);
+  const [transferSuccess, setTransferSuccess] = useState(false);
+
+  useEffect(() => {
+    if (showTransferDialog && doctors.length === 0) {
+      supabase.from('medics').select('id, username, nom, prenom, specialite').neq('id', getCurrentMedicId()!).then(({ data }) => {
+        setDoctors(data || []);
+      });
+    }
+  }, [showTransferDialog, doctors.length]);
+
+  const handleTransfer = async () => {
+    if (!transferPatient || !selectedDoctorId) return;
+    setTransferring(true);
+    // Copy patient to target doctor (INSERT new row with target medic_id)
+    const { id, created_at, updated_at, registered_at, ...patientData } = transferPatient as any;
+    const { error: err } = await supabase.from('patients').insert([{
+      ...patientData,
+      medic_id: selectedDoctorId,
+    }]);
+    setTransferring(false);
+    if (!err) {
+      setTransferSuccess(true);
+      setTimeout(() => {
+        setShowTransferDialog(false);
+        setTransferPatient(null);
+        setSelectedDoctorId('');
+        setTransferSuccess(false);
+      }, 1500);
+    }
+  };
   const {
     results: patients,
     total,
@@ -531,14 +570,25 @@ const PatientsViewPageEnhanced: React.FC = () => {
                               </span>
                             </td>
                             <td className="px-4 md:px-6 py-3 md:py-4 text-right">
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleViewPatient(patient.id); }}
-                                className="inline-flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-medium text-emerald-600 hover:text-white hover:bg-emerald-500 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 opacity-80 group-hover:opacity-100"
-                                aria-label={`Voir les détails de ${patient.name}`}
-                              >
-                                <Eye size={16} className="transition-transform group-hover:scale-110" />
-                                <span className="hidden lg:inline">Voir</span>
-                              </button>
+                              <div className="flex items-center justify-end gap-1">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); setTransferPatient(patient); setShowTransferDialog(true); }}
+                                  className="inline-flex items-center gap-1 px-2 md:px-3 py-2 text-xs md:text-sm font-medium text-blue-500 hover:text-white hover:bg-blue-500 rounded-xl transition-all duration-200 opacity-80 group-hover:opacity-100"
+                                  aria-label={`Envoyer ${patient.name} à un médecin`}
+                                  title="Envoyer au médecin"
+                                >
+                                  <Send size={14} />
+                                  <span className="hidden xl:inline">Envoyer</span>
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleViewPatient(patient.id); }}
+                                  className="inline-flex items-center gap-1 md:gap-2 px-2 md:px-3 py-2 text-xs md:text-sm font-medium text-emerald-600 hover:text-white hover:bg-emerald-500 rounded-xl transition-all duration-200 opacity-80 group-hover:opacity-100"
+                                  aria-label={`Voir les détails de ${patient.name}`}
+                                >
+                                  <Eye size={16} className="transition-transform group-hover:scale-110" />
+                                  <span className="hidden lg:inline">Voir</span>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -681,6 +731,96 @@ const PatientsViewPageEnhanced: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         onPatientAdded={handlePatientAdded}
       />
+
+      {/* Transfer Patient Dialog */}
+      {showTransferDialog && transferPatient && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="theme-bg-secondary border theme-border rounded-2xl w-full max-w-sm shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b theme-border">
+              <div className="flex items-center gap-2">
+                <Send size={18} className="text-blue-400" />
+                <h3 className="theme-text-primary font-semibold text-sm">Envoyer le patient</h3>
+              </div>
+              <button type="button" onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); }} className="theme-text-secondary hover:theme-text-primary transition-colors" aria-label="Fermer">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="px-5 py-4 space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <div className={`w-10 h-10 ${getAvatarColor(transferPatient.name)} rounded-full flex items-center justify-center`}>
+                  <span className="text-white text-sm font-bold">{transferPatient.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</span>
+                </div>
+                <div>
+                  <p className="theme-text-primary font-medium text-sm">{transferPatient.name}</p>
+                  <p className="theme-text-secondary text-xs">{transferPatient.email || transferPatient.phone || 'Aucun contact'}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-2">Médecin destinataire</label>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {doctors.map((doc) => (
+                    <label
+                      key={doc.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
+                        selectedDoctorId === doc.id
+                          ? 'bg-blue-500/20 border border-blue-500/50'
+                          : 'theme-bg-primary border theme-border hover:border-blue-500/30'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="targetDoctor"
+                        value={doc.id}
+                        checked={selectedDoctorId === doc.id}
+                        onChange={() => setSelectedDoctorId(doc.id)}
+                        className="accent-blue-500"
+                      />
+                      <div>
+                        <p className={`text-sm font-medium ${selectedDoctorId === doc.id ? 'text-blue-400' : 'theme-text-primary'}`}>
+                          {doc.prenom} {doc.nom}
+                        </p>
+                        <p className="theme-text-secondary text-xs">{doc.specialite}</p>
+                      </div>
+                    </label>
+                  ))}
+                  {doctors.length === 0 && (
+                    <p className="theme-text-secondary text-sm text-center py-4">Aucun autre médecin disponible</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t theme-border">
+              <button
+                type="button"
+                onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); }}
+                className="px-4 py-2 text-sm theme-text-secondary hover:theme-text-primary rounded-xl transition-all"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={handleTransfer}
+                disabled={!selectedDoctorId || transferring || transferSuccess}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-50 ${
+                  transferSuccess ? 'bg-emerald-600' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
+              >
+                {transferring ? (
+                  <><Loader2 size={15} className="animate-spin" /> Envoi...</>
+                ) : transferSuccess ? (
+                  <><Check size={15} /> Envoyé !</>
+                ) : (
+                  <><Send size={15} /> Envoyer</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       </ErrorBoundary>
     </div>
   );
