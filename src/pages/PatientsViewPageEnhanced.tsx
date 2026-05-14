@@ -128,6 +128,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
   const [sendService, setSendService] = useState('');
   const [sendConsultationEn, setSendConsultationEn] = useState('');
   const [sendRenseignements, setSendRenseignements] = useState('');
+  const [customEmail, setCustomEmail] = useState('');
 
   useEffect(() => {
     if (showTransferDialog && doctors.length === 0) {
@@ -138,9 +139,10 @@ const PatientsViewPageEnhanced: React.FC = () => {
   }, [showTransferDialog, doctors.length]);
 
   const handleTransfer = async () => {
-    if (!transferPatient || !selectedDoctorId) return;
-    const targetDoctor = doctors.find(d => d.id === selectedDoctorId);
-    if (!targetDoctor?.email) return;
+    if (!transferPatient) return;
+    const targetDoctor = selectedDoctorId ? doctors.find(d => d.id === selectedDoctorId) : null;
+    const toEmail = targetDoctor?.email || customEmail;
+    if (!toEmail) return;
 
     setTransferring(true);
     const p = transferPatient;
@@ -211,7 +213,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ to: targetDoctor.email, subject, html, attachments: attachments.length ? attachments : undefined }),
+        body: JSON.stringify({ to: toEmail, subject, html, attachments: attachments.length ? attachments : undefined }),
       });
       const result = await res.json();
       setTransferring(false);
@@ -836,7 +838,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
                   <p className="theme-text-secondary text-xs">{transferPatient.name}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType(''); }} className="theme-text-secondary hover:theme-text-primary transition-colors" aria-label="Fermer">
+              <button type="button" onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType('fiche-cms'); setCustomEmail(''); }} className="theme-text-secondary hover:theme-text-primary transition-colors" aria-label="Fermer">
                 <X size={18} />
               </button>
             </div>
@@ -999,7 +1001,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
                           : 'theme-bg-primary border theme-border hover:border-blue-500/30'
                       }`}
                     >
-                      <input type="radio" name="targetDoctor" value={doc.id} checked={selectedDoctorId === doc.id} onChange={() => setSelectedDoctorId(doc.id)} className="accent-blue-500" />
+                      <input type="radio" name="targetDoctor" value={doc.id} checked={selectedDoctorId === doc.id} onChange={() => { setSelectedDoctorId(doc.id); setCustomEmail(''); }} className="accent-blue-500" />
                       <div>
                         <p className={`text-sm font-medium ${selectedDoctorId === doc.id ? 'text-blue-500' : 'theme-text-primary'}`}>{doc.prenom} {doc.nom}</p>
                         <p className="theme-text-secondary text-xs">{doc.email}</p>
@@ -1007,13 +1009,23 @@ const PatientsViewPageEnhanced: React.FC = () => {
                     </label>
                   ))}
                 </div>
+                <div className="mt-2">
+                  <label className="block theme-text-secondary text-xs mb-1.5">Ou saisir un autre email</label>
+                  <input
+                    type="email"
+                    value={customEmail}
+                    onChange={(e) => { setCustomEmail(e.target.value); setSelectedDoctorId(''); }}
+                    placeholder="email@exemple.com"
+                    className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
+                  />
+                </div>
               </div>
             </div>
 
             <div className="flex items-center justify-end gap-2 px-5 py-4 border-t theme-border flex-shrink-0">
               <button
                 type="button"
-                onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType(''); }}
+                onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType('fiche-cms'); setCustomEmail(''); }}
                 className="px-4 py-2 text-sm theme-text-secondary hover:theme-text-primary rounded-xl transition-all"
               >
                 Annuler
@@ -1021,7 +1033,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
               <button
                 type="button"
                 onClick={handleTransfer}
-                disabled={(!selectedDoctorId || !sendDocType) || transferring || transferSuccess}
+                disabled={(!selectedDoctorId && !customEmail) || !sendDocType || transferring || transferSuccess}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-50 ${
                   transferSuccess ? 'bg-emerald-600' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
