@@ -15,10 +15,10 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
   const { data: predictionsData } = usePredictions();
   const { data: alertsData } = useAIAlerts();
   const [selectedReportType, setSelectedReportType] = useState('monthly');
-  const [selectedPeriod, setSelectedPeriod] = useState(() => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  });
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth() + 1);
+  const [selectedQuarter, setSelectedQuarter] = useState(() => Math.ceil((new Date().getMonth() + 1) / 3));
+  const selectedPeriod = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
   const [selectedFormat, setSelectedFormat] = useState('csv');
   const [isGenerating, setIsGenerating] = useState(false);
   const generateFormRef = useRef<HTMLDivElement>(null);
@@ -287,21 +287,42 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
             <div>
               <label className="block text-sm theme-text-secondary mb-2 font-medium">Période</label>
               <div className="flex gap-2">
+                {/* Mensuel / Performance / Patients / Activity / Analytics / Custom → Mois + Année */}
+                {!['quarterly', 'annual'].includes(selectedReportType) && (
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                    className="flex-1 px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                    aria-label="Mois"
+                    title="Mois"
+                  >
+                    {['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'].map((m, i) => (
+                      <option key={i} value={i + 1}>{m}</option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Trimestriel → Trimestre + Année */}
+                {selectedReportType === 'quarterly' && (
+                  <select
+                    value={selectedQuarter}
+                    onChange={(e) => { setSelectedQuarter(parseInt(e.target.value)); setSelectedMonth((parseInt(e.target.value) - 1) * 3 + 1); }}
+                    className="flex-1 px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                    aria-label="Trimestre"
+                    title="Trimestre"
+                  >
+                    <option value={1}>T1 (Jan – Mar)</option>
+                    <option value={2}>T2 (Avr – Juin)</option>
+                    <option value={3}>T3 (Juil – Sep)</option>
+                    <option value={4}>T4 (Oct – Déc)</option>
+                  </select>
+                )}
+
+                {/* Année — toujours visible */}
                 <select
-                  value={selectedPeriod.split('-')[1]}
-                  onChange={(e) => setSelectedPeriod(`${selectedPeriod.split('-')[0]}-${e.target.value}`)}
-                  className="flex-1 px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
-                  aria-label="Mois"
-                  title="Mois"
-                >
-                  {['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'].map((m, i) => (
-                    <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>
-                  ))}
-                </select>
-                <select
-                  value={selectedPeriod.split('-')[0]}
-                  onChange={(e) => setSelectedPeriod(`${e.target.value}-${selectedPeriod.split('-')[1]}`)}
-                  className="w-24 px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  className={`${selectedReportType === 'annual' ? 'flex-1' : 'w-24'} px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all`}
                   aria-label="Année"
                   title="Année"
                 >
