@@ -105,37 +105,71 @@ const PatientsViewPageEnhanced: React.FC = () => {
   // Transfer patient to another doctor
   const [showTransferDialog, setShowTransferDialog] = useState(false);
   const [transferPatient, setTransferPatient] = useState<Patient | null>(null);
-  const [doctors, setDoctors] = useState<{ id: string; username: string; nom: string; prenom: string; specialite: string }[]>([]);
+  const [doctors, setDoctors] = useState<{ id: string; username: string; nom: string; prenom: string; specialite: string; email: string }[]>([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [transferring, setTransferring] = useState(false);
   const [transferSuccess, setTransferSuccess] = useState(false);
 
   useEffect(() => {
     if (showTransferDialog && doctors.length === 0) {
-      supabase.from('medics').select('id, username, nom, prenom, specialite').neq('id', getCurrentMedicId()!).then(({ data }) => {
-        setDoctors(data || []);
+      supabase.from('medics').select('id, username, nom, prenom, specialite, email').neq('id', getCurrentMedicId()!).then(({ data }) => {
+        setDoctors((data || []).filter((d: any) => d.email));
       });
     }
   }, [showTransferDialog, doctors.length]);
 
   const handleTransfer = async () => {
     if (!transferPatient || !selectedDoctorId) return;
+    const targetDoctor = doctors.find(d => d.id === selectedDoctorId);
+    if (!targetDoctor?.email) return;
+
     setTransferring(true);
-    // Copy patient to target doctor (INSERT new row with target medic_id)
-    const { id, created_at, updated_at, registered_at, ...patientData } = transferPatient as any;
-    const { error: err } = await supabase.from('patients').insert([{
-      ...patientData,
-      medic_id: selectedDoctorId,
-    }]);
-    setTransferring(false);
-    if (!err) {
-      setTransferSuccess(true);
-      setTimeout(() => {
-        setShowTransferDialog(false);
-        setTransferPatient(null);
-        setSelectedDoctorId('');
-        setTransferSuccess(false);
-      }, 1500);
+    const p = transferPatient;
+    const age = p.date_of_birth ? `${Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / 31557600000)} ans` : 'N/A';
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <h2 style="color:#1e40af;border-bottom:2px solid #3b82f6;padding-bottom:8px;">Fiche Patient</h2>
+        <table style="width:100%;border-collapse:collapse;margin-top:12px;">
+          <tr><td style="padding:8px;font-weight:bold;color:#374151;width:140px;">Nom complet</td><td style="padding:8px;">${p.name || ''}</td></tr>
+          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Date de naissance</td><td style="padding:8px;">${p.date_of_birth || 'N/A'} (${age})</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Genre</td><td style="padding:8px;">${p.gender || 'N/A'}</td></tr>
+          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Email</td><td style="padding:8px;">${p.email || 'N/A'}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Téléphone</td><td style="padding:8px;">${p.phone || 'N/A'}</td></tr>
+          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Adresse</td><td style="padding:8px;">${p.address || 'N/A'}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Pathologie</td><td style="padding:8px;">${p.primary_pathology || 'Aucune'}</td></tr>
+          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Statut</td><td style="padding:8px;">${p.status || 'N/A'}</td></tr>
+          <tr><td style="padding:8px;font-weight:bold;color:#374151;">Contact urgence</td><td style="padding:8px;">${p.emergency_contact || 'N/A'}</td></tr>
+          <tr style="background:#f9fafb;"><td style="padding:8px;font-weight:bold;color:#374151;">Notes</td><td style="padding:8px;">${p.notes || 'Aucune'}</td></tr>
+        </table>
+        <p style="margin-top:16px;color:#6b7280;font-size:12px;">Envoyé depuis MediCare Pro — ${new Date().toLocaleDateString('fr-FR')}</p>
+      </div>`;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          to: targetDoctor.email,
+          subject: `Fiche Patient : ${p.name}`,
+          html,
+        }),
+      });
+      const result = await res.json();
+      setTransferring(false);
+      if (result.success) {
+        setTransferSuccess(true);
+        setTimeout(() => {
+          setShowTransferDialog(false);
+          setTransferPatient(null);
+          setSelectedDoctorId('');
+          setTransferSuccess(false);
+        }, 1500);
+      }
+    } catch {
+      setTransferring(false);
     }
   };
   const {
