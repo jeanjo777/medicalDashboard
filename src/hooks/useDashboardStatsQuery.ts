@@ -13,6 +13,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface DashboardStats {
   appointmentsToday: number;
@@ -95,11 +96,13 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
     supabase
       .from('patients')
       .select('id', { count: 'exact', head: true })
+      .eq('medic_id', getCurrentMedicId()!)
       .gte('created_at', startOfThisMonth),
 
     supabase
       .from('patients')
       .select('id', { count: 'exact', head: true })
+      .eq('medic_id', getCurrentMedicId()!)
       .gte('created_at', startOfLastMonth)
       .lt('created_at', startOfThisMonth),
   ]);

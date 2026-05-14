@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS patients (
     test_dengue varchar(20),
     urines_albumine varchar(50),
     urines_sucre varchar(50),
+    medic_id uuid,
     registered_at timestamptz DEFAULT now(),
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
@@ -140,6 +141,10 @@ CREATE TABLE IF NOT EXISTS medics (
 
 CREATE INDEX IF NOT EXISTS idx_medics_username ON medics(username);
 CREATE INDEX IF NOT EXISTS idx_medics_email ON medics(email);
+
+-- Add FK and index for patients.medic_id (after medics table exists)
+CREATE INDEX IF NOT EXISTS idx_patients_medic_id ON patients(medic_id);
+ALTER TABLE patients ADD CONSTRAINT fk_patients_medic_id FOREIGN KEY (medic_id) REFERENCES medics(id) ON DELETE SET NULL;
 
 CREATE TRIGGER update_medics_updated_at
     BEFORE UPDATE ON medics
@@ -617,16 +622,11 @@ $$ LANGUAGE plpgsql;
 -- SEED: Default admin medic
 -- ============================================================
 
-INSERT INTO medics (username, nom, prenom, specialite, password, password_hash, is_active)
-VALUES (
-    'admin',
-    'Admin',
-    'MediCare',
-    'Administrateur',
-    'admin123',
-    '$2a$12$LQv3c1yqBo9SkvXS7Qo.u.gS.Ht/dFKkF/JmH0LNP6v6Xz5G5GnK',
-    true
-)
+INSERT INTO medics (username, email, nom, prenom, specialite, password_hash, is_active)
+VALUES
+    ('pr.karama', 'pr.karama@medicare.com', 'KARAMA', 'Professeur', 'Médecin Chef - Centre Médico Social SIFCA', '$2b$10$wO.41JKgIe/fuyeoWpy1F./wJJDI3ilksSTlr2kx9utrnB3bYJT2C', true),
+    ('dr.zago', 'dr.zago@medicare.com', 'ZAGO', 'Mario', 'Médecin Chef PALMCI', '$2b$10$UHIN1ctxexxhZAgF2sHg2ea27GlBxJNt9NJXL7JuUOAh1PVqSbEHK', true),
+    ('dr.admin', 'dr.admin@medicare.com', 'Administrateur', 'Dr', 'Administration', '$2b$10$sNOQfqYhFi/5HZ5/VrPuyejsMen5sWjh4lQR9ZToGmyXnc1/EQ19S', true)
 ON CONFLICT (username) DO NOTHING;
 
 -- ============================================================
@@ -644,6 +644,20 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO service_role;
+
+-- ============================================================
+-- MIGRATIONS (safe to run on existing DB)
+-- ============================================================
+
+-- Add medic_id column to patients if it doesn't exist
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'patients' AND column_name = 'medic_id') THEN
+    ALTER TABLE patients ADD COLUMN medic_id uuid;
+    CREATE INDEX IF NOT EXISTS idx_patients_medic_id ON patients(medic_id);
+    ALTER TABLE patients ADD CONSTRAINT fk_patients_medic_id FOREIGN KEY (medic_id) REFERENCES medics(id) ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Done
 SELECT 'MediCare Pro database initialized successfully' AS status;

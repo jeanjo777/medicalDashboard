@@ -231,3 +231,13 @@ export const getUserIdFromToken = (): string | null => {
   const payload = decodeToken(token);
   return payload?.sub || null;
 };
+
+/**
+ * Récupère l'ID du médecin connecté (depuis localStorage user ou token)
+ * Utilisé pour filtrer les patients par médecin
+ */
+export const getCurrentMedicId = (): string | null => {
+  const user = getUser();
+  if (user?.id) return user.id;
+  return getUserIdFromToken();
+};

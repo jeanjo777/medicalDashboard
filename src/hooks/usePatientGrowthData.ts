@@ -15,6 +15,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 import { startOfDay, subDays, subMonths, format, parseISO, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -41,6 +42,7 @@ const fetchPatients = async (): Promise<Patient[]> => {
   const { data, error } = await supabase
     .from('patients')
     .select('id, registered_at, created_at')
+    .eq('medic_id', getCurrentMedicId()!)
     .order('registered_at', { ascending: true });
 
   if (error) {

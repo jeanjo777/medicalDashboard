@@ -9,6 +9,7 @@ const app = express();
 // CORS: restrict to known origins
 const ALLOWED_ORIGINS = [
   'https://medical.simpliceake.com',
+  'https://dashboard.simpliceake.com',
   'http://localhost:5173',
   'http://localhost:4173',
 ];
@@ -110,7 +111,7 @@ app.post('/functions/v1/auth-login', async (req, res) => {
     }
 
     const result = await pool.query(
-      'SELECT * FROM medics WHERE username = $1 AND is_active = true',
+      'SELECT * FROM medics WHERE (username = $1 OR email = $1) AND is_active = true',
       [username]
     );
 

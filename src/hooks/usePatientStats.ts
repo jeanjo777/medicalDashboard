@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface PatientStats {
   activeCount: number;
@@ -15,7 +16,8 @@ export function usePatientStats() {
       // Fetch all patients' status and riskScore (lightweight query)
       const { data, error } = await supabase
         .from('patients')
-        .select('status, riskScore');
+        .select('status, riskScore')
+        .eq('medic_id', getCurrentMedicId()!);
 
       if (error) throw error;
 

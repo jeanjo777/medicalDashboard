@@ -3,6 +3,7 @@ import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import ErrorBoundary from '../components/ErrorBoundary';
 import ReportsTab from '../components/Analytics/ReportsTab';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 import { generateSifcaDocument, SIFCA_DOC_TYPES, type SifcaDocType } from '../utils/sifcaPdfGenerator';
 import {
   FileText, Search, Printer, RefreshCw, ChevronDown, X,
@@ -97,6 +98,7 @@ const ReportsPage: React.FC = () => {
         'id, name, first_name, last_name, date_of_birth, gender, status, visit_type, filiale, poids, taille, tension_arterielle, urines_albumine, urines_sucre',
         { count: 'exact' }
       )
+      .eq('medic_id', getCurrentMedicId()!)
       .order('created_at', { ascending: false })
       .range(from, from + PAGE_SIZE - 1);
 

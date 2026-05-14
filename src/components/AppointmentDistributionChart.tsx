@@ -20,6 +20,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { supabase } from '../lib/supabase';
 import { PieChartIcon, BarChart3, Loader2 } from 'lucide-react';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 type Period = 'week' | 'month' | 'year';
 type ChartType = 'pie' | 'bar';
@@ -103,6 +104,7 @@ const AppointmentDistributionChart: React.FC = () => {
       let { data: patients, error: patientsError } = await supabase
         .from('patients')
         .select('id, status, created_at')
+        .eq('medic_id', getCurrentMedicId()!)
         .gte('created_at', range.start.toISOString())
         .lte('created_at', range.end.toISOString());
 
@@ -111,7 +113,8 @@ const AppointmentDistributionChart: React.FC = () => {
         logger.info('[AppointmentDistribution] No data in period, fetching all patients');
         const { data: allPatients, error: allError } = await supabase
           .from('patients')
-          .select('id, status, created_at');
+          .select('id, status, created_at')
+          .eq('medic_id', getCurrentMedicId()!);
         patients = allPatients;
         patientsError = allError;
       }

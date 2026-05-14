@@ -48,6 +48,7 @@ import {
 } from '../../hooks/useAnalyticsData';
 import { useAppointmentsQuery } from '../../hooks/useAppointmentsQuery';
 import { supabase } from '../../lib/supabase';
+import { getCurrentMedicId } from '../../utils/auth';
 
 interface OverviewTabProps {
   filters: any;
@@ -79,7 +80,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters }) => {
   const { data: realPatientCount = 0 } = useQuery({
     queryKey: ['real-patient-count'],
     queryFn: async () => {
-      const { count, error } = await supabase.from('patients').select('id', { count: 'exact', head: true });
+      const { count, error } = await supabase.from('patients').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!);
       if (error) throw error;
       return count ?? 0;
     },
@@ -99,7 +100,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters }) => {
   const { data: realHighRiskCount = 0 } = useQuery({
     queryKey: ['real-high-risk-count'],
     queryFn: async () => {
-      const { count, error } = await supabase.from('patients').select('id', { count: 'exact', head: true }).gt('riskScore', 60);
+      const { count, error } = await supabase.from('patients').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!).gt('riskScore', 60);
       if (error) throw error;
       return count ?? 0;
     },

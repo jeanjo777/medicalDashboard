@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 // Types
 export type AlertPriority = 'critical' | 'high' | 'medium' | 'low';
@@ -96,6 +97,7 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
         supabase
           .from('patients')
           .select('id, first_name, last_name, riskScore, primary_pathology, status')
+          .eq('medic_id', getCurrentMedicId()!)
           .gte('riskScore', 70)
           .order('riskScore', { ascending: false }),
 
@@ -110,6 +112,7 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
         supabase
           .from('patients')
           .select('id, first_name, last_name, status, created_at')
+          .eq('medic_id', getCurrentMedicId()!)
           .order('created_at', { ascending: false }),
 
         // Query 4: Missed/cancelled appointments (last 30 days)

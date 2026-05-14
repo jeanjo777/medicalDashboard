@@ -34,6 +34,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, User, Calendar, Activity, FileText, Phone, Mail, MapPin, AlertCircle, CheckCircle, Heart, Thermometer } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 interface AddPatientModalProps {
   isOpen: boolean;
@@ -196,7 +197,8 @@ const AddPatientModal: React.FC<AddPatientModalProps> = ({ isOpen, onClose, onPa
             test_typhoide: formData.test_typhoide || null,
             test_dengue: formData.test_dengue || null,
             urines_albumine: formData.urines_albumine.trim() || null,
-            urines_sucre: formData.urines_sucre.trim() || null
+            urines_sucre: formData.urines_sucre.trim() || null,
+            medic_id: getCurrentMedicId()
           }
         ]);
 

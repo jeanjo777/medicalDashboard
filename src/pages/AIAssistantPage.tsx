@@ -38,6 +38,7 @@ import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { useAIAssistant, type AssistantMode, type ChatMessage, type ImageAttachment, type PatientContext, type ConversationSummary, type ThinkingBlock as ThinkingBlockType, type ToolExecution } from '../hooks/useAIAssistant';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 // ============================================
 // MODE CONFIGURATION
@@ -477,6 +478,7 @@ const PatientSearchSelector: React.FC<{
       const { data, error } = await supabase
         .from('patients')
         .select('id, name, email, date_of_birth, gender, status, primary_pathology, riskScore, age, medical_history, allergies, blood_type')
+        .eq('medic_id', getCurrentMedicId()!)
         .or(`name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%,primary_pathology.ilike.%${searchQuery}%`)
         .limit(8);
 

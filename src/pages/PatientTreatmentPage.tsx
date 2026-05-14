@@ -4,6 +4,7 @@ import { ArrowLeft, User, Calendar, Activity, FileText, Clock, AlertCircle, Save
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/Common/ToastNotification';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 interface Patient {
   id: string;
@@ -90,6 +91,7 @@ const PatientTreatmentPage = () => {
         .from('patients')
         .select('*')
         .eq('id', patientId)
+        .eq('medic_id', getCurrentMedicId()!)
         .single();
 
       if (patientError) throw patientError;

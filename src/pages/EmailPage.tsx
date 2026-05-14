@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import MedicalSidebarRefined from '../components/MedicalSidebarRefined';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 import {
   Mail, Send, Inbox, FileText, Trash2, Plus, X,
   User, RefreshCw, Loader2, AlertCircle,
@@ -141,6 +142,7 @@ const EmailPage: React.FC = () => {
       const { data } = await supabase
         .from('patients')
         .select('id, name, first_name, last_name, email')
+        .eq('medic_id', getCurrentMedicId()!)
         .or(
           `name.ilike.%${patientSearch}%,first_name.ilike.%${patientSearch}%,last_name.ilike.%${patientSearch}%`
         )

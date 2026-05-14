@@ -21,6 +21,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { supabase } from '../lib/supabase';
 import { TrendingUp, Loader2 } from 'lucide-react';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 type Period = 'week' | 'month' | 'year';
 
@@ -103,6 +104,7 @@ const PatientGrowthChart: React.FC = () => {
       let { data: patients, error: fetchError } = await supabase
         .from('patients')
         .select('id, created_at')
+        .eq('medic_id', getCurrentMedicId()!)
         .gte('created_at', range.start.toISOString())
         .lte('created_at', range.end.toISOString())
         .order('created_at', { ascending: true });
@@ -125,6 +127,7 @@ const PatientGrowthChart: React.FC = () => {
         const { data: allPatients, error: allError } = await supabase
           .from('patients')
           .select('id, created_at')
+          .eq('medic_id', getCurrentMedicId()!)
           .order('created_at', { ascending: true });
 
         if (allError) {

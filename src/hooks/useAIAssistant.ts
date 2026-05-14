@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 // ============================================
 // TYPES
@@ -190,6 +191,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
         const { data: patients } = await supabase
           .from('patients')
           .select('id, name')
+          .eq('medic_id', getCurrentMedicId()!)
           .in('id', patientIds);
         if (patients) {
           patientMap = Object.fromEntries(patients.map(p => [p.id, p.name]));
@@ -248,6 +250,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
           .from('patients')
           .select('id, name, age, gender, primary_pathology, riskScore, medical_history, allergies, blood_type')
           .eq('id', consultation.patient_id)
+          .eq('medic_id', getCurrentMedicId()!)
           .single();
 
         if (patient) {

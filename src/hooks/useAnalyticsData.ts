@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 // Types pour les données analytics
 export interface AnalyticsStats {
@@ -282,7 +283,7 @@ export function useDynamicAnalytics(filters?: Record<string, unknown>) {
         supabase.from('analytics_stats').select('*').order('date', { ascending: false }).limit(1).maybeSingle(),
         supabase.from('analytics_departement').select('*').order('patients_count', { ascending: false }),
         supabase.from('analytics_flux_patients').select('*').order('annee', { ascending: true }).order('created_at', { ascending: true }),
-        supabase.from('patients').select('*'),
+        supabase.from('patients').select('*').eq('medic_id', getCurrentMedicId()!),
       ]);
 
       const stats = statsRes.data;
@@ -531,7 +532,7 @@ export function useAIAlerts() {
     queryFn: async (): Promise<AIAlertsResponse> => {
       const [statsRes, patientsRes] = await Promise.all([
         supabase.from('analytics_stats').select('*').order('date', { ascending: false }).limit(1).maybeSingle(),
-        supabase.from('patients').select('*'),
+        supabase.from('patients').select('*').eq('medic_id', getCurrentMedicId()!),
       ]);
 
       const stats = statsRes.data;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface SidebarBadges {
   appointments: number;  // RDV aujourd'hui (status a_venir)
@@ -41,6 +42,7 @@ export function useSidebarBadges(): SidebarBadges {
         supabase
           .from('patients')
           .select('id', { count: 'exact', head: true })
+          .eq('medic_id', getCurrentMedicId()!)
           .gte('created_at', startOfMonth),
 
         // 3. Upcoming appointments (next 7 days)

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { X, Calendar, Clock, User, FileText, Tag, AlertCircle, AlertTriangle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import logger from '../../utils/logger';
+import { getCurrentMedicId } from '../../utils/auth';
 import { useAppointmentConflict, ConflictingAppointment } from '../../hooks/useAppointmentConflict';
 
 interface AddAppointmentModalProps {
@@ -88,6 +89,7 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
       const { data, error: fetchError } = await supabase
         .from('patients')
         .select('id, first_name, last_name, phone, email')
+        .eq('medic_id', getCurrentMedicId()!)
         .order('last_name', { ascending: true });
 
       if (fetchError) {

@@ -26,6 +26,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import logger from '../utils/logger';
 import { exportData, ExportFormat, flattenData } from '../utils/exportUtils';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 const PAGE_CONFIG: Record<string, { title: string; subtitle: string; icon: React.ElementType; sidebarId: string }> = {
   '/analytics-advanced': { title: 'Analytics & Statistiques', subtitle: "Vue d'ensemble de l'activité et rapports détaillés", icon: BarChart3, sidebarId: 'statistics' },
@@ -85,8 +86,8 @@ const AnalyticsPageAdvanced: React.FC = () => {
       completedConsultationsRes,
       analyticsStatsRes,
     ] = await Promise.all([
-      supabase.from('patients').select('id', { count: 'exact', head: true }),
-      supabase.from('patients').select('id', { count: 'exact', head: true }).gte('created_at', startOfThisMonth),
+      supabase.from('patients').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!),
+      supabase.from('patients').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!).gte('created_at', startOfThisMonth),
       supabase.from('appointments').select('id', { count: 'exact', head: true }),
       supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('appointment_date', todayStr),
       supabase.from('consultations').select('id', { count: 'exact', head: true }).eq('status', 'completed'),

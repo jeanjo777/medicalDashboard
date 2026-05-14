@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 import logger from '../utils/logger';
 
 export interface SearchFilters {
@@ -77,6 +78,12 @@ export function useAdvancedSearch<T = any>({
       setError(null);
 
       let query = supabase.from(table).select(selectFields, { count: 'exact' });
+
+      // Isolate patients per doctor
+      if (table === 'patients') {
+        const medicId = getCurrentMedicId();
+        if (medicId) query = query.eq('medic_id', medicId);
+      }
 
       if (filters.query && filters.query.trim()) {
         const searchConditions = searchFields

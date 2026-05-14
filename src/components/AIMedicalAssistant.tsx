@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Sparkles, Brain, TrendingUp, FileText, AlertCircle, Minimize2, Maximize2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 interface Message {
   id: string;
@@ -74,6 +75,7 @@ const AIMedicalAssistant: React.FC = () => {
         const { data } = await supabase
           .from('patients')
           .select('name, first_name, last_name, riskScore, primary_pathology, status')
+          .eq('medic_id', getCurrentMedicId()!)
           .gte('riskScore', 70)
           .order('riskScore', { ascending: false })
           .limit(5);
@@ -100,7 +102,8 @@ const AIMedicalAssistant: React.FC = () => {
 
         const { count: totalPatients } = await supabase
           .from('patients')
-          .select('id', { count: 'exact', head: true });
+          .select('id', { count: 'exact', head: true })
+          .eq('medic_id', getCurrentMedicId()!);
 
         const { count: totalAppointments } = await supabase
           .from('appointments')

@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, User, Calendar, FileText, Loader2, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import logger from '../../utils/logger';
+import { getCurrentMedicId } from '../../utils/auth';
 
 interface SearchResult {
   id: string;
@@ -80,6 +81,7 @@ export const GlobalSearch: React.FC = () => {
       const { data: patients } = await supabase
         .from('patients')
         .select('id, name, email, phone, created_at')
+        .eq('medic_id', getCurrentMedicId()!)
         .or(`name.ilike.${searchTerm},email.ilike.${searchTerm},phone.ilike.${searchTerm}`)
         .limit(5);
 

@@ -28,6 +28,7 @@ import { useToast } from '../Common/Toast';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import ErrorState from '../ErrorState';
 import logger from '../../utils/logger';
+import { getCurrentMedicId } from '../../utils/auth';
 
 interface Patient {
   id: string;
@@ -119,6 +120,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
         .from('patients')
         .select('*')
         .eq('id', patientId)
+        .eq('medic_id', getCurrentMedicId()!)
         .single();
 
       if (fetchError) throw fetchError;
@@ -172,7 +174,8 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
           urines_sucre: editedPatient.urines_sucre || null,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', patient.id);
+        .eq('id', patient.id)
+        .eq('medic_id', getCurrentMedicId()!);
 
       if (updateError) throw updateError;
 
@@ -209,7 +212,8 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
       const { error: deleteError } = await supabase
         .from('patients')
         .delete()
-        .eq('id', patient.id);
+        .eq('id', patient.id)
+        .eq('medic_id', getCurrentMedicId()!);
 
       if (deleteError) throw deleteError;
 
