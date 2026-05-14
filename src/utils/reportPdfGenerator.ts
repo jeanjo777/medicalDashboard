@@ -56,6 +56,30 @@ const C_PINK: [number, number, number] = [236, 72, 153];
 // HELPERS
 // ════════════════════════════════════════════════════════════════
 
+/** Strip accents for jsPDF Helvetica (no unicode support) */
+function clean(s: string): string {
+  return s
+    .replace(/[éèêë]/g, 'e').replace(/[ÉÈÊË]/g, 'E')
+    .replace(/[àâä]/g, 'a').replace(/[ÀÂÄ]/g, 'A')
+    .replace(/[ùûü]/g, 'u').replace(/[ÙÛÜ]/g, 'U')
+    .replace(/[îï]/g, 'i').replace(/[ÎÏ]/g, 'I')
+    .replace(/[ôö]/g, 'o').replace(/[ÔÖ]/g, 'O')
+    .replace(/[ç]/g, 'c').replace(/[Ç]/g, 'C')
+    .replace(/[—–]/g, '-').replace(/[«»""]/g, '"').replace(/['']/g, "'")
+    .replace(/[✓✔]/g, '*').replace(/[•●]/g, '-')
+    .replace(/[^\x00-\x7F]/g, '');
+}
+
+/** Monkey-patch doc.text to auto-clean accents */
+function patchDoc(doc: jsPDF): jsPDF {
+  const origText = doc.text.bind(doc);
+  (doc as any).text = (text: string | string[], x: number, y: number, options?: any) => {
+    const cleaned = Array.isArray(text) ? text.map(clean) : clean(text);
+    return origText(cleaned, x, y, options);
+  };
+  return doc;
+}
+
 function np(doc: jsPDF, y: number, needed: number): number {
   if (y + needed > PAGE_H - 30) { doc.addPage(); return 20; }
   return y;
@@ -780,7 +804,7 @@ function drawHighRiskPatients(doc: jsPDF, data: ReportData, y: number): number {
     doc.setFillColor(240, 253, 244);
     doc.roundedRect(M, y, CONTENT_W, 12, 2, 2, 'F');
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GREEN);
-    doc.text('✓ Aucun patient à risque élevé — situation favorable.', M + 5, y + 8);
+    doc.text('Aucun patient a risque eleve - situation favorable.', M + 5, y + 8);
     return y + 18;
   }
 
@@ -957,7 +981,7 @@ function drawFooter(doc: jsPDF, y: number) {
 // ════════════════════════════════════════════════════════════════
 
 export function generateReportPDF(data: ReportData): void {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = patchDoc(new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }));
 
   let y = drawHeader(doc, data);
   y = drawStatCards(doc, data, y);
