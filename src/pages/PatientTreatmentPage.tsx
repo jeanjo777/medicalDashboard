@@ -101,6 +101,7 @@ const PatientTreatmentPage = () => {
         .from('consultations')
         .select('*')
         .eq('patient_id', patientId)
+        .eq('medic_id', getCurrentMedicId()!)
         .order('created_at', { ascending: false });
 
       if (consultationsError) throw consultationsError;
@@ -148,7 +149,8 @@ const PatientTreatmentPage = () => {
       const { error } = await supabase
         .from('consultations')
         .update(updateData)
-        .eq('id', selectedConsultation.id);
+        .eq('id', selectedConsultation.id)
+        .eq('medic_id', getCurrentMedicId()!);
 
       if (error) throw error;
 
@@ -176,7 +178,8 @@ const PatientTreatmentPage = () => {
       const { error } = await supabase
         .from('consultations')
         .update(updateData)
-        .eq('id', consultationId);
+        .eq('id', consultationId)
+        .eq('medic_id', getCurrentMedicId()!);
 
       if (error) throw error;
       fetchPatientData();

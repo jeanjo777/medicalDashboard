@@ -15,6 +15,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
 import { parseISO, addMinutes, isWithinInterval, parse, format } from 'date-fns';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface ConflictingAppointment {
   id: string;
@@ -94,6 +95,7 @@ export const useAppointmentConflict = () => {
         .from('appointments')
         .select('id, patient_name, appointment_time, duration, status')
         .eq('appointment_date', date)
+        .eq('medic_id', getCurrentMedicId()!)
         .neq('status', 'annule');
 
       if (error) {
@@ -170,6 +172,7 @@ export const useAppointmentConflict = () => {
         .from('appointments')
         .select('appointment_time, duration')
         .eq('appointment_date', date)
+        .eq('medic_id', getCurrentMedicId()!)
         .neq('status', 'annule')
         .order('appointment_time', { ascending: true });
 

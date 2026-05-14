@@ -645,19 +645,5 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO service_role;
 
--- ============================================================
--- MIGRATIONS (safe to run on existing DB)
--- ============================================================
-
--- Add medic_id column to patients if it doesn't exist
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'patients' AND column_name = 'medic_id') THEN
-    ALTER TABLE patients ADD COLUMN medic_id uuid;
-    CREATE INDEX IF NOT EXISTS idx_patients_medic_id ON patients(medic_id);
-    ALTER TABLE patients ADD CONSTRAINT fk_patients_medic_id FOREIGN KEY (medic_id) REFERENCES medics(id) ON DELETE SET NULL;
-  END IF;
-END $$;
-
 -- Done
 SELECT 'MediCare Pro database initialized successfully' AS status;

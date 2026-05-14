@@ -127,6 +127,7 @@ const AppointmentDistributionChart: React.FC = () => {
       let { data: appointments, error: appointmentsError } = await supabase
         .from('appointments')
         .select('id, appointment_date, message, status')
+        .eq('medic_id', getCurrentMedicId()!)
         .gte('appointment_date', startDateStr)
         .lte('appointment_date', endDateStr);
 
@@ -135,7 +136,8 @@ const AppointmentDistributionChart: React.FC = () => {
         logger.info('[AppointmentDistribution] No appointments in period, fetching all');
         const { data: allAppointments, error: allError } = await supabase
           .from('appointments')
-          .select('id, appointment_date, message, status');
+          .select('id, appointment_date, message, status')
+          .eq('medic_id', getCurrentMedicId()!);
         appointments = allAppointments;
         appointmentsError = allError;
       }

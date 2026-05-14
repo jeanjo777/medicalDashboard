@@ -143,7 +143,8 @@ const AddAppointmentModal: React.FC<AddAppointmentModalProps> = ({ onClose, onSu
           type_consultation: formData.type_consultation,
           notes: formData.notes,
           duration: formData.duration,
-          status: formData.status
+          status: formData.status,
+          medic_id: getCurrentMedicId()
         }]);
 
       if (insertError) {

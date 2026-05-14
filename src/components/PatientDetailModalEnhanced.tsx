@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Phone, Mail, MapPin, Printer, Download, Activity, Heart, Droplet, Weight, Ruler, Calendar, User, AlertCircle, Pill, FileText, TrendingUp, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 interface PatientDetailModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ const PatientDetailModalEnhanced: React.FC<PatientDetailModalProps> = ({ isOpen,
           .from('consultations')
           .select('*')
           .eq('patient_id', patient.id)
+          .eq('medic_id', getCurrentMedicId()!)
           .order('created_at', { ascending: false });
         if (data) setConsultations(data);
       } catch (err) {

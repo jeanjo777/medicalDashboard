@@ -176,6 +176,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
       const { data, error: err } = await supabase
         .from('consultations')
         .select('id, symptoms, status, patient_id, created_at, updated_at')
+        .eq('medic_id', getCurrentMedicId()!)
         .order('updated_at', { ascending: false })
         .limit(50);
 
@@ -427,6 +428,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
         const insertData: Record<string, unknown> = {
           symptoms: message.trim().substring(0, 500),
           status: 'pending',
+          medic_id: getCurrentMedicId(),
         };
         if (patientContext?.patientId) {
           insertData.patient_id = patientContext.patientId;

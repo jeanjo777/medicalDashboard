@@ -90,7 +90,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ filters }) => {
   const { data: realConsultationCount = 0 } = useQuery({
     queryKey: ['real-consultation-count'],
     queryFn: async () => {
-      const { count, error } = await supabase.from('consultations').select('id', { count: 'exact', head: true });
+      const { count, error } = await supabase.from('consultations').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!);
       if (error) throw error;
       return count ?? 0;
     },

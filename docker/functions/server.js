@@ -194,14 +194,20 @@ app.post('/functions/v1/verify-token', async (req, res) => {
 // ============================================================
 app.post('/functions/v1/register-patient', async (req, res) => {
   try {
+    const claims = verifyAuth(req);
+    if (!claims) {
+      return res.status(401).json({ error: 'Non authentifié' });
+    }
+    const medic_id = claims.sub;
+
     const { email, name, age, gender } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'Le nom est requis' });
     }
 
     const result = await pool.query(
-      `INSERT INTO patients (email, name, age, gender) VALUES ($1, $2, $3, $4) RETURNING id`,
-      [email || null, name, age || null, gender || 'male']
+      `INSERT INTO patients (email, name, age, gender, medic_id) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
+      [email || null, name, age || null, gender || 'male', medic_id]
     );
 
     res.json({ success: true, patientId: result.rows[0].id });
