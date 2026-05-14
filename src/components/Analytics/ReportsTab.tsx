@@ -106,7 +106,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
         // Fetch patients
         const { data: patients } = await supabase
           .from('patients')
-          .select('name, date_of_birth, gender, status, created_at, primary_pathology')
+          .select('name, date_of_birth, gender, status, created_at, primary_pathology, filiale, temperature, poids, taille, tension_arterielle, test_palu, test_typhoide, test_dengue, riskScore')
           .eq('medic_id', medicId!)
           .gte('created_at', startDate)
           .lte('created_at', endDate + 'T23:59:59');

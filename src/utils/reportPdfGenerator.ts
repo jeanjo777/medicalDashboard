@@ -26,7 +26,7 @@ export interface ReportData {
     maleCount: number;
     femaleCount: number;
   };
-  patients: { name: string; date_of_birth: string; gender: string; status: string; created_at: string; primary_pathology: string }[];
+  patients: { name: string; date_of_birth: string; gender: string; status: string; created_at: string; primary_pathology: string; filiale?: string; temperature?: number; poids?: number; taille?: number; tension_arterielle?: string; test_palu?: string; test_typhoide?: string; test_dengue?: string; riskScore?: number }[];
   appointments: { patient_name: string; appointment_date: string; appointment_time: string; status: string; type_consultation: string }[];
 }
 
@@ -503,6 +503,321 @@ function drawAnalysis(doc: jsPDF, data: ReportData, y: number): number {
 }
 
 // ════════════════════════════════════════════════════════════════
+// TOP PATHOLOGIES BAR CHART
+// ════════════════════════════════════════════════════════════════
+
+function drawPathologiesChart(doc: jsPDF, data: ReportData, y: number): number {
+  y = sectionTitle(doc, 'TOP 5 — PATHOLOGIES LES PLUS FRÉQUENTES', y);
+  y = np(doc, y, 50);
+
+  const pathMap: Record<string, number> = {};
+  data.patients.forEach(p => {
+    const path = p.primary_pathology || 'Non spécifié';
+    pathMap[path] = (pathMap[path] || 0) + 1;
+  });
+
+  const sorted = Object.entries(pathMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  if (sorted.length === 0) {
+    doc.setFontSize(9); doc.setTextColor(...C_GRAY);
+    doc.text('Aucune pathologie enregistrée.', M, y + 5);
+    return y + 12;
+  }
+
+  const maxVal = sorted[0][1] || 1;
+  const colors: [number, number, number][] = [C_BLUE, C_ACCENT, C_PURPLE, C_ORANGE, C_PINK];
+  const chartX = M + 40;
+  const chartW = CONTENT_W - 45;
+
+  sorted.forEach((entry, i) => {
+    const by = y + i * 12;
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GRAY);
+    doc.text(entry[0].substring(0, 20), M, by + 6);
+    doc.setFillColor(235, 235, 235);
+    doc.roundedRect(chartX, by + 1, chartW, 7, 2, 2, 'F');
+    const bw = Math.max(3, (entry[1] / maxVal) * chartW);
+    doc.setFillColor(...(colors[i] || C_BLUE));
+    doc.roundedRect(chartX, by + 1, bw, 7, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(...(colors[i] || C_BLUE));
+    doc.text(`${entry[1]} (${Math.round((entry[1] / data.patients.length) * 100)}%)`, chartX + bw + 3, by + 6);
+  });
+
+  return y + sorted.length * 12 + 8;
+}
+
+// ════════════════════════════════════════════════════════════════
+// AGE DISTRIBUTION
+// ════════════════════════════════════════════════════════════════
+
+function drawAgeDistribution(doc: jsPDF, data: ReportData, y: number): number {
+  y = sectionTitle(doc, 'RÉPARTITION PAR TRANCHE D\'ÂGE', y);
+  y = np(doc, y, 50);
+
+  const groups = [
+    { label: '0-18 ans', min: 0, max: 18, color: C_BLUE, count: 0 },
+    { label: '19-35 ans', min: 19, max: 35, color: C_ACCENT, count: 0 },
+    { label: '36-55 ans', min: 36, max: 55, color: C_ORANGE, count: 0 },
+    { label: '56+ ans', min: 56, max: 200, color: C_RED, count: 0 },
+  ];
+
+  data.patients.forEach(p => {
+    if (!p.date_of_birth) return;
+    const age = Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / 31557600000);
+    const g = groups.find(gr => age >= gr.min && age <= gr.max);
+    if (g) g.count++;
+  });
+
+  const total = data.patients.length || 1;
+  const maxVal = Math.max(...groups.map(g => g.count), 1);
+  const barW = (CONTENT_W - 15) / groups.length;
+
+  // Draw vertical bars
+  const chartH = 35;
+  const baseY = y + chartH;
+
+  groups.forEach((g, i) => {
+    const bx = M + 5 + i * barW;
+    const bh = Math.max(2, (g.count / maxVal) * (chartH - 5));
+    doc.setFillColor(...g.color);
+    doc.roundedRect(bx + 5, baseY - bh, barW - 15, bh, 2, 2, 'F');
+
+    // Value on top
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(...g.color);
+    doc.text(String(g.count), bx + 5 + (barW - 15) / 2, baseY - bh - 3, { align: 'center' });
+
+    // Label below
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GRAY);
+    doc.text(g.label, bx + 5 + (barW - 15) / 2, baseY + 5, { align: 'center' });
+    doc.text(`${Math.round((g.count / total) * 100)}%`, bx + 5 + (barW - 15) / 2, baseY + 10, { align: 'center' });
+  });
+
+  return baseY + 16;
+}
+
+// ════════════════════════════════════════════════════════════════
+// VITALS AVERAGE
+// ════════════════════════════════════════════════════════════════
+
+function drawVitalsAverage(doc: jsPDF, data: ReportData, y: number): number {
+  y = sectionTitle(doc, 'SIGNES VITAUX MOYENS', y);
+  y = np(doc, y, 30);
+
+  const patients = data.patients.filter(p => p.temperature || p.poids || p.taille);
+  if (patients.length === 0) {
+    doc.setFontSize(9); doc.setTextColor(...C_GRAY);
+    doc.text('Aucune donnée de signes vitaux disponible.', M, y + 5);
+    return y + 12;
+  }
+
+  const avg = (arr: number[]) => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : 'N/A';
+  const temps = patients.filter(p => p.temperature).map(p => p.temperature!);
+  const poids = patients.filter(p => p.poids).map(p => p.poids!);
+  const tailles = patients.filter(p => p.taille).map(p => p.taille!);
+
+  const vitals = [
+    { label: 'Température moy.', value: `${avg(temps)} °C`, icon: '🌡', color: C_RED },
+    { label: 'Poids moyen', value: `${avg(poids)} kg`, icon: '⚖', color: C_BLUE },
+    { label: 'Taille moyenne', value: `${avg(tailles)} cm`, icon: '📏', color: C_ACCENT },
+    { label: 'Patients mesurés', value: `${patients.length}`, icon: '👥', color: C_PURPLE },
+  ];
+
+  const cardW = (CONTENT_W - 9) / 4;
+  vitals.forEach((v, i) => {
+    const cx = M + i * (cardW + 3);
+    doc.setFillColor(...C_BG);
+    doc.roundedRect(cx, y, cardW, 18, 2, 2, 'F');
+    doc.setFillColor(...v.color);
+    doc.rect(cx, y, 3, 18, 'F');
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(...v.color);
+    doc.text(v.value, cx + 8, y + 8);
+    doc.setFontSize(6); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GRAY);
+    doc.text(v.label, cx + 8, y + 14);
+  });
+
+  return y + 24;
+}
+
+// ════════════════════════════════════════════════════════════════
+// TEST RESULTS (Palu, Typhoide, Dengue)
+// ════════════════════════════════════════════════════════════════
+
+function drawTestResults(doc: jsPDF, data: ReportData, y: number): number {
+  y = sectionTitle(doc, 'RÉSULTATS D\'ANALYSES — TAUX DE POSITIFS', y);
+  y = np(doc, y, 35);
+
+  const tests = [
+    { label: 'Test Paludisme', field: 'test_palu' as const, color: C_RED },
+    { label: 'Test Typhoïde', field: 'test_typhoide' as const, color: C_ORANGE },
+    { label: 'Test Dengue', field: 'test_dengue' as const, color: C_PURPLE },
+  ];
+
+  tests.forEach((t, i) => {
+    const tested = data.patients.filter(p => (p as any)[t.field]);
+    const positive = tested.filter(p => (p as any)[t.field] === 'positif' || (p as any)[t.field] === 'Positif');
+    const total = tested.length || 1;
+    const pct = Math.round((positive.length / total) * 100);
+    const barY = y + i * 14;
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GRAY);
+    doc.text(t.label, M, barY + 5);
+
+    // Background bar
+    const barX = M + 40;
+    const barW = CONTENT_W - 85;
+    doc.setFillColor(235, 235, 235);
+    doc.roundedRect(barX, barY + 1, barW, 7, 2, 2, 'F');
+
+    // Positive bar
+    const pw = Math.max(1, (pct / 100) * barW);
+    doc.setFillColor(...t.color);
+    doc.roundedRect(barX, barY + 1, pw, 7, 2, 2, 'F');
+
+    // Stats
+    doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(...t.color);
+    doc.text(`${positive.length}/${tested.length} positifs (${pct}%)`, barX + barW + 3, barY + 6);
+  });
+
+  return y + tests.length * 14 + 8;
+}
+
+// ════════════════════════════════════════════════════════════════
+// FILIALES DISTRIBUTION
+// ════════════════════════════════════════════════════════════════
+
+function drawFilialesChart(doc: jsPDF, data: ReportData, y: number): number {
+  y = sectionTitle(doc, 'RÉPARTITION PAR FILIALE', y);
+  y = np(doc, y, 50);
+
+  const filMap: Record<string, number> = {};
+  data.patients.forEach(p => {
+    const f = p.filiale || 'Non spécifié';
+    filMap[f] = (filMap[f] || 0) + 1;
+  });
+
+  const sorted = Object.entries(filMap).sort((a, b) => b[1] - a[1]);
+  if (sorted.length === 0) {
+    doc.setFontSize(9); doc.setTextColor(...C_GRAY);
+    doc.text('Aucune donnée de filiale.', M, y + 5);
+    return y + 12;
+  }
+
+  const total = data.patients.length || 1;
+  const colors: [number, number, number][] = [C_BLUE, C_ACCENT, C_GREEN, C_ORANGE, C_PURPLE, C_PINK, C_RED];
+  const maxVal = sorted[0][1] || 1;
+  const chartX = M + 35;
+  const chartW = CONTENT_W - 40;
+
+  sorted.slice(0, 7).forEach((entry, i) => {
+    const by = y + i * 10;
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GRAY);
+    doc.text(entry[0].substring(0, 18), M, by + 5);
+    doc.setFillColor(235, 235, 235);
+    doc.roundedRect(chartX, by + 1, chartW, 6, 2, 2, 'F');
+    const bw = Math.max(3, (entry[1] / maxVal) * chartW);
+    doc.setFillColor(...(colors[i % colors.length]));
+    doc.roundedRect(chartX, by + 1, bw, 6, 2, 2, 'F');
+    doc.setFontSize(6); doc.setFont('helvetica', 'bold'); doc.setTextColor(...(colors[i % colors.length]));
+    doc.text(`${entry[1]} (${Math.round((entry[1] / total) * 100)}%)`, chartX + bw + 2, by + 5.5);
+  });
+
+  return y + Math.min(sorted.length, 7) * 10 + 8;
+}
+
+// ════════════════════════════════════════════════════════════════
+// WEEKDAY DISTRIBUTION
+// ════════════════════════════════════════════════════════════════
+
+function drawWeekdayChart(doc: jsPDF, data: ReportData, y: number): number {
+  y = sectionTitle(doc, 'TAUX D\'OCCUPATION PAR JOUR DE LA SEMAINE', y);
+  y = np(doc, y, 50);
+
+  const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+
+  data.appointments.forEach(a => {
+    if (!a.appointment_date) return;
+    const d = new Date(a.appointment_date + 'T00:00:00').getDay();
+    dayCounts[d]++;
+  });
+
+  const maxVal = Math.max(...dayCounts, 1);
+  const barW = (CONTENT_W - 10) / 7;
+  const chartH = 35;
+  const baseY = y + chartH;
+
+  const dayColors: [number, number, number][] = [C_GRAY, C_BLUE, C_ACCENT, C_GREEN, C_ORANGE, C_PURPLE, C_GRAY];
+
+  dayCounts.forEach((count, i) => {
+    const bx = M + 3 + i * barW;
+    const bh = Math.max(2, (count / maxVal) * (chartH - 5));
+    doc.setFillColor(...dayColors[i]);
+    doc.roundedRect(bx + 3, baseY - bh, barW - 8, bh, 2, 2, 'F');
+
+    // Value on top
+    if (count > 0) {
+      doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(...dayColors[i]);
+      doc.text(String(count), bx + 3 + (barW - 8) / 2, baseY - bh - 2, { align: 'center' });
+    }
+
+    // Day label
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GRAY);
+    doc.text(dayNames[i], bx + 3 + (barW - 8) / 2, baseY + 5, { align: 'center' });
+  });
+
+  return baseY + 12;
+}
+
+// ════════════════════════════════════════════════════════════════
+// HIGH RISK PATIENTS
+// ════════════════════════════════════════════════════════════════
+
+function drawHighRiskPatients(doc: jsPDF, data: ReportData, y: number): number {
+  y = sectionTitle(doc, 'PATIENTS À RISQUE ÉLEVÉ', y);
+  y = np(doc, y, 30);
+
+  const highRisk = data.patients.filter(p => (p.riskScore || 0) > 50).sort((a, b) => (b.riskScore || 0) - (a.riskScore || 0));
+
+  if (highRisk.length === 0) {
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(M, y, CONTENT_W, 12, 2, 2, 'F');
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GREEN);
+    doc.text('✓ Aucun patient à risque élevé — situation favorable.', M + 5, y + 8);
+    return y + 18;
+  }
+
+  // Table
+  doc.setFillColor(...C_RED);
+  doc.rect(M, y, CONTENT_W, 7, 'F');
+  doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.setTextColor(...C_WHITE);
+  doc.text('Patient', M + 2, y + 5);
+  doc.text('Risque', M + 60, y + 5);
+  doc.text('Pathologie', M + 85, y + 5);
+  doc.text('Statut', M + 140, y + 5);
+  y += 7;
+
+  highRisk.slice(0, 10).forEach((p, i) => {
+    y = np(doc, y, 7);
+    if (i % 2 === 0) { doc.setFillColor(254, 242, 242); doc.rect(M, y, CONTENT_W, 6.5, 'F'); }
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 30, 30);
+    doc.text((p.name || '').substring(0, 30), M + 2, y + 4.5);
+
+    // Risk badge
+    const risk = p.riskScore || 0;
+    const rColor: [number, number, number] = risk > 80 ? C_RED : C_ORANGE;
+    doc.setFillColor(...rColor);
+    doc.roundedRect(M + 60, y + 0.5, 18, 5, 1, 1, 'F');
+    doc.setFontSize(6); doc.setFont('helvetica', 'bold'); doc.setTextColor(...C_WHITE);
+    doc.text(`${risk}%`, M + 69, y + 4, { align: 'center' });
+
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal'); doc.setTextColor(30, 30, 30);
+    doc.text((p.primary_pathology || '-').substring(0, 25), M + 85, y + 4.5);
+    doc.text(p.status === 'in_treatment' ? 'Traitement' : p.status || '-', M + 140, y + 4.5);
+    y += 6.5;
+  });
+
+  return y + 5;
+}
+
+// ════════════════════════════════════════════════════════════════
 // PATIENTS TABLE
 // ════════════════════════════════════════════════════════════════
 
@@ -651,7 +966,22 @@ export function generateReportPDF(data: ReportData): void {
   y = drawActivityCurve(doc, data, y);
   y = drawAnalysis(doc, data, y);
 
-  // New page for tables
+  // Page 2 — Pathologies + Age + Vitals
+  doc.addPage();
+  y = 20;
+  y = drawPathologiesChart(doc, data, y);
+  y = drawAgeDistribution(doc, data, y);
+  y = drawVitalsAverage(doc, data, y);
+  y = drawTestResults(doc, data, y);
+
+  // Page 3 — Filiales + Weekday + Risk patients + Tables
+  doc.addPage();
+  y = 20;
+  y = drawFilialesChart(doc, data, y);
+  y = drawWeekdayChart(doc, data, y);
+  y = drawHighRiskPatients(doc, data, y);
+
+  // Page 4 — Tables
   doc.addPage();
   y = 20;
   y = drawPatientsTable(doc, data, y);
