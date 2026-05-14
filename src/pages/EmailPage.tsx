@@ -56,39 +56,114 @@ const TEMPLATES = [
     label: 'Compte-rendu de consultation',
     subject: 'Compte-rendu de votre consultation',
     body: `<p>Cher(e) patient(e),</p>
-<p>Suite à votre consultation du <strong>[DATE]</strong>, veuillez trouver ci-joint votre compte-rendu médical.</p>
-<p>En cas de questions, n'hésitez pas à nous contacter.</p>
+<p>Suite à votre consultation du <strong>[DATE]</strong> au Centre Médico-Social SIFCA, veuillez trouver ci-joint votre compte-rendu médical.</p>
+<p>Ce document comprend les observations cliniques, les examens réalisés et les recommandations de votre médecin traitant.</p>
+<p>En cas de questions ou pour un suivi complémentaire, n'hésitez pas à nous contacter au <strong>27 21 75 75 75</strong>.</p>
 <br/>
-<p>Cordialement,<br/>Le service médical</p>`,
+<p>Cordialement,<br/><strong>Le Service Médical</strong><br/>Centre Médico-Social SIFCA<br/>18 BP 3321 Abidjan 18</p>`,
   },
   {
     id: 'resultats',
     label: "Résultats d'analyse",
     subject: "Vos résultats d'analyse sont disponibles",
     body: `<p>Cher(e) patient(e),</p>
-<p>Nous vous informons que vos résultats d'analyse sont désormais disponibles.</p>
-<p>Vous pouvez les récupérer directement au cabinet ou prendre rendez-vous pour en discuter avec le médecin.</p>
+<p>Nous avons le plaisir de vous informer que vos résultats d'analyse sont désormais disponibles.</p>
+<p>Vous pouvez :</p>
+<ul>
+<li>Les récupérer directement au Centre Médico-Social SIFCA</li>
+<li>Prendre rendez-vous avec votre médecin pour en discuter</li>
+</ul>
+<p><em>Important :</em> En cas de résultats nécessitant une prise en charge urgente, notre équipe médicale vous contactera directement.</p>
 <br/>
-<p>Cordialement,<br/>Le service médical</p>`,
+<p>Cordialement,<br/><strong>Le Service Médical</strong><br/>Centre Médico-Social SIFCA<br/>Tél : 27 21 75 75 75</p>`,
   },
   {
     id: 'rappel-rdv',
     label: 'Rappel de rendez-vous',
     subject: 'Rappel de votre rendez-vous médical',
     body: `<p>Cher(e) patient(e),</p>
-<p>Nous vous rappelons votre rendez-vous prévu le <strong>[DATE]</strong> à <strong>[HEURE]</strong>.</p>
-<p>En cas d'empêchement, merci de nous prévenir au moins 24h à l'avance.</p>
+<p>Nous vous rappelons votre rendez-vous prévu le :</p>
+<p style="background:#f0f9ff;padding:12px;border-radius:8px;border-left:4px solid #3b82f6;">
+📅 <strong>Date :</strong> [DATE]<br/>
+🕐 <strong>Heure :</strong> [HEURE]<br/>
+📍 <strong>Lieu :</strong> Centre Médico-Social SIFCA
+</p>
+<p>Merci de vous présenter <strong>15 minutes avant</strong> l'heure du rendez-vous avec votre carnet de santé et vos documents médicaux.</p>
+<p>En cas d'empêchement, merci de nous prévenir au moins <strong>24h à l'avance</strong> au 27 21 75 75 75 afin de libérer le créneau pour un autre patient.</p>
 <br/>
-<p>Cordialement,<br/>Le service médical</p>`,
+<p>Cordialement,<br/><strong>Le Service Médical</strong><br/>Centre Médico-Social SIFCA</p>`,
   },
   {
     id: 'ordonnance',
     label: 'Ordonnance / Renouvellement',
     subject: 'Votre ordonnance médicale',
     body: `<p>Cher(e) patient(e),</p>
-<p>Votre ordonnance médicale a été préparée. Vous pouvez la récupérer au cabinet pendant les heures d'ouverture.</p>
+<p>Votre ordonnance médicale a été préparée par votre médecin traitant.</p>
+<p>Vous trouverez ci-joint le document au format PDF. Vous pouvez le présenter directement en pharmacie pour le retrait de vos médicaments.</p>
+<p><em>Rappel :</em> Respectez scrupuleusement la posologie et la durée du traitement indiquées sur l'ordonnance. En cas d'effets indésirables, contactez immédiatement votre médecin.</p>
 <br/>
-<p>Cordialement,<br/>Le service médical</p>`,
+<p>Cordialement,<br/><strong>Le Service Médical</strong><br/>Centre Médico-Social SIFCA<br/>Tél : 27 21 75 75 75</p>`,
+  },
+  {
+    id: 'certificat',
+    label: 'Certificat médical',
+    subject: 'Votre certificat médical',
+    body: `<p>Cher(e) patient(e),</p>
+<p>Suite à votre examen médical au Centre Médico-Social SIFCA, veuillez trouver ci-joint votre certificat médical.</p>
+<p>Ce document est valable pour les démarches administratives auprès de votre employeur ou de votre organisme de rattachement.</p>
+<p>Pour toute demande de duplicata ou de précisions complémentaires, veuillez contacter le secrétariat médical au <strong>27 21 75 75 75</strong>.</p>
+<br/>
+<p>Cordialement,<br/><strong>Le Service Médical</strong><br/>Centre Médico-Social SIFCA<br/>18 BP 3321 Abidjan 18</p>`,
+  },
+  {
+    id: 'arret-travail',
+    label: 'Arrêt de travail',
+    subject: 'Votre arrêt de travail',
+    body: `<p>Cher(e) patient(e),</p>
+<p>Suite à votre consultation, un arrêt de travail vous a été prescrit.</p>
+<p>Veuillez trouver ci-joint le document officiel à transmettre à votre employeur et à votre organisme de couverture sociale dans un délai de <strong>48 heures</strong>.</p>
+<p><em>Rappel :</em></p>
+<ul>
+<li>Respectez les horaires de sortie autorisés</li>
+<li>Présentez-vous à la visite de contrôle si demandée</li>
+<li>Consultez votre médecin avant la reprise si nécessaire</li>
+</ul>
+<br/>
+<p>Cordialement,<br/><strong>Le Service Médical</strong><br/>Centre Médico-Social SIFCA<br/>Tél : 27 21 75 75 75</p>`,
+  },
+  {
+    id: 'transfert-medecin',
+    label: 'Transfert de dossier médical',
+    subject: 'Transfert de dossier patient',
+    body: `<p>Cher(e) Confrère/Consœur,</p>
+<p>Nous vous adressons ci-joint le dossier médical du patient concerné pour <strong>avis spécialisé / prise en charge / suivi</strong>.</p>
+<p><strong>Motif du transfert :</strong> [MOTIF]</p>
+<p><strong>Résumé clinique :</strong></p>
+<ul>
+<li>Antécédents : [ANTECEDENTS]</li>
+<li>Traitement en cours : [TRAITEMENT]</li>
+<li>Examens réalisés : [EXAMENS]</li>
+</ul>
+<p>Nous restons à votre disposition pour tout renseignement complémentaire.</p>
+<br/>
+<p>Confraternellement,<br/><strong>Dr [NOM_MEDECIN]</strong><br/>Centre Médico-Social SIFCA<br/>Tél : 27 21 75 75 75</p>`,
+  },
+  {
+    id: 'suivi-post-consultation',
+    label: 'Suivi post-consultation',
+    subject: 'Suivi de votre consultation médicale',
+    body: `<p>Cher(e) patient(e),</p>
+<p>Nous vous contactons dans le cadre du suivi de votre consultation du <strong>[DATE]</strong>.</p>
+<p>Comment vous sentez-vous depuis votre dernière visite ? Avez-vous bien suivi le traitement prescrit ?</p>
+<p>Si vous constatez :</p>
+<ul>
+<li>Une amélioration → continuez le traitement jusqu'à son terme</li>
+<li>Aucune amélioration après 72h → prenez rendez-vous pour une réévaluation</li>
+<li>Une aggravation → contactez-nous immédiatement au <strong>27 21 75 75 75</strong></li>
+</ul>
+<p>Votre santé est notre priorité.</p>
+<br/>
+<p>Cordialement,<br/><strong>Le Service Médical</strong><br/>Centre Médico-Social SIFCA</p>`,
   },
 ];
 
