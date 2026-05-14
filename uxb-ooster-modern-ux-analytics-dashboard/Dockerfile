@@ -1,7 +1,7 @@
 FROM node:20-alpine AS base
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm via npm (more reliable than corepack)
+RUN npm install -g pnpm@10
 
 WORKDIR /app
 
@@ -17,7 +17,6 @@ RUN pnpm build
 
 # Production
 FROM node:20-alpine AS runner
-RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
