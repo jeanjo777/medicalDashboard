@@ -19,7 +19,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth() + 1);
   const [selectedQuarter, setSelectedQuarter] = useState(() => Math.ceil((new Date().getMonth() + 1) / 3));
   const selectedPeriod = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
-  const [selectedFormat, setSelectedFormat] = useState('csv');
+  const [selectedFormat, setSelectedFormat] = useState('pdf');
   const [isGenerating, setIsGenerating] = useState(false);
   const generateFormRef = useRef<HTMLDivElement>(null);
 
