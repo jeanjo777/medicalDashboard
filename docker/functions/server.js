@@ -365,17 +365,28 @@ app.post('/functions/v1/send-email', async (req, res) => {
   }
 
   try {
-    const { to, subject, html, text } = req.body;
+    const { to, subject, html, text, attachments } = req.body;
     if (!to || !subject) {
       return res.status(400).json({ error: 'Destinataire (to) et sujet (subject) requis' });
     }
 
-    const { data, error } = await resend.emails.send({
+    // Build email payload
+    const emailPayload = {
       from: EMAIL_FROM,
       to: Array.isArray(to) ? to : [to],
       subject,
       html: html || `<p>${text || ''}</p>`,
-    });
+    };
+
+    // Add PDF attachments if provided
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      emailPayload.attachments = attachments.map(att => ({
+        filename: att.filename || 'document.pdf',
+        content: Buffer.from(att.content, 'base64'),
+      }));
+    }
+
+    const { data, error } = await resend.emails.send(emailPayload);
 
     if (error) {
       await pool.query(
