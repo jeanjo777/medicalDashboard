@@ -792,87 +792,81 @@ const PatientsViewPageEnhanced: React.FC = () => {
         onPatientAdded={handlePatientAdded}
       />
 
-      {/* Transfer Patient Dialog */}
+      {/* Transfer Patient Dialog — same layout as Rapport SIFCA */}
       {showTransferDialog && transferPatient && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="theme-bg-secondary border theme-border rounded-2xl w-full max-w-sm shadow-2xl">
-            <div className="flex items-center justify-between px-5 py-4 border-b theme-border">
+          <div className="theme-bg-secondary border theme-border rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b theme-border flex-shrink-0">
               <div className="flex items-center gap-2">
                 <Send size={18} className="text-blue-400" />
-                <h3 className="theme-text-primary font-semibold text-sm">Envoyer le patient</h3>
+                <div>
+                  <h3 className="theme-text-primary font-semibold text-sm">Envoyer document SIFCA</h3>
+                  <p className="theme-text-secondary text-xs">{transferPatient.name}</p>
+                </div>
               </div>
-              <button type="button" onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); }} className="theme-text-secondary hover:theme-text-primary transition-colors" aria-label="Fermer">
+              <button type="button" onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType(''); }} className="theme-text-secondary hover:theme-text-primary transition-colors" aria-label="Fermer">
                 <X size={18} />
               </button>
             </div>
 
-            <div className="px-5 py-4 space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <div className={`w-10 h-10 ${getAvatarColor(transferPatient.name)} rounded-full flex items-center justify-center`}>
-                  <span className="text-white text-sm font-bold">{transferPatient.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}</span>
-                </div>
-                <div>
-                  <p className="theme-text-primary font-medium text-sm">{transferPatient.name}</p>
-                  <p className="theme-text-secondary text-xs">{transferPatient.email || transferPatient.phone || 'Aucun contact'}</p>
-                </div>
-              </div>
-
-              {/* Options d'envoi */}
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={sendIncludeInfo} onChange={(e) => setSendIncludeInfo(e.target.checked)} className="accent-blue-500" />
-                  <span className="text-sm theme-text-secondary">Fiche patient</span>
-                </label>
-              </div>
-
-              {/* Type de document PDF */}
+            <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+              {/* Type de document */}
               <div>
-                <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Document PDF (optionnel)</label>
-                <select
-                  value={sendDocType}
-                  onChange={(e) => setSendDocType(e.target.value as SifcaDocType | '')}
-                  aria-label="Type de document PDF"
-                  title="Type de document PDF"
-                  className="w-full theme-bg-primary border theme-border rounded-xl px-3 py-2.5 text-sm theme-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
-                >
-                  <option value="">— Aucun document PDF —</option>
+                <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-1.5">Type de document</label>
+                <div className="space-y-1.5 max-h-[200px] overflow-y-auto pr-1">
                   {SIFCA_DOC_TYPES.map((dt) => (
-                    <option key={dt.id} value={dt.id}>{dt.label}</option>
+                    <label
+                      key={dt.id}
+                      className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all ${
+                        sendDocType === dt.id
+                          ? 'bg-blue-500/15 border border-blue-500/40'
+                          : 'theme-bg-primary border theme-border hover:border-blue-500/30'
+                      }`}
+                    >
+                      <input type="radio" name="sendDocType" value={dt.id} checked={sendDocType === dt.id} onChange={() => setSendDocType(dt.id)} className="accent-blue-500 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <span className={`text-sm font-medium block ${sendDocType === dt.id ? 'text-blue-500' : 'theme-text-primary'}`}>{dt.label}</span>
+                        <span className="text-xs theme-text-secondary block truncate">{dt.description}</span>
+                      </div>
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
+
+              {/* Options */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={sendIncludeInfo} onChange={(e) => setSendIncludeInfo(e.target.checked)} className="accent-blue-500" />
+                <span className="text-sm theme-text-secondary">Inclure la fiche patient dans l'email</span>
+              </label>
 
               {/* Médecin destinataire */}
               <div>
                 <label className="block theme-text-secondary text-xs font-medium uppercase tracking-wide mb-2">Médecin destinataire</label>
-                <div className="space-y-2 max-h-[150px] overflow-y-auto">
+                <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
                   {doctors.map((doc) => (
                     <label
                       key={doc.id}
-                      className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${
+                      className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all ${
                         selectedDoctorId === doc.id
-                          ? 'bg-blue-500/20 border border-blue-500/50'
+                          ? 'bg-blue-500/15 border border-blue-500/40'
                           : 'theme-bg-primary border theme-border hover:border-blue-500/30'
                       }`}
                     >
                       <input type="radio" name="targetDoctor" value={doc.id} checked={selectedDoctorId === doc.id} onChange={() => setSelectedDoctorId(doc.id)} className="accent-blue-500" />
                       <div>
-                        <p className={`text-sm font-medium ${selectedDoctorId === doc.id ? 'text-blue-400' : 'theme-text-primary'}`}>{doc.prenom} {doc.nom}</p>
+                        <p className={`text-sm font-medium ${selectedDoctorId === doc.id ? 'text-blue-500' : 'theme-text-primary'}`}>{doc.prenom} {doc.nom}</p>
                         <p className="theme-text-secondary text-xs">{doc.email}</p>
                       </div>
                     </label>
                   ))}
-                  {doctors.length === 0 && (
-                    <p className="theme-text-secondary text-sm text-center py-4">Aucun autre médecin disponible</p>
-                  )}
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t theme-border">
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t theme-border flex-shrink-0">
               <button
                 type="button"
-                onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); }}
+                onClick={() => { setShowTransferDialog(false); setTransferSuccess(false); setSendDocType(''); }}
                 className="px-4 py-2 text-sm theme-text-secondary hover:theme-text-primary rounded-xl transition-all"
               >
                 Annuler
@@ -880,7 +874,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
               <button
                 type="button"
                 onClick={handleTransfer}
-                disabled={!selectedDoctorId || transferring || transferSuccess}
+                disabled={(!selectedDoctorId || !sendDocType) || transferring || transferSuccess}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-50 ${
                   transferSuccess ? 'bg-emerald-600' : 'bg-blue-600 hover:bg-blue-700'
                 }`}
@@ -890,7 +884,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
                 ) : transferSuccess ? (
                   <><Check size={15} /> Envoyé !</>
                 ) : (
-                  <><Send size={15} /> Envoyer</>
+                  <><Mail size={15} /> Envoyer par email</>
                 )}
               </button>
             </div>
