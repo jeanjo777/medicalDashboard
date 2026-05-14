@@ -30,6 +30,7 @@ import {
   Activity
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { getCurrentMedicId } from '../../utils/auth';
 import logger from '../../utils/logger';
 
 interface Notification {
@@ -95,6 +96,7 @@ export const NotificationBell: React.FC = () => {
       const { data: appointments, error } = await supabase
         .from('appointments')
         .select('id, patient_name, appointment_date, appointment_time, message')
+        .eq('medic_id', getCurrentMedicId()!)
         .eq('appointment_date', today)
         .order('appointment_time', { ascending: true })
         .limit(10);

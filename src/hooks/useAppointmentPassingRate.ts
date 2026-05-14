@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface PassingRate {
   complete: number;
@@ -18,6 +19,7 @@ export function useAppointmentPassingRate() {
       const { data, error } = await supabase
         .from('appointments')
         .select('status')
+        .eq('medic_id', getCurrentMedicId()!)
         .gte('appointment_date', startOfMonth);
 
       if (error) throw error;

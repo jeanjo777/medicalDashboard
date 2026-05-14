@@ -105,6 +105,7 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
         supabase
           .from('consultations')
           .select('id, patient_id, symptoms, status, created_at')
+          .eq('medic_id', getCurrentMedicId()!)
           .eq('status', 'pending')
           .is('ai_response', null),
 
@@ -119,6 +120,7 @@ export const usePatientAlerts = (): UsePatientAlertsResult => {
         supabase
           .from('appointments')
           .select('id, patient_id, patient_name, appointment_date, appointment_time, status')
+          .eq('medic_id', getCurrentMedicId()!)
           .in('status', ['cancelled', 'annule', 'no_show'])
           .gte('appointment_date', thirtyDaysAgo)
           .order('appointment_date', { ascending: false }),

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface WeeklyData {
   counts: number[];
@@ -26,6 +27,7 @@ export function useWeeklyAppointments() {
       const { data, error } = await supabase
         .from('appointments')
         .select('appointment_date')
+        .eq('medic_id', getCurrentMedicId()!)
         .gte('appointment_date', mondayStr)
         .lte('appointment_date', sundayStr);
 

@@ -23,7 +23,7 @@ import {
   Printer,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { generateSifcaPDF } from '../../utils/sifcaPdfGenerator';
+import { generateSifcaDocument, SIFCA_DOC_TYPES, type SifcaDocType } from '../../utils/sifcaPdfGenerator';
 import { useToast } from '../Common/Toast';
 import ConfirmDialog from '../Common/ConfirmDialog';
 import ErrorState from '../ErrorState';
@@ -84,6 +84,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showSifcaDialog, setShowSifcaDialog] = useState(false);
+  const [sifcaDocType, setSifcaDocType] = useState<SifcaDocType>('fiche-cms');
   const [sifcaVisitType, setSifcaVisitType] = useState<'consultation' | 'systematique' | 'embauche' | ''>('');
   const [sifcaFiliale, setSifcaFiliale] = useState('');
   const [sifcaMedecin, setSifcaMedecin] = useState('');
@@ -371,7 +372,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                   <div className="flex-1 min-w-0 pr-8">
                     <h2
                       id="patient-modal-title"
-                      className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate"
+                      className="text-lg sm:text-xl md:text-2xl font-bold theme-text-primary truncate"
                     >
                       {isEditing ? (
                         <input
@@ -1010,7 +1011,37 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
               </button>
             </div>
 
-            <div className="px-5 py-4 space-y-4">
+            <div className="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+              {/* Type de document */}
+              <div>
+                <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Type de document</label>
+                <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                  {SIFCA_DOC_TYPES.map((dt) => (
+                    <label
+                      key={dt.id}
+                      className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer transition-all ${
+                        sifcaDocType === dt.id
+                          ? 'bg-emerald-500/20 border border-emerald-500/50'
+                          : 'hover:bg-[#334155]/50 border border-transparent'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="sifcaDocType"
+                        value={dt.id}
+                        checked={sifcaDocType === dt.id}
+                        onChange={() => setSifcaDocType(dt.id)}
+                        className="accent-emerald-500 flex-shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <span className={`text-sm font-medium block ${sifcaDocType === dt.id ? 'text-emerald-400' : 'text-gray-300'}`}>{dt.label}</span>
+                        <span className="text-xs text-gray-500 block truncate">{dt.description}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
               {/* Médecin */}
               <div>
                 <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Médecin</label>
@@ -1023,48 +1054,52 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                 />
               </div>
 
-              {/* Type de visite */}
-              <div>
-                <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Type de visite</label>
-                <div className="space-y-2">
-                  {[
-                    { value: 'consultation', label: 'Consultation' },
-                    { value: 'systematique', label: 'Visite Systématique' },
-                    { value: 'embauche', label: "Visite d'embauche" },
-                  ].map((v) => (
-                    <label key={v.value} className="flex items-center gap-2.5 cursor-pointer group">
-                      <div
-                        onClick={() => setSifcaVisitType(v.value as any)}
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
-                          sifcaVisitType === v.value
-                            ? 'bg-emerald-500 border-emerald-500'
-                            : 'border-[#475569] group-hover:border-emerald-500/50'
-                        }`}
-                      >
-                        {sifcaVisitType === v.value && <div className="w-2 h-2 bg-white rounded-sm" />}
-                      </div>
-                      <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{v.label}</span>
-                    </label>
-                  ))}
+              {/* Type de visite (only for Fiche CMS) */}
+              {sifcaDocType === 'fiche-cms' && (
+                <div>
+                  <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Type de visite</label>
+                  <div className="space-y-2">
+                    {[
+                      { value: 'consultation', label: 'Consultation' },
+                      { value: 'systematique', label: 'Visite Systématique' },
+                      { value: 'embauche', label: "Visite d'embauche" },
+                    ].map((v) => (
+                      <label key={v.value} className="flex items-center gap-2.5 cursor-pointer group">
+                        <div
+                          onClick={() => setSifcaVisitType(v.value as any)}
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer ${
+                            sifcaVisitType === v.value
+                              ? 'bg-emerald-500 border-emerald-500'
+                              : 'border-[#475569] group-hover:border-emerald-500/50'
+                          }`}
+                        >
+                          {sifcaVisitType === v.value && <div className="w-2 h-2 bg-white rounded-sm" />}
+                        </div>
+                        <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{v.label}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Filiale */}
-              <div>
-                <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Filiale</label>
-                <select
-                  value={sifcaFiliale}
-                  onChange={(e) => setSifcaFiliale(e.target.value)}
-                  aria-label="Filiale SIFCA"
-                  title="Filiale SIFCA"
-                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
-                >
-                  <option value="">— Sélectionner</option>
-                  {['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'].map((f) => (
-                    <option key={f} value={f}>{f}</option>
-                  ))}
-                </select>
-              </div>
+              {/* Filiale (only for Fiche CMS) */}
+              {sifcaDocType === 'fiche-cms' && (
+                <div>
+                  <label className="block text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5">Filiale</label>
+                  <select
+                    value={sifcaFiliale}
+                    onChange={(e) => setSifcaFiliale(e.target.value)}
+                    aria-label="Filiale SIFCA"
+                    title="Filiale SIFCA"
+                    className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer"
+                  >
+                    <option value="">— Sélectionner</option>
+                    {['AUTRES', 'SIFCA', 'SAPH', 'PALMCI', 'SANIA', 'SUCRIVOIRE', 'SIFCOMASSUR'].map((f) => (
+                      <option key={f} value={f}>{f}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[#334155]">
@@ -1078,13 +1113,15 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  generateSifcaPDF({
+                  generateSifcaDocument(sifcaDocType, {
                     name: patient.name,
                     first_name: patient.first_name,
                     last_name: patient.last_name,
                     date_of_birth: patient.date_of_birth,
+                    gender: patient.gender,
                     temperature: patient.temperature,
                     poids: patient.poids,
+                    taille: patient.taille,
                     tension_arterielle: patient.tension_arterielle,
                     glycemie: patient.glycemie,
                     urines_albumine: patient.urines_albumine,
@@ -1094,6 +1131,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     medecin: sifcaMedecin || undefined,
                   });
                   setShowSifcaDialog(false);
+                  setSifcaDocType('fiche-cms');
                   setSifcaVisitType('');
                   setSifcaFiliale('');
                   setSifcaMedecin('');

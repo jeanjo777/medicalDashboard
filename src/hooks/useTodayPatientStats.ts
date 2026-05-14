@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface TodayPatientStats {
   total: number;
@@ -16,6 +17,7 @@ export function useTodayPatientStats() {
       const { data, error } = await supabase
         .from('appointments')
         .select('status')
+        .eq('medic_id', getCurrentMedicId()!)
         .eq('appointment_date', today);
 
       if (error) throw error;

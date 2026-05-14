@@ -107,7 +107,8 @@ const AIMedicalAssistant: React.FC = () => {
 
         const { count: totalAppointments } = await supabase
           .from('appointments')
-          .select('id', { count: 'exact', head: true });
+          .select('id', { count: 'exact', head: true })
+          .eq('medic_id', getCurrentMedicId()!);
 
         const stat = stats?.[0];
         let response = `📊 **Rapport d'activité :**\n\n`;

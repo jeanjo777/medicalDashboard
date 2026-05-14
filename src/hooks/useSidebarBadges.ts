@@ -35,6 +35,7 @@ export function useSidebarBadges(): SidebarBadges {
         supabase
           .from('appointments')
           .select('id', { count: 'exact', head: true })
+          .eq('medic_id', getCurrentMedicId()!)
           .eq('appointment_date', today)
           .in('status', ['a_venir', 'pending', 'confirmed', 'en_cours']),
 
@@ -49,6 +50,7 @@ export function useSidebarBadges(): SidebarBadges {
         supabase
           .from('appointments')
           .select('id', { count: 'exact', head: true })
+          .eq('medic_id', getCurrentMedicId()!)
           .gte('appointment_date', today)
           .lte('appointment_date', nextWeek)
           .in('status', ['a_venir', 'pending', 'confirmed']),
@@ -63,6 +65,7 @@ export function useSidebarBadges(): SidebarBadges {
         supabase
           .from('consultations')
           .select('id', { count: 'exact', head: true })
+          .eq('medic_id', getCurrentMedicId()!)
           .eq('status', 'pending'),
       ]);
 

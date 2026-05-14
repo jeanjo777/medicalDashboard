@@ -88,9 +88,9 @@ const AnalyticsPageAdvanced: React.FC = () => {
     ] = await Promise.all([
       supabase.from('patients').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!),
       supabase.from('patients').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!).gte('created_at', startOfThisMonth),
-      supabase.from('appointments').select('id', { count: 'exact', head: true }),
-      supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('appointment_date', todayStr),
-      supabase.from('consultations').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+      supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!),
+      supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!).eq('appointment_date', todayStr),
+      supabase.from('consultations').select('id', { count: 'exact', head: true }).eq('medic_id', getCurrentMedicId()!).eq('status', 'completed'),
       supabase.from('analytics_stats').select('cas_risque, rdv_honores').order('created_at', { ascending: false }).limit(1),
     ]);
 

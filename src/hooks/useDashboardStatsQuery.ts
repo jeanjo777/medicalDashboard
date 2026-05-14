@@ -63,33 +63,39 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
     supabase
       .from('appointments')
       .select('id', { count: 'exact', head: true })
+      .eq('medic_id', getCurrentMedicId()!)
       .eq('appointment_date', today),
 
     supabase
       .from('appointments')
       .select('id', { count: 'exact', head: true })
+      .eq('medic_id', getCurrentMedicId()!)
       .eq('appointment_date', yesterday),
 
     // Attendance: today's appointments that are confirmed, in_progress, or completed
     supabase
       .from('appointments')
       .select('status')
+      .eq('medic_id', getCurrentMedicId()!)
       .eq('appointment_date', today),
 
     // Yesterday's attendance for trend comparison
     supabase
       .from('appointments')
       .select('status')
+      .eq('medic_id', getCurrentMedicId()!)
       .eq('appointment_date', yesterday),
 
     supabase
       .from('consultations')
       .select('id', { count: 'exact', head: true })
+      .eq('medic_id', getCurrentMedicId()!)
       .gte('created_at', lastWeek),
 
     supabase
       .from('consultations')
       .select('id', { count: 'exact', head: true })
+      .eq('medic_id', getCurrentMedicId()!)
       .gte('created_at', twoWeeksAgo)
       .lt('created_at', lastWeek),
 

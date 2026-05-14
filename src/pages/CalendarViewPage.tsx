@@ -29,6 +29,7 @@ import AppointmentDetailModal from '../components/Appointments/AppointmentDetail
 import EditAppointmentModal from '../components/Appointments/EditAppointmentModal';
 import { useToast } from '../components/Common/Toast';
 import { supabase } from '../lib/supabase';
+import { getCurrentMedicId } from '../utils/auth';
 import { normalizeAppointmentStatus } from '../utils/statusUtils';
 import {
   format,
@@ -768,6 +769,7 @@ const CalendarViewPage: React.FC = () => {
       const { data, error: fetchError } = await supabase
         .from('appointments')
         .select('*')
+        .eq('medic_id', getCurrentMedicId()!)
         .gte('appointment_date', startDate)
         .lte('appointment_date', endDate)
         .order('appointment_date', { ascending: true })

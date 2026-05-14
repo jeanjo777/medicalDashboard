@@ -23,6 +23,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import logger from '../utils/logger';
+import { getCurrentMedicId } from '../utils/auth';
 
 export interface Appointment {
   id: string;
@@ -53,6 +54,7 @@ const fetchAppointments = async (): Promise<Appointment[]> => {
   const { data, error } = await supabase
     .from('appointments')
     .select('*')
+    .eq('medic_id', getCurrentMedicId()!)
     .order('appointment_date', { ascending: false });
 
   if (error) {

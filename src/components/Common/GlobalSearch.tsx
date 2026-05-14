@@ -89,6 +89,7 @@ export const GlobalSearch: React.FC = () => {
       const { data: appointments } = await supabase
         .from('appointments')
         .select('id, patient_name, appointment_date, appointment_time, message')
+        .eq('medic_id', getCurrentMedicId()!)
         .or(`patient_name.ilike.${searchTerm},message.ilike.${searchTerm}`)
         .limit(5);
 

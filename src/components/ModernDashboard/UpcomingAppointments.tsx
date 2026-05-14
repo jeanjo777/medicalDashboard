@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react';
 import { Clock, Mail, Phone, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { getCurrentMedicId } from '../../utils/auth';
 import EmptyState from '../EmptyState';
 import AppointmentDetailModal from '../AppointmentDetailModal';
 import logger from '../../utils/logger';
@@ -61,6 +62,7 @@ const UpcomingAppointments: React.FC = () => {
       const { data, error: fetchError } = await supabase
         .from('appointments')
         .select('*')
+        .eq('medic_id', getCurrentMedicId()!)
         .eq('appointment_date', todayDateStr)
         .neq('status', 'cancelled')
         .order('appointment_time', { ascending: true });
