@@ -285,16 +285,31 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ filters }) => {
             </div>
 
             <div>
-              <label htmlFor="report-period" className="block text-sm theme-text-secondary mb-2 font-medium">Période</label>
-              <input
-                id="report-period"
-                type="month"
-                value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
-                aria-label="Période du rapport"
-                title="Sélectionner la période"
-              />
+              <label className="block text-sm theme-text-secondary mb-2 font-medium">Période</label>
+              <div className="flex gap-2">
+                <select
+                  value={selectedPeriod.split('-')[1]}
+                  onChange={(e) => setSelectedPeriod(`${selectedPeriod.split('-')[0]}-${e.target.value}`)}
+                  className="flex-1 px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                  aria-label="Mois"
+                  title="Mois"
+                >
+                  {['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'].map((m, i) => (
+                    <option key={i} value={String(i + 1).padStart(2, '0')}>{m}</option>
+                  ))}
+                </select>
+                <select
+                  value={selectedPeriod.split('-')[0]}
+                  onChange={(e) => setSelectedPeriod(`${e.target.value}-${selectedPeriod.split('-')[1]}`)}
+                  className="w-24 px-3 py-2.5 bg-[var(--bg-input)] border border-[var(--border-color)] rounded-lg text-[var(--text-primary)] focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none transition-all"
+                  aria-label="Année"
+                  title="Année"
+                >
+                  {[2024, 2025, 2026, 2027].map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
