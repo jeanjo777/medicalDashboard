@@ -177,7 +177,7 @@ export const verifyToken = async (options?: {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-token`;
+      const apiUrl = `${window.location.origin}/functions/v1/verify-token`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',

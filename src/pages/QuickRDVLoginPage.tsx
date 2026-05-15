@@ -17,7 +17,7 @@ const QuickRDVLoginPage: React.FC = () => {
 
     try {
       // Authenticate via server-side Edge Function to avoid client-side password handling
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-login`;
+      const apiUrl = `${window.location.origin}/functions/v1/auth-login`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',

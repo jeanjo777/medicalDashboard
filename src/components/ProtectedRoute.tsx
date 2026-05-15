@@ -25,7 +25,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       const token = localStorage.getItem('auth_token');
       if (!token) return;
 
-      const apiUrl = import.meta.env.VITE_SUPABASE_URL || '';
+      const apiUrl = window.location.origin;
       fetch(`${apiUrl}/functions/v1/verify-token`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },

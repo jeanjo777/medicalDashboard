@@ -17,7 +17,7 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auth-login`;
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL || window.location.origin}/functions/v1/auth-login`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',

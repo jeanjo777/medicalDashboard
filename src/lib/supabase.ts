@@ -1,11 +1,15 @@
 // PostgREST client — drop-in replacement for @supabase/supabase-js
 // Exports the same `supabase` object so no import changes needed across the app.
 
-const BASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+// Use current origin so the app works on any domain (medical.simpliceake.com, dashboard.simpliceake.com, etc.)
+export const getApiBase = (): string => {
+  try { return window.location.origin; } catch { return import.meta.env.VITE_SUPABASE_URL as string || ''; }
+};
+const BASE_URL = getApiBase();
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-if (!BASE_URL || !ANON_KEY) {
-  throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY environment variables');
+if (!ANON_KEY) {
+  throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
 }
 
 const REST_URL = `${BASE_URL}/rest/v1`;

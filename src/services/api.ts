@@ -45,7 +45,7 @@ const DEFAULT_CONFIG: Required<RequestConfig> = {
 
 // URL de base de l'API
 const getBaseUrl = (): string => {
-  return import.meta.env.VITE_SUPABASE_URL || '';
+  try { return window.location.origin; } catch { return import.meta.env.VITE_SUPABASE_URL || ''; }
 };
 
 /**

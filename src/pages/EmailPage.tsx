@@ -304,7 +304,7 @@ const EmailPage: React.FC = () => {
     setSendResult(null);
     try {
       const token = localStorage.getItem('auth_token');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const supabaseUrl = window.location.origin;
 
       // Convert attachments to base64
       const attachmentsPayload = attachments.length > 0

@@ -14,7 +14,7 @@ const ForgotPasswordPage = () => {
     setError('');
 
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-reset-password`;
+      const apiUrl = `${window.location.origin}/functions/v1/send-reset-password`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',

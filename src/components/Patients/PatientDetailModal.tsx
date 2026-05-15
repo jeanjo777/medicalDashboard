@@ -1295,7 +1295,7 @@ const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                     if (result) {
                       const docLabel = SIFCA_DOC_TYPES.find(d => d.id === sifcaDocType)?.label || sifcaDocType;
                       const token = localStorage.getItem('auth_token');
-                      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
+                      const apiUrl = `${window.location.origin}/functions/v1/send-email`;
                       try {
                         await fetch(apiUrl, {
                           method: 'POST',

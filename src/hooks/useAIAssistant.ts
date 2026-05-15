@@ -477,7 +477,7 @@ export function useAIAssistant(): UseAIAssistantReturn {
         };
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseUrl = window.location.origin;
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
       // Create abort controller for cancellation

@@ -40,7 +40,7 @@ const ResetPasswordPage = () => {
     setIsLoading(true);
 
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-reset-token`;
+      const apiUrl = `${window.location.origin}/functions/v1/validate-reset-token`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',

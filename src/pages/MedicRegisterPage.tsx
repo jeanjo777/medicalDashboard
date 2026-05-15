@@ -36,7 +36,7 @@ const MedicRegisterPage = () => {
     setLoading(true);
 
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/register-medic`;
+      const apiUrl = `${window.location.origin}/functions/v1/register-medic`;
 
       const response = await fetch(apiUrl, {
         method: 'POST',

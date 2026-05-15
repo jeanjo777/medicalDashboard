@@ -211,7 +211,7 @@ const PatientsViewPageEnhanced: React.FC = () => {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
+      const apiUrl = `${window.location.origin}/functions/v1/send-email`;
       const res = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

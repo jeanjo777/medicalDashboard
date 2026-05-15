@@ -36,7 +36,7 @@ const PatientDashboardPage = () => {
           return;
         }
 
-        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-patient-summary`;
+        const apiUrl = `${window.location.origin}/functions/v1/get-patient-summary`;
 
         const response = await fetch(apiUrl, {
           headers: {
