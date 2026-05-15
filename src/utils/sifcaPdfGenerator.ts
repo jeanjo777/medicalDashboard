@@ -203,6 +203,31 @@ function drawSignature(doc: jsPDF, y: number): number {
 
   const stampX = 140;
   const stampY = y - 2;
+
+  // Dr Selly: draw text stamp (source image too noisy)
+  if (username === 'dr.selly') {
+    const cx = stampX + 30;
+    doc.setDrawColor(0, 0, 150);
+    doc.setLineWidth(0.6);
+    doc.rect(stampX, stampY, 60, 26);
+    doc.setFontSize(6.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 150);
+    doc.text('CENTRE MEDICO SOCIAL SIFCA', cx, stampY + 4.5, { align: 'center' });
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Dr SELLY CHARLES PATRICK', cx, stampY + 9, { align: 'center' });
+    doc.setFontSize(6.5);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Medecin Interne et Diabetologue', cx, stampY + 13, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text('ONMCI : 3606', cx, stampY + 17, { align: 'center' });
+    doc.text('Cel : 01 02 02 48 03', cx, stampY + 21, { align: 'center' });
+    doc.setTextColor(COLOR_VALUE);
+    doc.setFont('helvetica', 'normal');
+    return stampY + 26;
+  }
+
   doc.addImage(stampImg, 'PNG', stampX, stampY, stampW, stampH);
   return stampY + stampH;
 }
