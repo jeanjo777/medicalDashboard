@@ -191,7 +191,7 @@ function drawSignature(doc: jsPDF, y: number): number {
     'dr.dagbo': { img: STAMP_DAGBO, w: 55, h: 22 },
     'dr.sekou': { img: STAMP_SEKOU, w: 55, h: 24 },
     'dr.hamed': { img: STAMP_HAMED, w: 55, h: 22 },
-    'dr.selly': { img: STAMP_SELLY, w: 55, h: 25 },
+    'dr.selly': { img: STAMP_SELLY, w: 65, h: 30 },
   };
 
   const match = stampMap[username];
