@@ -3,6 +3,11 @@ import { SIFCA_LOGO_BW } from './sifcaLogoBw';
 import { DOCTOR_STAMP } from './doctorStamp';
 import { STAMP_KARAMA } from './stampKarama';
 import { STAMP_ZAGO } from './stampZago';
+import { STAMP_AHONON } from './stampAhonon';
+import { STAMP_DAGBO } from './stampDagbo';
+import { STAMP_SEKOU } from './stampSekou';
+import { STAMP_HAMED } from './stampHamed';
+import { STAMP_SELLY } from './stampSelly';
 import { getUser } from './auth';
 
 // ════════════════════════════════════════════════════════════════
@@ -953,11 +958,17 @@ function drawFooter(doc: jsPDF, y: number) {
   let stampImg = DOCTOR_STAMP;
   let stampW = 55, stampH = 22;
 
-  if (username === 'pr.karama' || username.includes('karama')) {
-    stampImg = STAMP_KARAMA; stampW = 45; stampH = 38;
-  } else if (username === 'dr.zago' || username.includes('zago')) {
-    stampImg = STAMP_ZAGO; stampW = 55; stampH = 22;
-  }
+  const stampMap: Record<string, { img: string; w: number; h: number }> = {
+    'pr.karama': { img: STAMP_KARAMA, w: 45, h: 38 },
+    'dr.zago': { img: STAMP_ZAGO, w: 55, h: 22 },
+    'dr.ahonon': { img: STAMP_AHONON, w: 55, h: 24 },
+    'dr.dagbo': { img: STAMP_DAGBO, w: 55, h: 22 },
+    'dr.sekou': { img: STAMP_SEKOU, w: 55, h: 24 },
+    'dr.hamed': { img: STAMP_HAMED, w: 55, h: 22 },
+    'dr.selly': { img: STAMP_SELLY, w: 55, h: 25 },
+  };
+  const match = stampMap[username];
+  if (match) { stampImg = match.img; stampW = match.w; stampH = match.h; }
 
   doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(...C_GRAY);
   doc.text(`Fait à Abidjan, le ${new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`, 95, y);
