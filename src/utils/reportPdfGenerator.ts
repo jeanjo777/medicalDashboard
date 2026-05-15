@@ -976,24 +976,7 @@ function drawFooter(doc: jsPDF, y: number) {
   doc.setFont('helvetica', 'bold'); doc.setTextColor(0, 0, 0);
   doc.text('Le Médecin :', 140, y);
   y += 8;
-  if (username === 'dr.selly') {
-    const cx = 170;
-    doc.setDrawColor(0, 0, 150);
-    doc.setLineWidth(0.6);
-    doc.rect(140, y, 60, 26);
-    doc.setFontSize(6.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(0, 0, 150);
-    doc.text('CENTRE MEDICO SOCIAL SIFCA', cx, y + 4.5, { align: 'center' });
-    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
-    doc.text('Dr SELLY CHARLES PATRICK', cx, y + 9, { align: 'center' });
-    doc.setFontSize(6.5); doc.setFont('helvetica', 'italic');
-    doc.text('Medecin Interne et Diabetologue', cx, y + 13, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.text('ONMCI : 3606', cx, y + 17, { align: 'center' });
-    doc.text('Cel : 01 02 02 48 03', cx, y + 21, { align: 'center' });
-    doc.setTextColor(...C_GRAY);
-  } else {
-    doc.addImage(stampImg, 'PNG', 140, y, stampW, stampH);
-  }
+  doc.addImage(stampImg, 'PNG', 140, y, stampW, stampH);
 
   // Page numbers
   const pages = doc.getNumberOfPages();
