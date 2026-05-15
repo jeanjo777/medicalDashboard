@@ -120,10 +120,17 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
       section: 'ai'
     },
     {
-      id: 'predictions',
-      label: 'Prédictions IA',
-      icon: <Brain size={22} strokeWidth={2} />,
-      path: '/predictions',
+      id: 'segmentation',
+      label: 'Segmentation',
+      icon: <PieChart size={22} strokeWidth={2} />,
+      path: '/segmentation',
+      section: 'analytics'
+    },
+    {
+      id: 'comparative',
+      label: 'Comparatif',
+      icon: <ArrowLeftRight size={22} strokeWidth={2} />,
+      path: '/comparative',
       section: 'analytics'
     },
     {
@@ -134,13 +141,6 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
       section: 'analytics'
     },
     {
-      id: 'segmentation',
-      label: 'Segmentation',
-      icon: <PieChart size={22} strokeWidth={2} />,
-      path: '/segmentation',
-      section: 'analytics'
-    },
-    {
       id: 'ai-alerts',
       label: 'Alertes IA',
       icon: <Bell size={22} strokeWidth={2} />,
@@ -148,10 +148,10 @@ const MedicalSidebarRefined: React.FC<MedicalSidebarRefinedProps> = ({
       section: 'analytics'
     },
     {
-      id: 'comparative',
-      label: 'Comparatif',
-      icon: <ArrowLeftRight size={22} strokeWidth={2} />,
-      path: '/comparative',
+      id: 'predictions',
+      label: 'Prédictions IA',
+      icon: <Brain size={22} strokeWidth={2} />,
+      path: '/predictions',
       section: 'analytics'
     },
     {
