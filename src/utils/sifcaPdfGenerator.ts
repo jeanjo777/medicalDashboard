@@ -414,7 +414,8 @@ export type SifcaDocType =
   | 'arret-travail'
   | 'certificat-grossesse'
   | 'ordonnance-medicale'
-  | 'bulletin-consultation';
+  | 'bulletin-consultation'
+  | 'bulletin-examen';
 
 export interface SifcaDocOption {
   id: SifcaDocType;
@@ -430,6 +431,7 @@ export const SIFCA_DOC_TYPES: SifcaDocOption[] = [
   { id: 'certificat-grossesse', label: 'Certificat de Grossesse', description: 'Attestation de grossesse en cours' },
   { id: 'ordonnance-medicale', label: 'Ordonnance M\u00e9dicale', description: 'Prescription m\u00e9dicamenteuse' },
   { id: 'bulletin-consultation', label: 'Bulletin de Consultation', description: 'Bulletin de consultation avec renseignements cliniques' },
+  { id: 'bulletin-examen', label: "Bulletin d'Examen", description: 'Bulletin d\'examen avec examens demand\u00e9s et renseignements cliniques' },
 ];
 
 interface SifcaDocData extends PatientData {
@@ -447,6 +449,7 @@ interface SifcaDocData extends PatientData {
   service?: string;
   consultationEn?: string;
   renseignementsCliniques?: string;
+  examensDemandes?: string;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -690,6 +693,75 @@ function genBulletinConsultation(doc: jsPDF, d: SifcaDocData) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// 8. BULLETIN D'EXAMEN
+// ════════════════════════════════════════════════════════════════
+
+function genBulletinExamen(doc: jsPDF, d: SifcaDocData) {
+  const headerY = drawSifcaHeader(doc);
+  let y = drawTitle(doc, "BULLETIN D'EXAMEN", headerY + 12);
+
+  y += 6;
+  y = drawMedicalField(doc, 'SERVICE', d.service || '', y);
+
+  const lastName = d.last_name || d.name?.split(' ').slice(-1)[0] || '';
+  const firstName = d.first_name || d.name?.split(' ').slice(0, -1).join(' ') || '';
+
+  y = drawMedicalField(doc, 'NOM', lastName.toUpperCase(), y);
+  y = drawMedicalField(doc, 'PRENOMS', firstName, y);
+
+  // AGE + SEXE cote a cote
+  doc.setFontSize(FONT_LABEL);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(COLOR_LABEL);
+  doc.text('AGE', M, y);
+  doc.text('SEXE', 100, y);
+
+  doc.setFontSize(FONT_VALUE);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
+  doc.text(calculateAge(d.date_of_birth) || '', M, y + 5.5);
+  const sexLabel = d.gender === 'male' ? 'Masculin' : d.gender === 'female' ? 'Feminin' : (d.gender || '');
+  doc.text(sexLabel, 100, y + 5.5);
+  y += FIELD_GAP;
+
+  // EXAMENS DEMANDES
+  y += 4;
+  doc.setFontSize(FONT_SECTION);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
+  doc.text('EXAMENS DEMANDES', M, y);
+  y += 8;
+
+  if (d.examensDemandes) {
+    doc.setFontSize(FONT_BODY);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(d.examensDemandes, CONTENT_W);
+    doc.text(lines, M, y);
+    y += lines.length * 6;
+  }
+
+  y += SECTION_GAP;
+
+  // RENSEIGNEMENTS CLINIQUES
+  doc.setFontSize(FONT_SECTION);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(COLOR_VALUE);
+  doc.text('RENSEIGNEMENTS CLINIQUES', M, y);
+  y += 8;
+
+  if (d.renseignementsCliniques) {
+    doc.setFontSize(FONT_BODY);
+    doc.setFont('helvetica', 'normal');
+    const lines = doc.splitTextToSize(d.renseignementsCliniques, CONTENT_W);
+    doc.text(lines, M, y);
+    y += lines.length * 6;
+  }
+
+  y += 16;
+  drawSignature(doc, y);
+}
+
+// ════════════════════════════════════════════════════════════════
 // DISPATCH PRINCIPAL
 // ════════════════════════════════════════════════════════════════
 
@@ -708,6 +780,7 @@ export const generateSifcaDocument = (docType: SifcaDocType, data: SifcaDocData)
     'certificat-grossesse': genCertificatGrossesse,
     'ordonnance-medicale': genOrdonnanceMedicale,
     'bulletin-consultation': genBulletinConsultation,
+    'bulletin-examen': genBulletinExamen,
   };
 
   const gen = generators[docType];
@@ -753,6 +826,7 @@ export const generateSifcaDocumentBase64 = (docType: SifcaDocType, data: SifcaDo
     'certificat-grossesse': genCertificatGrossesse,
     'ordonnance-medicale': genOrdonnanceMedicale,
     'bulletin-consultation': genBulletinConsultation,
+    'bulletin-examen': genBulletinExamen,
   };
 
   const gen = generators[docType];

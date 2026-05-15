@@ -78,6 +78,7 @@ const ReportsPage: React.FC = () => {
   const [service, setService] = useState('');
   const [consultationEn, setConsultationEn] = useState('');
   const [renseignementsCliniques, setRenseignementsCliniques] = useState('');
+  const [examensDemandes, setExamensDemandes] = useState('');
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -198,6 +199,7 @@ const ReportsPage: React.FC = () => {
       service: service || undefined,
       consultationEn: consultationEn || undefined,
       renseignementsCliniques: renseignementsCliniques || undefined,
+      examensDemandes: examensDemandes || undefined,
     });
     setDialogOpen(false);
   };
@@ -647,6 +649,23 @@ const ReportsPage: React.FC = () => {
                       rows={5}
                       className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition resize-none"
                     />
+                  </div>
+                </>
+              )}
+
+              {selectedDocType === 'bulletin-examen' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Service</label>
+                    <input type="text" value={service} onChange={(e) => setService(e.target.value)} placeholder="Ex: Médecine générale, Urgences..." className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Examens demandés</label>
+                    <textarea value={examensDemandes} onChange={(e) => setExamensDemandes(e.target.value)} placeholder={"Ex:\nNFS, VS, CRP\nGlycémie à jeun\nBilan hépatique"} rows={5} className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition resize-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium theme-text-primary mb-1.5">Renseignements cliniques</label>
+                    <textarea value={renseignementsCliniques} onChange={(e) => setRenseignementsCliniques(e.target.value)} placeholder="Observations, symptômes, diagnostic..." rows={4} className="w-full px-3 py-2.5 text-sm theme-bg-primary border theme-border rounded-xl theme-text-primary placeholder:theme-text-secondary focus:outline-none focus:ring-2 focus:ring-primary/50 transition resize-none" />
                   </div>
                 </>
               )}
