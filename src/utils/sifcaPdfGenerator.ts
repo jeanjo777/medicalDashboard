@@ -201,7 +201,7 @@ function drawSignature(doc: jsPDF, y: number): number {
     stampH = match.h;
   }
 
-  const stampX = 140;
+  const stampX = 130;
   const stampY = y - 2;
 
   doc.addImage(stampImg, 'PNG', stampX, stampY, stampW, stampH);
