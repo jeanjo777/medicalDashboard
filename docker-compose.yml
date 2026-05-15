@@ -54,7 +54,7 @@ services:
     build:
       context: .
       args:
-        VITE_SUPABASE_URL: https://medical.simpliceake.com
+        VITE_SUPABASE_URL: ""
         VITE_SUPABASE_ANON_KEY: ${ANON_KEY}
         VITE_N8N_WEBHOOK_URL: ${VITE_N8N_WEBHOOK_URL:-}
     container_name: medicare-app
